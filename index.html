@@ -5,8 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Atalaia System · Cadastro de bens</title>
 <meta name="theme-color" content="#1d1f23">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://ipwleoawvxmzvofcccjn.supabase.co; connect-src https://ipwleoawvxmzvofcccjn.supabase.co wss://ipwleoawvxmzvofcccjn.supabase.co; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'none'; form-action 'self'">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d1f23%27/%3E%3Cpath d=%27M50 18 L24 82 M50 18 L76 82%27 stroke=%27white%27 stroke-width=%2710%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3Cpath d=%27M35 58 L46 67 L67 44%27 stroke=%27%23f2a33a%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 fill=%27none%27/%3E%3C/svg%3E">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
 <style>
 :root{--ink:#1d1f23;--amb:#f2a33a;--mut:#6b7078;--line:#e3e0da;--bg:#f5f3ef;--card:#fff;--ok:#1f9a55;--bad:#c8372d;--warn:#b7791f;--soft:#efece6}
 *{box-sizing:border-box}html,body{margin:0}
@@ -52,6 +54,10 @@ nav.tabs svg{width:22px;height:22px}
 .toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;z-index:30;font-size:.9rem;max-width:90vw}
 .center{min-height:80vh;display:grid;align-content:center}
 .muted{color:var(--mut);font-size:.88rem}
+.chk{list-style:none;padding:0;margin:-4px 0 12px;font-size:.84rem;display:grid;gap:2px}.chk li{color:var(--mut)}.chk li.ok{color:var(--ok)}.chk li:before{content:"○ "}.chk li.ok:before{content:"✓ "}
+.qr{display:block;width:200px;height:200px;margin:8px auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px}
+.code{font-family:ui-monospace,Menlo,monospace;letter-spacing:.08em;word-break:break-all;background:var(--soft);padding:8px 10px;border-radius:8px;font-size:.85rem}
+.otp{font-size:1.6rem;letter-spacing:.4em;text-align:center;font-family:ui-monospace,Menlo,monospace}
 .demo{background:var(--amb);color:var(--ink);text-align:center;font-size:.8rem;font-weight:700;padding:4px}
 </style>
 </head>
@@ -68,8 +74,12 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.1.0"
+  versao:"0.1.1",
+  // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
+  // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
+  turnstileSiteKey:""
 };
+if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Atalaia: abertura dentro de outra página bloqueada.")}
 const DEMO=new URLSearchParams(location.search).has("demo")||!CONFIG.anonKey||CONFIG.anonKey.startsWith("COLE_");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
 const IC={bens:"M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10",amb:"M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6",plano:"M12 2l3 6 6 .9-4.5 4.3 1 6.3L12 16.6 6.5 19.5l1-6.3L3 8.9 9 8z"};
@@ -92,11 +102,28 @@ function realDB(){
   return {
     async sessao(){return chk(await sb.auth.getSession()).session},
     aoMudar(fn){sb.auth.onAuthStateChange((ev,s)=>fn(ev,s))},
-    async entrar(email,senha){return chk(await sb.auth.signInWithPassword({email,password:senha}))},
-    async sair(){await sb.auth.signOut()},
-    async esqueci(email){return chk(await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname}))},
-    async definirSenha(senha){return chk(await sb.auth.updateUser({password:senha}))},
-    async meuVinculo(){const u=(await sb.auth.getUser()).data.user;const d=chk(await sb.from("membros").select("perfil,nome,contratante_id,contratantes(id,nome,sigla,situacao,plano_id,planos(*))").eq("user_id",u.id).eq("ativo",true).limit(1));return d[0]?{...d[0],email:u.email}:null},
+    async entrar(email,senha,captcha){return chk(await sb.auth.signInWithPassword({email,password:senha,options:captcha?{captchaToken:captcha}:{}}))},
+    async sair(todos){await sb.auth.signOut(todos?{scope:"global"}:undefined)},
+    async esqueci(email,captcha){return chk(await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname,...(captcha?{captchaToken:captcha}:{})}))},
+    async definirSenha(senha){return chk(await sb.auth.updateUser({password:senha,data:{senha_definida:true}}))},
+    async usuario(){return (await sb.auth.getUser()).data.user},
+    /* Confere a senha atual sem trocar a sessão aberta (a sessão de conferência é encerrada em seguida). */
+    async conferirSenha(email,senha,captcha){
+      const r=await fetch(CONFIG.url+"/auth/v1/token?grant_type=password",{method:"POST",headers:{"Content-Type":"application/json",apikey:CONFIG.anonKey},body:JSON.stringify({email,password:senha,...(captcha?{gotrue_meta_security:{captcha_token:captcha}}:{})})});
+      const j=await r.json().catch(()=>({}));
+      if(!r.ok)throw new Error(traduz(j.error_description||j.msg||j.message||"Invalid login credentials"));
+      try{await fetch(CONFIG.url+"/auth/v1/logout?scope=local",{method:"POST",headers:{apikey:CONFIG.anonKey,Authorization:"Bearer "+j.access_token}})}catch(e){}
+    },
+    async nivel(){return chk(await sb.auth.mfa.getAuthenticatorAssuranceLevel())},
+    async fatores(){const d=chk(await sb.auth.mfa.listFactors());return (d.all||[]).filter(f=>f.factor_type=="totp")},
+    async inscrever(){
+      for(const f of await this.fatores())if(f.status!=="verified")await sb.auth.mfa.unenroll({factorId:f.id});
+      return chk(await sb.auth.mfa.enroll({factorType:"totp",friendlyName:"Atalaia "+new Date().toISOString().slice(0,16)}));
+    },
+    async verificarCodigo(factorId,code){return chk(await sb.auth.mfa.challengeAndVerify({factorId,code}))},
+    async removerFator(factorId){return chk(await sb.auth.mfa.unenroll({factorId}))},
+    async ultimosAcessos(){const u=await this.usuario();return chk(await sb.from("registro_acessos").select("criado_em,aparelho").eq("user_id",u.id).eq("acao","entrou").order("criado_em",{ascending:false}).limit(2))},
+    async meuVinculo(){const u=(await sb.auth.getUser()).data.user;const d=chk(await sb.from("membros").select("perfil,nome,contratante_id,contratantes(id,nome,sigla,situacao,plano_id,exige_2_etapas,planos(*))").eq("user_id",u.id).eq("ativo",true).limit(1));return d[0]?{...d[0],email:u.email}:null},
     async ambientes(c){return chk(await sb.from("ambientes").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em"))},
     async addAmbiente(c,nome){return chk(await sb.from("ambientes").insert({contratante_id:c,nome}).select().single())},
     async renAmbiente(id,nome){return chk(await sb.from("ambientes").update({nome}).eq("id",id).select().single())},
@@ -111,7 +138,7 @@ function realDB(){
 function mockDB(){
   const plano={id:"free",nome:"Atalaia Free",preco_mensal:0,filiais:0,ambientes:1,bens:50,usuarios:1,armazenamento_gb:1,funcoes:["bens"]};
   const c={id:"c-demo",nome:"Studio de Unhas (demonstração)",sigla:"SU",situacao:"teste",plano_id:"free",planos:plano};
-  let logado=false,prox=4,fotos={};
+  let logado=false,prox=4,fotos={},fat=[],nivel2=false;
   const amb=[{id:"a1",contratante_id:c.id,nome:"Salão",ativo:true}];
   const bens=[{id:"b3",criado_em:"2026-03-10",contratante_id:c.id,ambiente_id:"a1",nome:"Cabine de secagem UV/LED",categoria:"Equipamento",marca:"Exemplo",modelo:"48W",numero_serie:"UV48-0091",estado:"bom",valor:189.9,data_aquisicao:"2026-03-10",ativo:true},
    {id:"b2",criado_em:"2025-11-02",contratante_id:c.id,ambiente_id:"a1",nome:"Cadeira de manicure",categoria:"Mobiliário",estado:"bom",valor:450,data_aquisicao:"2025-11-02",ativo:true},
@@ -120,8 +147,16 @@ function mockDB(){
   return {
     async sessao(){return logado?{user:{email:"demo@atalaia"}}:null},aoMudar(fn){cb=fn},
     async entrar(e,s){await w(300);if(!e||!s)throw new Error("Informe e-mail e senha.");logado=true;return {}},
-    async sair(){logado=false},async esqueci(){await w(300)},async definirSenha(){await w(200)},
-    async meuVinculo(){return {perfil:"administrador",nome:"Demonstração",contratante_id:c.id,contratantes:c,email:"demo@atalaia"}},
+    async sair(){logado=false;nivel2=false},async esqueci(){await w(300)},async definirSenha(){await w(200)},
+    async usuario(){return {id:"u-demo",email:"demo@atalaia",user_metadata:{senha_definida:true}}},
+    async conferirSenha(e,s){await w(200);if(!s)throw new Error("E-mail ou senha incorretos.")},
+    async nivel(){const v=fat.some(f=>f.status=="verified");return {currentLevel:v&&nivel2?"aal2":"aal1",nextLevel:v?"aal2":"aal1"}},
+    async fatores(){return fat},
+    async inscrever(){fat=fat.filter(f=>f.status=="verified");const f={id:"f"+Date.now(),status:"unverified",factor_type:"totp"};fat.push(f);return {id:f.id,totp:{qr_code:"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#fff"/><path d="M1 1h3v3H1zM6 1h3v3H6zM1 6h3v3H1zM6 6h1v1H6zM8 8h1v1H8z" fill="#000"/></svg>'),secret:"DEMO2ETAPAS7QK3",uri:"otpauth://totp/Atalaia:demo?secret=DEMO2ETAPAS7QK3"}}},
+    async verificarCodigo(id,code){await w(200);if(code!=="123456")throw new Error("Código incorreto ou vencido. Na demonstração, use 123456.");const f=fat.find(x=>x.id==id);f.status="verified";nivel2=true},
+    async removerFator(id){fat=fat.filter(f=>f.id!=id)},
+    async ultimosAcessos(){return [{criado_em:new Date().toISOString(),aparelho:aparelho()},{criado_em:new Date(Date.now()-864e5).toISOString(),aparelho:"Celular · Chrome"}]},
+    async meuVinculo(){return {perfil:"administrador",nome:"Demonstração",contratante_id:c.id,contratantes:{...c,exige_2_etapas:false},email:"demo@atalaia"}},
     async ambientes(){return amb.filter(a=>a.ativo)},
     async addAmbiente(ci,nome){if(amb.filter(a=>a.ativo).length>=plano.ambientes)throw new Error(`Limite do plano atingido: ${plano.ambientes} ambiente(s).`);const a={id:"a"+Date.now(),contratante_id:ci,nome,ativo:true};amb.push(a);return a},
     async renAmbiente(id,nome){const a=amb.find(x=>x.id==id);a.nome=nome;return a},
@@ -134,7 +169,9 @@ function mockDB(){
 }
 function traduz(m){
   const t={"Invalid login credentials":"E-mail ou senha incorretos.","Email not confirmed":"Confirme o e-mail pelo link recebido.","Password should be at least 6 characters":"A senha precisa ter pelo menos 6 caracteres.","New password should be different from the old password.":"A nova senha precisa ser diferente da anterior.","For security purposes, you can only request this after":"Por segurança, aguarde alguns segundos antes de pedir de novo."};
+  const t2={"at least one character of each":"A senha precisa ter letra minúscula, letra maiúscula, número e símbolo.","Password should be at least":"A senha está curta. Use pelo menos 10 caracteres.","weak":"Senha fraca. Use pelo menos 10 caracteres com letra minúscula, maiúscula, número e símbolo.","captcha":"Confirme a verificação de segurança (não sou um robô) e tente de novo.","Invalid TOTP":"Código incorreto ou vencido. Confira o código atual no aplicativo autenticador.","invalid totp":"Código incorreto ou vencido. Confira o código atual no aplicativo autenticador.","rate limit":"Muitas tentativas seguidas. Por segurança, aguarde alguns minutos.","AAL2":"Confirme o código da verificação em duas etapas.","aal2":"Confirme o código da verificação em duas etapas.","expired":"O link ou código venceu. Peça um novo.","Email link is invalid":"O link venceu ou já foi usado. Peça um novo em “Esqueci minha senha”."};
   for(const k in t)if(m&&m.includes(k))return t[k];
+  for(const k in t2)if(m&&m.toLowerCase().includes(k.toLowerCase()))return t2[k];
   if(m&&m.includes("duplicate key")&&m.includes("serie"))return "Já existe um bem com este número de série.";
   if(m&&m.includes("row-level security"))return "Sem permissão para esta ação.";
   return m||"Erro inesperado.";
@@ -142,18 +179,49 @@ function traduz(m){
 function aparelho(){const u=navigator.userAgent;return (/Mobi|Android|iPhone/.test(u)?"Celular":"Computador")+" · "+(/Edg\//.test(u)?"Edge":/Chrome\//.test(u)?"Chrome":/Safari\//.test(u)?"Safari":/Firefox\//.test(u)?"Firefox":"Navegador")}
 
 /* ---------------- Estado e telas ---------------- */
-const E={tela:"carregando",aba:"bens",v:null,amb:[],bens:[],busca:"",fotos:{},msg:null,modal:null};
+const E={tela:"carregando",aba:"bens",v:null,amb:[],bens:[],busca:"",fotos:{},msg:null,modal:null,modoSenha:"link",depois:null,fatores:[],insc:null,obrig:false,acessos:[]};
 function render(){
-  const h=E.tela=="login"?telaLogin():E.tela=="senha"?telaSenha():E.tela=="semacesso"?telaSemAcesso():E.tela=="app"?telaApp():`<div class="center wrap"><p class="muted" style="text-align:center">Carregando…</p></div>`;
+  const h=E.tela=="login"?telaLogin():E.tela=="senha"?telaSenha():E.tela=="mfa"?telaMfa():E.tela=="ativar2"?telaAtivar():E.tela=="semacesso"?telaSemAcesso():E.tela=="app"?telaApp():`<div class="center wrap"><p class="muted" style="text-align:center">Carregando…</p></div>`;
   $("#app").innerHTML=(DEMO?`<div class="demo">MODO DEMONSTRAÇÃO · os dados não são salvos</div>`:"")+h+(E.modal?modalHTML():"");
   if(E.tela=="app")carregarFotosVisiveis();
+  montarCaptcha();
 }
 const cab=(sub)=>`<header><div class="wrap">${LOGO}<div><b>ATALAIA SYSTEM${E.v?`<span class="pill">${esc(E.v.contratantes.planos.nome.replace("Atalaia ",""))}</span>`:""}</b><small>${sub||"Sistema de Gestão de Patrimônio e Manutenção"}</small></div></div></header>`;
-function telaLogin(){return cab()+`<div class="wrap center"><div class="card"><h1 style="margin-top:0">Entrar</h1><p class="sub">Use o e-mail e a senha cadastrados. Primeiro acesso? Abra o convite recebido por e-mail.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
- <form onsubmit="event.preventDefault();entrar()"><label>E-mail<input id="em" type="email" autocomplete="username" required></label><label>Senha<input id="se" type="password" autocomplete="current-password" required></label><button class="btn full">Entrar</button></form>
+function telaLogin(){return cab()+`<div class="wrap center"><div class="card"><h1 style="margin-top:0">Entrar</h1><p class="sub">Use o e-mail e a senha cadastrados. No primeiro acesso, entre com a senha provisória: o sistema vai pedir que você crie a sua.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
+ <form onsubmit="event.preventDefault();entrar()"><label>E-mail<input id="em" type="email" autocomplete="username" required></label><label>Senha<input id="se" type="password" autocomplete="current-password" required></label>${captchaHTML()}<button class="btn full">Entrar</button></form>
  <p style="text-align:center;margin:14px 0 0"><button class="btn ghost sm" onclick="esqueci()">Esqueci minha senha</button></p></div><p class="muted" style="text-align:center">Versão ${CONFIG.versao}</p></div>`}
-function telaSenha(){return cab()+`<div class="wrap center"><div class="card"><h1 style="margin-top:0">Crie sua senha</h1><p class="sub">Escolha uma senha pessoal, com pelo menos 8 caracteres. Ela não deve ser compartilhada.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
- <form onsubmit="event.preventDefault();salvarSenha()"><label>Nova senha<input id="s1" type="password" minlength="8" autocomplete="new-password" required></label><label>Repita a senha<input id="s2" type="password" minlength="8" autocomplete="new-password" required></label><button class="btn full">Salvar senha e entrar</button></form></div></div>`}
+const REGRAS=[[x=>x.length>=10,"10 caracteres ou mais"],[x=>/[a-z]/.test(x),"letra minúscula"],[x=>/[A-Z]/.test(x),"letra maiúscula"],[x=>/[0-9]/.test(x),"número"],[x=>/[^A-Za-z0-9]/.test(x),"símbolo (! @ # $ % …)"]];
+const senhaForte=x=>REGRAS.every(([f])=>f(x));
+function chkSenha(v){const ul=$("#chk");if(ul)ul.innerHTML=REGRAS.map(([f,t])=>`<li class="${f(v)?"ok":""}">${t}</li>`).join("")}
+function telaSenha(){
+  const m=E.modoSenha,tit=m=="primeiro"?"Crie sua senha pessoal":m=="trocar"?"Trocar senha":"Crie uma nova senha";
+  const sub=m=="primeiro"?"Por segurança, a senha provisória precisa ser trocada no primeiro acesso.":m=="trocar"?"Confirme a senha atual e escolha a nova.":"Escolha uma senha nova para a sua conta.";
+  return cab()+`<div class="wrap center"><div class="card"><h1 style="margin-top:0">${tit}</h1><p class="sub">${sub} Não use a mesma senha de outros sites e não compartilhe.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
+ <form onsubmit="event.preventDefault();salvarSenha()">
+ ${m=="trocar"?`<label>Senha atual<input id="s0" type="password" autocomplete="current-password" required></label>`:""}
+ <label>Nova senha<input id="s1" type="password" minlength="10" autocomplete="new-password" required oninput="chkSenha(this.value)"></label>
+ <ul class="chk" id="chk">${REGRAS.map(([,t])=>`<li>${t}</li>`).join("")}</ul>
+ <label>Repita a nova senha<input id="s2" type="password" minlength="10" autocomplete="new-password" required></label>
+ ${m=="trocar"?captchaHTML():""}
+ <button class="btn full">Salvar senha</button></form>
+ ${m=="trocar"?`<p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="E.tela='app';E.msg=null;render()">Cancelar</button></p>`:m=="primeiro"?`<p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="sair()">Sair</button></p>`:""}</div></div>`}
+function telaMfa(){return cab()+`<div class="wrap center"><div class="card"><h1 style="margin-top:0">Verificação em duas etapas</h1><p class="sub">Abra o aplicativo autenticador no seu celular (Google Authenticator ou Microsoft Authenticator) e digite o código de 6 números do Atalaia System.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
+ <form onsubmit="event.preventDefault();confirmarMfa()"><label>Código<input id="otp" class="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button class="btn full">Confirmar</button></form>
+ <p class="muted" style="margin:12px 0 0">Perdeu o celular? Fale com a equipe do Atalaia System para liberar o acesso com segurança.</p>
+ <p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="sair()">Sair</button></p></div></div>`}
+function telaAtivar(){
+  const i=E.insc;
+  return cab()+`<div class="wrap" style="padding-top:12px"><div class="card"><h1 style="margin-top:0">Ativar verificação em duas etapas</h1>
+ <p class="sub">${E.obrig?"Sua empresa exige esta proteção para administradores. ":""}Além da senha, será pedido um código que muda a cada 30 segundos no seu celular. Mesmo que alguém descubra a senha, não consegue entrar.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
+ <p><b>1.</b> Instale no celular o <b>Google Authenticator</b> ou o <b>Microsoft Authenticator</b> (gratuitos, na loja de aplicativos).</p>
+ <p><b>2.</b> No aplicativo, toque em <b>+</b> e escaneie o código abaixo.</p>
+ ${i?`<img class="qr" src="${esc(i.totp.qr_code)}" alt="Código QR para o aplicativo autenticador">
+ <p class="muted" style="margin:6px 0">Está usando este celular? Toque em “Abrir no autenticador” ou copie a chave e cole no aplicativo, na opção “inserir chave”.</p>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><a class="btn ghost sm" href="${esc(i.totp.uri)}">Abrir no autenticador</a><button class="btn ghost sm" onclick="navigator.clipboard.writeText('${esc(i.totp.secret)}').then(()=>toast('Chave copiada.'))">Copiar chave</button></div>
+ <div class="code">${esc(i.totp.secret)}</div>`:`<p class="muted">Gerando código…</p>`}
+ <p style="margin-top:14px"><b>3.</b> Digite o código de 6 números que aparece no aplicativo.</p>
+ <form onsubmit="event.preventDefault();confirmarAtivacao()"><label>Código<input id="otp" class="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button class="btn full" ${i?"":"disabled"}>Ativar</button></form>
+ <p style="text-align:center;margin:12px 0 0">${E.obrig?`<button class="btn ghost sm" onclick="sair()">Sair</button>`:`<button class="btn ghost sm" onclick="E.tela='app';E.insc=null;E.msg=null;render()">Agora não</button>`}</p></div></div>`}
 function telaSemAcesso(){return cab()+`<div class="wrap center"><div class="card"><h2>Acesso ainda não liberado</h2><p class="sub">Seu e-mail entrou, mas ainda não está ligado a uma empresa. Peça à equipe do Atalaia System para concluir o cadastro.</p><button class="btn ghost" onclick="sair()">Sair</button></div></div>`}
 function telaApp(){
   const c=E.v.contratantes,p=c.planos;
@@ -185,8 +253,19 @@ function abaPlano(p){
   <p style="margin:12px 0 0" class="muted">Empresa: 1${p.filiais?` + até ${p.filiais} filiais`:""} · Usuários: até ${p.usuarios} · Fotos: até ${p.armazenamento_gb} GB</p></div>
   ${bloq.length?`<div class="card"><h2>Disponível nos planos pagos</h2><div class="lock">${bloq.map(([k,t])=>`<div><b>🔒 ${t}</b></div>`).join("")}</div>
   <p class="muted" style="margin:12px 0 0">Atalaia a partir de R$ 690 por mês: até 1.000 bens, 50 ambientes, 10 usuários e todas as funções. Fale com a equipe do Atalaia System para mudar de plano sem perder nada do que já foi cadastrado.</p></div>`:""}
-  <div class="card"><h2>Sua conta</h2><p style="margin:0 0 10px" class="muted">${esc(E.v.nome)} · ${esc(E.v.email||"")} · ${esc(E.v.perfil)}</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" onclick="E.tela='senha';E.msg=['info','Digite a nova senha duas vezes.'];render()">Trocar senha</button><button class="btn ghost" onclick="sair()">Sair</button></div></div>
+  ${contaHTML()}
   <p class="muted" style="text-align:center">Atalaia System · versão ${CONFIG.versao} · Seus dados pertencem à sua empresa e podem ser baixados a qualquer momento pela planilha.</p>`;
+}
+function contaHTML(){
+  const ativo=E.fatores.some(f=>f.status=="verified"),ant=E.acessos[1];
+  const dh=d=>new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+  return `<div class="card"><h2>Sua conta e segurança</h2><p style="margin:0 0 6px" class="muted">${esc(E.v.nome)} · ${esc(E.v.email||"")} · ${esc(E.v.perfil)}</p>
+  <p style="margin:0 0 12px" class="muted">${ant?`Acesso anterior: ${dh(ant.criado_em)} · ${esc(ant.aparelho||"")}. Não reconhece? Troque a senha e use “Sair de todos os aparelhos”.`:"Este é o seu primeiro acesso registrado."}</p>
+  <p style="margin:0 0 8px"><b>Verificação em duas etapas:</b> ${ativo?`<span style="color:var(--ok)">ativada ✓</span>`:`<span style="color:var(--warn)">desativada</span> <span class="muted">(recomendada)</span>`}</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">${ativo?(E.obrig?"":`<button class="btn ghost sm" onclick="desativar2()">Desativar duas etapas</button>`):`<button class="btn amb sm" onclick="ativar2()">Ativar duas etapas</button>`}
+  <button class="btn ghost sm" onclick="E.modoSenha='trocar';E.tela='senha';E.msg=null;render()">Trocar senha</button>
+  <button class="btn ghost sm" onclick="sair()">Sair</button>
+  <button class="btn ghost sm" onclick="sairTodos()">Sair de todos os aparelhos</button></div></div>`;
 }
 const nomeAmb=id=>E.amb.find(a=>a.id==id)?.nome||"Sem ambiente";
 const CAT=["Equipamento","Mobiliário","Eletrônico","Utensílio","Ferramenta","Outro"],EST=["novo","bom","regular","ruim","em manutenção"];
@@ -211,29 +290,79 @@ function modalHTML(){
 }
 
 /* ---------------- Ações ---------------- */
+/* ---------------- Captcha (Cloudflare Turnstile), ativo só quando a chave do site estiver configurada ---------------- */
+let cfId=null,cfPronto=false;
+const captchaHTML=()=>CONFIG.turnstileSiteKey&&!DEMO?`<div id="cf" style="margin:0 0 12px;min-height:65px"></div>`:"";
+function carregarTurnstile(){if(!CONFIG.turnstileSiteKey||DEMO)return;window.cfOk=()=>{cfPronto=true;montarCaptcha()};const sc=document.createElement("script");sc.src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=cfOk&render=explicit";sc.async=true;document.head.appendChild(sc)}
+function montarCaptcha(){const el=$("#cf");if(!el||!cfPronto||el.dataset.ok)return;el.dataset.ok="1";cfId=turnstile.render(el,{sitekey:CONFIG.turnstileSiteKey,language:"pt-br",appearance:"interaction-only"})}
+function tokenCaptcha(){if(!CONFIG.turnstileSiteKey||DEMO)return null;const t=cfPronto&&cfId!=null?turnstile.getResponse(cfId):"";if(!t)throw new Error("Aguarde a verificação de segurança (não sou um robô) terminar e tente de novo.");return t}
+function resetCaptcha(){try{if(cfPronto&&cfId!=null)turnstile.reset(cfId)}catch(e){}}
+
+/* ---------------- Entrada, senha e verificação em duas etapas ---------------- */
 async function iniciar(){
-  DB.aoMudar((ev)=>{if(ev=="PASSWORD_RECOVERY"){E.tela="senha";E.msg=null;render()}});
+  carregarTurnstile();
+  DB.aoMudar((ev)=>{if(ev=="PASSWORD_RECOVERY"){E.modoSenha="link";E.tela="senha";E.msg=null;render()}});
   const hash=location.hash||"";
   const convite=/type=(invite|recovery|signup)/.test(hash);
+  const erroLink=/error_description=/.test(hash);
   try{
     const s=await DB.sessao();
-    if(s&&convite){E.tela="senha";render();return}
-    if(s){await abrirApp();return}
+    if(s&&convite){E.modoSenha="link";E.tela="senha";render();return}
+    if(s){await posLogin(false);return}
   }catch(e){E.msg=["err",e.message]}
+  if(erroLink){E.msg=["err","O link venceu ou já foi usado. Peça um novo em “Esqueci minha senha”."];history.replaceState(null,"",location.pathname)}
   E.tela="login";render();
 }
-async function entrar(){E.msg=null;try{await DB.entrar($("#em").value.trim(),$("#se").value);await abrirApp(true)}catch(e){E.msg=["err",e.message];render()}}
+async function entrar(){E.msg=null;try{const cap=tokenCaptcha();await DB.entrar($("#em").value.trim(),$("#se").value,cap);await posLogin(true)}catch(e){resetCaptcha();E.msg=["err",e.message];render()}}
 async function esqueci(){const em=($("#em")?.value||"").trim();if(!em){E.msg=["info","Digite seu e-mail no campo acima e toque de novo em “Esqueci minha senha”."];render();return}
- try{await DB.esqueci(em);E.msg=["ok","Se o e-mail estiver cadastrado, você receberá um link para criar nova senha. Confira também a caixa de spam."]}catch(e){E.msg=["err",e.message]}render()}
-async function salvarSenha(){const a=$("#s1").value,b=$("#s2").value;if(a!==b){E.msg=["err","As senhas não são iguais."];render();return}if(a.length<8){E.msg=["err","Use pelo menos 8 caracteres."];render();return}
- try{await DB.definirSenha(a);history.replaceState(null,"",location.pathname);toast("Senha criada.");await abrirApp(true)}catch(e){E.msg=["err",e.message];render()}}
+ try{const cap=tokenCaptcha();await DB.esqueci(em,cap);E.msg=["ok","Se o e-mail estiver cadastrado, você receberá um link para criar nova senha. O link vale por pouco tempo e só pode ser usado uma vez. Confira também a caixa de spam."]}catch(e){E.msg=["err",e.message]}resetCaptcha();render()}
+/* Depois da senha: pede o código (se a pessoa tiver duas etapas), exige senha pessoal no primeiro acesso e abre o app. */
+async function posLogin(registrar){
+  const n=await DB.nivel();
+  if(n.nextLevel=="aal2"&&n.currentLevel!="aal2"){E.depois=registrar?"app+reg":"app";E.tela="mfa";E.msg=null;render();return}
+  const u=await DB.usuario();
+  if(!u?.user_metadata?.senha_definida){E.modoSenha="primeiro";E.tela="senha";E.msg=null;render();return}
+  await abrirApp(registrar);
+}
+async function confirmarMfa(){
+  try{const f=(await DB.fatores()).find(x=>x.status=="verified");if(!f)throw new Error("Nenhuma verificação em duas etapas encontrada.");
+    await DB.verificarCodigo(f.id,$("#otp").value.trim());E.msg=null;
+    if(E.depois=="senha"){E.depois=null;E.tela="senha";render();return}
+    const reg=E.depois=="app+reg";E.depois=null;await posLogin(reg);
+  }catch(e){E.msg=["err",e.message];render()}}
+async function salvarSenha(){
+  const m=E.modoSenha,a=$("#s1").value,b=$("#s2").value;
+  if(a!==b){E.msg=["err","As duas senhas novas não são iguais."];render();return}
+  if(!senhaForte(a)){E.msg=["err","A senha ainda não cumpre todas as regras da lista."];render();chkSenha(a);return}
+  try{
+    if(m=="trocar"){const atual=$("#s0").value;if(atual===a)throw new Error("A nova senha precisa ser diferente da atual.");await DB.conferirSenha(E.v.email,atual,tokenCaptcha())}
+    const n=await DB.nivel();
+    if(n.nextLevel=="aal2"&&n.currentLevel!="aal2"){E.depois="senha";E.tela="mfa";E.msg=["info","Antes de salvar a senha, confirme o código do aplicativo autenticador."];render();return}
+    await DB.definirSenha(a);history.replaceState(null,"",location.pathname);
+    const vinc=E.v||await DB.meuVinculo();if(vinc)DB.registrar(vinc.contratante_id,m=="link"?"criou nova senha pelo link":m=="primeiro"?"criou a senha pessoal":"trocou a senha",null);
+    toast("Senha salva.");E.msg=null;
+    if(m=="trocar"){E.tela="app";render()}else await abrirApp(true);
+  }catch(e){resetCaptcha();E.msg=["err",e.message];render()}}
+async function ativar2(){E.tela="ativar2";E.insc=null;E.msg=null;render();try{E.insc=await DB.inscrever()}catch(e){E.msg=["err",e.message]}render()}
+async function confirmarAtivacao(){try{await DB.verificarCodigo(E.insc.id,$("#otp").value.trim());E.insc=null;E.fatores=await DB.fatores();DB.registrar(E.v.contratante_id,"ativou a verificação em duas etapas",null);toast("Verificação em duas etapas ativada.");
+  if(E.obrig){E.obrig=false;await abrirApp(false);return}E.tela="app";E.msg=null;render()}catch(e){E.msg=["err",e.message];render()}}
+async function desativar2(){if(!confirm("Desativar a verificação em duas etapas deixa a conta menos protegida. Deseja continuar?"))return;
+  try{for(const f of E.fatores)await DB.removerFator(f.id);E.fatores=await DB.fatores();DB.registrar(E.v.contratante_id,"desativou a verificação em duas etapas",null);toast("Verificação em duas etapas desativada.");render()}catch(e){toast(e.message)}}
 async function abrirApp(registrar){
   E.v=await DB.meuVinculo();
   if(!E.v){E.tela="semacesso";render();return}
-  const c=E.v.contratante_id;[E.amb,E.bens]=await Promise.all([DB.ambientes(c),DB.bens(c)]);
-  E.tela="app";render();if(registrar)DB.registrar(c,"entrou",null);
+  E.fatores=await DB.fatores();
+  const exige=E.v.contratantes.exige_2_etapas&&E.v.perfil=="administrador";
+  if(exige&&!E.fatores.some(f=>f.status=="verified")){E.obrig=true;await ativar2();return}
+  E.obrig=exige;
+  const c=E.v.contratante_id;
+  if(registrar)await DB.registrar(c,"entrou",null);
+  [E.amb,E.bens,E.acessos]=await Promise.all([DB.ambientes(c),DB.bens(c),DB.ultimosAcessos().catch(()=>[])]);
+  E.tela="app";render();
 }
-async function sair(){await DB.sair();E.v=null;E.tela="login";E.msg=null;render()}
+async function sair(){await DB.sair();E.v=null;E.tela="login";E.msg=null;E.modal=null;render()}
+async function sairTodos(){if(!confirm("Sair de todos os aparelhos? Você e qualquer outro aparelho conectado com a sua conta precisarão entrar de novo."))return;
+  try{await DB.registrar(E.v.contratante_id,"saiu de todos os aparelhos",null);await DB.sair(true)}catch(e){}E.v=null;E.tela="login";E.msg=["ok","Pronto: a conta foi desconectada de todos os aparelhos."];render()}
 async function recarregar(){const c=E.v.contratante_id;[E.amb,E.bens]=await Promise.all([DB.ambientes(c),DB.bens(c)]);render()}
 async function abrirBem(id){const b=id?E.bens.find(x=>x.id==id):null;E.modal={bem:b?{...b}:null,foto:null,fotoUrl:b?.foto_path?(E.fotos[b.foto_path]||await DB.urlFoto(b.foto_path)):null};render()}
 function prevFoto(inp){const f=inp.files[0];if(!f)return;comprimir(f).then(bl=>{E.modal.foto=bl;const u=URL.createObjectURL(bl);const im=$("#fprev");im.src=u;im.style.display="block"}).catch(()=>toast("Não foi possível ler a foto."))}
