@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atalaia System · Cadastro de bens</title>
+<meta name="theme-color" content="#1d1f23">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d1f23%27/%3E%3Cpath d=%27M50 18 L24 82 M50 18 L76 82%27 stroke=%27white%27 stroke-width=%2710%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3Cpath d=%27M35 58 L46 67 L67 44%27 stroke=%27%23f2a33a%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 fill=%27none%27/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.min.js"></script>
+<style>
+:root{--ink:#1d1f23;--amb:#f2a33a;--mut:#6b7078;--line:#e3e0da;--bg:#f5f3ef;--card:#fff;--ok:#1f9a55;--bad:#c8372d;--warn:#b7791f;--soft:#efece6}
+*{box-sizing:border-box}html,body{margin:0}
+body{font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+header{background:var(--ink);color:#fff;padding:14px 0 16px;position:sticky;top:0;z-index:5}
+header .wrap{display:flex;align-items:center;gap:12px}
+header svg{width:34px;height:34px;flex-shrink:0}
+header b{font-size:1.05rem;letter-spacing:.04em;display:block}
+header small{color:#c9cdd2;font-size:.78rem}
+.pill{display:inline-block;background:var(--amb);color:var(--ink);font-weight:700;font-size:.72rem;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:middle}
+h1{font-size:1.35rem;margin:18px 0 4px}h2{font-size:1.1rem;margin:0 0 8px}
+.sub{color:var(--mut);margin:0 0 14px;font-size:.92rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;padding:12px 16px;background:var(--ink);color:#fff;font-weight:600;cursor:pointer;min-height:46px}
+.btn.amb{background:var(--amb);color:var(--ink)}.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.sm{min-height:36px;padding:7px 12px;font-size:.88rem}.btn.full{width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+label{display:grid;gap:5px;font-size:.88rem;font-weight:600;margin-bottom:12px}
+input,select,textarea{border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;background:#fff;width:100%;font-weight:400}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--amb);border-color:var(--amb)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bar{height:9px;background:var(--soft);border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ink)}
+.bem{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line);cursor:pointer}
+.bem:first-child{border-top:0}
+.bem .ft{width:64px;height:64px;border-radius:10px;background:var(--soft);object-fit:cover;display:grid;place-items:center;color:var(--mut);font-size:.7rem;text-align:center}
+.bem b{display:block}.pat{font-family:ui-monospace,Menlo,monospace;font-size:.82rem;color:var(--mut)}
+.tag{font-size:.75rem;border:1px solid var(--line);border-radius:99px;padding:2px 8px;white-space:nowrap}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav.tabs button{background:none;border:0;padding:10px 4px;font-size:.78rem;color:var(--mut);display:grid;justify-items:center;gap:3px;cursor:pointer}
+nav.tabs button[aria-current=true]{color:var(--ink);font-weight:700}
+nav.tabs svg{width:22px;height:22px}
+.lock{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.lock div{border:1px dashed #cfcac2;border-radius:10px;padding:10px;font-size:.85rem;color:var(--mut)}
+.lock div b{display:block;color:var(--ink);font-size:.88rem}
+.msg{padding:10px 12px;border-radius:10px;font-size:.9rem;margin-bottom:12px}
+.msg.err{background:#fbe9e7;color:var(--bad)}.msg.ok{background:#e6f4ec;color:var(--ok)}.msg.info{background:#fff4e2;color:#7a4e0c}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;align-items:end;z-index:20}
+.modal .sheet{background:var(--bg);border-radius:18px 18px 0 0;max-height:92vh;overflow:auto;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+@media (min-width:700px){.modal{align-items:center;justify-items:center}.modal .sheet{border-radius:18px;width:640px}}
+.foto-prev{width:100%;max-height:240px;object-fit:contain;border-radius:12px;background:var(--soft);margin-bottom:10px}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;z-index:30;font-size:.9rem;max-width:90vw}
+.center{min-height:80vh;display:grid;align-content:center}
+.muted{color:var(--mut);font-size:.88rem}
+.demo{background:var(--amb);color:var(--ink);text-align:center;font-size:.8rem;font-weight:700;padding:4px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* =====================================================================
+   ATALAIA SYSTEM · Sistema de Gestão de Patrimônio e Manutenção
+   Versão 0.1 · Aplicativo de cadastro de bens (computador e celular)
+   Configuração: Project URL e chave pública (anon/public) do Supabase.
+   A chave pública pode ficar no código; a segurança vem das regras (RLS).
+   Nunca coloque aqui a chave secreta (service_role).
+   ===================================================================== */
+const CONFIG={
+  url:"https://ipwleoawvxmzvofcccjn.supabase.co",
+  anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
+  versao:"0.1.0"
+};
+const DEMO=new URLSearchParams(location.search).has("demo")||!CONFIG.anonKey||CONFIG.anonKey.startsWith("COLE_");
+const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
+const IC={bens:"M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10",amb:"M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6",plano:"M12 2l3 6 6 .9-4.5 4.3 1 6.3L12 16.6 6.5 19.5l1-6.3L3 8.9 9 8z"};
+const ic=(k)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${IC[k]}"/></svg>`;
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=s=>document.querySelector(s);
+function toast(t){const e=document.createElement("div");e.className="toast";e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),3200)}
+const brl=v=>v==null||v===""?"—":Number(v).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const dtBR=d=>d?d.split("-").reverse().join("/"):"—";
+const temPat=()=>!!(E.v&&E.v.contratantes.planos.funcoes.includes("etiquetas"));
+const rot=b=>b.patrimonio||b.nome;
+const FUNCOES={chamados:"Chamados pelo QR Code",etiquetas:"Número de patrimônio e etiquetas",auditoria:"Auditoria com leitor",calibracoes:"Calibrações e preventivas",rondas:"Rondas",relatorios:"Relatórios e indicadores",termos:"Termos de responsabilidade",avalie:"Avalie (elogios e reclamações)"};
+
+/* ---------------- Camada de dados: Supabase real ou demonstração ---------------- */
+let sb=null;
+const DB=DEMO?mockDB():realDB();
+function realDB(){
+  sb=supabase.createClient(CONFIG.url,CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  const chk=({data,error})=>{if(error)throw new Error(traduz(error.message));return data};
+  return {
+    async sessao(){return chk(await sb.auth.getSession()).session},
+    aoMudar(fn){sb.auth.onAuthStateChange((ev,s)=>fn(ev,s))},
+    async entrar(email,senha){return chk(await sb.auth.signInWithPassword({email,password:senha}))},
+    async sair(){await sb.auth.signOut()},
+    async esqueci(email){return chk(await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname}))},
+    async definirSenha(senha){return chk(await sb.auth.updateUser({password:senha}))},
+    async meuVinculo(){const u=(await sb.auth.getUser()).data.user;const d=chk(await sb.from("membros").select("perfil,nome,contratante_id,contratantes(id,nome,sigla,situacao,plano_id,planos(*))").eq("user_id",u.id).eq("ativo",true).limit(1));return d[0]?{...d[0],email:u.email}:null},
+    async ambientes(c){return chk(await sb.from("ambientes").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em"))},
+    async addAmbiente(c,nome){return chk(await sb.from("ambientes").insert({contratante_id:c,nome}).select().single())},
+    async renAmbiente(id,nome){return chk(await sb.from("ambientes").update({nome}).eq("id",id).select().single())},
+    async bens(c){return chk(await sb.from("bens").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em",{ascending:false}))},
+    async addBem(b){return chk(await sb.from("bens").insert(b).select().single())},
+    async updBem(id,b){return chk(await sb.from("bens").update(b).eq("id",id).select().single())},
+    async enviarFoto(c,blob){const p=`${c}/${crypto.randomUUID()}.jpg`;chk(await sb.storage.from("fotos-bens").upload(p,blob,{contentType:"image/jpeg"}));return p},
+    async urlFoto(p){if(!p)return null;const r=await sb.storage.from("fotos-bens").createSignedUrl(p,3600);return r.data?.signedUrl||null},
+    async registrar(c,acao,detalhe){try{await sb.from("registro_acessos").insert({contratante_id:c,acao,detalhe,aparelho:aparelho()})}catch(e){}}
+  };
+}
+function mockDB(){
+  const plano={id:"free",nome:"Atalaia Free",preco_mensal:0,filiais:0,ambientes:1,bens:50,usuarios:1,armazenamento_gb:1,funcoes:["bens"]};
+  const c={id:"c-demo",nome:"Studio de Unhas (demonstração)",sigla:"SU",situacao:"teste",plano_id:"free",planos:plano};
+  let logado=false,prox=4,fotos={};
+  const amb=[{id:"a1",contratante_id:c.id,nome:"Salão",ativo:true}];
+  const bens=[{id:"b3",criado_em:"2026-03-10",contratante_id:c.id,ambiente_id:"a1",nome:"Cabine de secagem UV/LED",categoria:"Equipamento",marca:"Exemplo",modelo:"48W",numero_serie:"UV48-0091",estado:"bom",valor:189.9,data_aquisicao:"2026-03-10",ativo:true},
+   {id:"b2",criado_em:"2025-11-02",contratante_id:c.id,ambiente_id:"a1",nome:"Cadeira de manicure",categoria:"Mobiliário",estado:"bom",valor:450,data_aquisicao:"2025-11-02",ativo:true},
+   {id:"b1",criado_em:"2025-08-15",contratante_id:c.id,ambiente_id:"a1",nome:"Mesa de atendimento",categoria:"Mobiliário",estado:"regular",valor:620,data_aquisicao:"2025-08-15",ativo:true}];
+  let cb=null;const w=ms=>new Promise(r=>setTimeout(r,ms));
+  return {
+    async sessao(){return logado?{user:{email:"demo@atalaia"}}:null},aoMudar(fn){cb=fn},
+    async entrar(e,s){await w(300);if(!e||!s)throw new Error("Informe e-mail e senha.");logado=true;return {}},
+    async sair(){logado=false},async esqueci(){await w(300)},async definirSenha(){await w(200)},
+    async meuVinculo(){return {perfil:"administrador",nome:"Demonstração",contratante_id:c.id,contratantes:c,email:"demo@atalaia"}},
+    async ambientes(){return amb.filter(a=>a.ativo)},
+    async addAmbiente(ci,nome){if(amb.filter(a=>a.ativo).length>=plano.ambientes)throw new Error(`Limite do plano atingido: ${plano.ambientes} ambiente(s).`);const a={id:"a"+Date.now(),contratante_id:ci,nome,ativo:true};amb.push(a);return a},
+    async renAmbiente(id,nome){const a=amb.find(x=>x.id==id);a.nome=nome;return a},
+    async bens(){return bens.filter(b=>b.ativo).sort((a,b)=>String(b.criado_em).localeCompare(String(a.criado_em)))},
+    async addBem(b){await w(250);if(bens.filter(x=>x.ativo).length>=plano.bens)throw new Error(`Limite do plano atingido: ${plano.bens} bens. Para cadastrar mais, conheça os planos pagos.`);if(b.numero_serie&&bens.some(x=>x.numero_serie==b.numero_serie))throw new Error("Já existe um bem com este número de série.");const n={...b,id:"b"+Date.now(),patrimonio:null,criado_em:new Date().toISOString(),ativo:true};bens.push(n);return n},
+    async updBem(id,b){const x=bens.find(y=>y.id==id);Object.assign(x,b);return x},
+    async enviarFoto(ci,blob){const p="demo/"+Date.now();fotos[p]=URL.createObjectURL(blob);return p},
+    async urlFoto(p){return fotos[p]||null},async registrar(){}
+  };
+}
+function traduz(m){
+  const t={"Invalid login credentials":"E-mail ou senha incorretos.","Email not confirmed":"Confirme o e-mail pelo link recebido.","Password should be at least 6 characters":"A senha precisa ter pelo menos 6 caracteres.","New password should be different from the old password.":"A nova senha precisa ser diferente da anterior.","For security purposes, you can only request this after":"Por segurança, aguarde alguns segundos antes de pedir de novo."};
+  for(const k in t)if(m&&m.includes(k))return t[k];
+  if(m&&m.includes("duplicate key")&&m.includes("serie"))return "Já existe um bem com este número de série.";
+  if(m&&m.includes("row-level security"))return "Sem permissão para esta ação.";
+  return m||"Erro inesperado.";
+}
+function aparelho(){const u=navigator.userAgent;return (/Mobi|Android|iPhone/.test(u)?"Celular":"Computador")+" · "+(/Edg\//.test(u)?"Edge":/Chrome\//.test(u)?"Chrome":/Safari\//.test(u)?"Safari":/Firefox\//.test(u)?"Firefox":"Navegador")}
+
+/* ---------------- Estado e telas ---------------- */
+const E={tela:"carregando",aba:"bens",v:null,amb:[],bens:[],busca:"",fotos:{},msg:null,modal:null};
+function render(){
+  const h=E.tela=="login"?telaLogin():E.tela=="senha"?telaSenha():E.tela=="semacesso"?telaSemAcesso():E.tela=="app"?telaApp():`<div class="center wrap"><p class="muted" style="text-align:center">Carregando…</p></div>`;
+  $("#app").innerHTML=(DEMO?`<div class="demo">MODO DEMONSTRAÇÃO · os dados não são salvos</div>`:"")+h+(E.modal?modalHTML():"");
+  if(E.tela=="app")carregarFotosVisiveis();
+}
+const cab=(sub)=>`<header><div class="wrap">${LOGO}<div><b>ATALAIA SYSTEM${E.v?`<span class="pill">${esc(E.v.contratantes.planos.nome.replace("Atalaia ",""))}</span>`:""}</b><small>${sub||"Sistema de Gestão de Patrimônio e Manutenção"}</small></div></div></header>`;
+function telaLogin(){return cab()+`<div class="wrap center"><div class="card"><h1 style="margin-top:0">Entrar</h1><p class="sub">Use o e-mail e a senha cadastrados. Primeiro acesso? Abra o convite recebido por e-mail.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
+ <form onsubmit="event.preventDefault();entrar()"><label>E-mail<input id="em" type="email" autocomplete="username" required></label><label>Senha<input id="se" type="password" autocomplete="current-password" required></label><button class="btn full">Entrar</button></form>
+ <p style="text-align:center;margin:14px 0 0"><button class="btn ghost sm" onclick="esqueci()">Esqueci minha senha</button></p></div><p class="muted" style="text-align:center">Versão ${CONFIG.versao}</p></div>`}
+function telaSenha(){return cab()+`<div class="wrap center"><div class="card"><h1 style="margin-top:0">Crie sua senha</h1><p class="sub">Escolha uma senha pessoal, com pelo menos 8 caracteres. Ela não deve ser compartilhada.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
+ <form onsubmit="event.preventDefault();salvarSenha()"><label>Nova senha<input id="s1" type="password" minlength="8" autocomplete="new-password" required></label><label>Repita a senha<input id="s2" type="password" minlength="8" autocomplete="new-password" required></label><button class="btn full">Salvar senha e entrar</button></form></div></div>`}
+function telaSemAcesso(){return cab()+`<div class="wrap center"><div class="card"><h2>Acesso ainda não liberado</h2><p class="sub">Seu e-mail entrou, mas ainda não está ligado a uma empresa. Peça à equipe do Atalaia System para concluir o cadastro.</p><button class="btn ghost" onclick="sair()">Sair</button></div></div>`}
+function telaApp(){
+  const c=E.v.contratantes,p=c.planos;
+  const corpo=E.aba=="bens"?abaBens(p):E.aba=="amb"?abaAmb(p):abaPlano(p);
+  return cab(esc(c.nome))+`<div class="wrap">${corpo}</div><nav class="tabs">${[["bens","Bens"],["amb",p.ambientes>1?"Ambientes":"Ambiente"],["plano","Plano"]].map(([k,t])=>`<button aria-current="${E.aba==k}" onclick="E.aba='${k}';render();scrollTo(0,0)">${ic(k=="amb"?"amb":k)}${t}</button>`).join("")}</nav>`;
+}
+function uso(n,lim,neutro){const p=Math.min(100,n/lim*100);return `<div class="bar"><i style="width:${p}%;background:${neutro?"var(--ink)":p>=100?"var(--bad)":p>=75?"var(--warn)":"var(--ink)"}"></i></div>`}
+function abaBens(p){
+  const q=E.busca.toLowerCase();const L=E.bens.filter(b=>!q||(b.nome+" "+(b.patrimonio||"")+" "+(b.numero_serie||"")+" "+(b.marca||"")).toLowerCase().includes(q));
+  const cheio=E.bens.length>=p.bens;
+  return `<h1>Bens</h1><p class="sub">${E.bens.length} de ${p.bens} bens cadastrados</p>${uso(E.bens.length,p.bens)}
+  <div style="display:flex;gap:8px;margin:14px 0"><button class="btn amb" style="flex:1" ${cheio?"disabled":""} onclick="abrirBem()">+ Cadastrar bem</button><button class="btn ghost" onclick="exportar()" title="Baixar planilha">Planilha</button></div>
+  ${cheio?`<div class="msg info">Limite do plano ${esc(p.nome)} atingido. Para cadastrar mais bens, conheça os planos pagos na aba Plano.</div>`:""}
+  <input placeholder="Buscar por nome${temPat()?", patrimônio":""}, série ou marca" value="${esc(E.busca)}" oninput="E.busca=this.value;render();const i=document.querySelector('input[placeholder^=Buscar]');i.focus();i.setSelectionRange(i.value.length,i.value.length)" style="margin-bottom:12px">
+  <div class="card" style="padding:4px 16px">${L.map(b=>`<div class="bem" onclick="abrirBem('${b.id}')"><div class="ft" data-foto="${esc(b.foto_path||"")}">${b.foto_path?"…":"sem foto"}</div><div><b>${esc(b.nome)}</b>${b.patrimonio?`<span class="pat">${esc(b.patrimonio)}</span>`:""} <span class="muted">· ${esc(nomeAmb(b.ambiente_id))}</span></div><span class="tag">${esc(b.estado)}</span></div>`).join("")||`<p class="muted" style="padding:14px 0">${E.bens.length?"Nenhum bem encontrado na busca.":"Nenhum bem cadastrado ainda. Toque em “Cadastrar bem” para começar."}</p>`}</div>`;
+}
+function abaAmb(p){
+  const pode=E.v.perfil=="administrador";
+  return `<h1>${p.ambientes>1?"Ambientes":"Ambiente"}</h1><p class="sub">${E.amb.length} de ${p.ambientes} · os bens ficam ligados a um ambiente</p>
+  <div class="card">${E.amb.map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)"><div><b>${esc(a.nome)}</b><div class="muted">${E.bens.filter(b=>b.ambiente_id==a.id).length} bem(ns)</div></div>${pode?`<button class="btn ghost sm" onclick="renomear('${a.id}')">Renomear</button>`:""}</div>`).join("")}</div>
+  ${pode&&E.amb.length<p.ambientes?`<form class="card" onsubmit="event.preventDefault();novoAmb()"><label>Novo ambiente<input id="na" required placeholder="Ex.: Recepção"></label><button class="btn">Criar ambiente</button></form>`:`<p class="muted">${E.amb.length>=p.ambientes?`O plano ${esc(p.nome)} permite ${p.ambientes} ambiente(s).`:""}</p>`}`;
+}
+function abaPlano(p){
+  const bloq=Object.entries(FUNCOES).filter(([k])=>!p.funcoes.includes(k));
+  return `<h1>Plano ${esc(p.nome)}</h1><p class="sub">${p.preco_mensal>0?brl(p.preco_mensal)+" por mês":"Gratuito"} · ${E.v.contratantes.situacao=="teste"?"em teste":E.v.contratantes.situacao}</p>
+  <div class="card"><h2>Uso do plano</h2>
+  <p style="margin:0 0 4px">Bens: <b>${E.bens.length} de ${p.bens}</b></p>${uso(E.bens.length,p.bens)}
+  <p style="margin:12px 0 4px">Ambientes: <b>${E.amb.length} de ${p.ambientes}</b></p>${uso(E.amb.length,p.ambientes,true)}
+  <p style="margin:12px 0 0" class="muted">Empresa: 1${p.filiais?` + até ${p.filiais} filiais`:""} · Usuários: até ${p.usuarios} · Fotos: até ${p.armazenamento_gb} GB</p></div>
+  ${bloq.length?`<div class="card"><h2>Disponível nos planos pagos</h2><div class="lock">${bloq.map(([k,t])=>`<div><b>🔒 ${t}</b></div>`).join("")}</div>
+  <p class="muted" style="margin:12px 0 0">Atalaia a partir de R$ 690 por mês: até 1.000 bens, 50 ambientes, 10 usuários e todas as funções. Fale com a equipe do Atalaia System para mudar de plano sem perder nada do que já foi cadastrado.</p></div>`:""}
+  <div class="card"><h2>Sua conta</h2><p style="margin:0 0 10px" class="muted">${esc(E.v.nome)} · ${esc(E.v.email||"")} · ${esc(E.v.perfil)}</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost" onclick="E.tela='senha';E.msg=['info','Digite a nova senha duas vezes.'];render()">Trocar senha</button><button class="btn ghost" onclick="sair()">Sair</button></div></div>
+  <p class="muted" style="text-align:center">Atalaia System · versão ${CONFIG.versao} · Seus dados pertencem à sua empresa e podem ser baixados a qualquer momento pela planilha.</p>`;
+}
+const nomeAmb=id=>E.amb.find(a=>a.id==id)?.nome||"Sem ambiente";
+const CAT=["Equipamento","Mobiliário","Eletrônico","Utensílio","Ferramenta","Outro"],EST=["novo","bom","regular","ruim","em manutenção"];
+function modalHTML(){
+  const b=E.modal.bem||{},novo=!b.id;
+  return `<div class="modal" onclick="if(event.target==this){E.modal=null;render()}"><div class="sheet"><h2>${novo?"Cadastrar bem":esc(rot(b))}</h2>${novo?(temPat()?`<p class="sub">O número de patrimônio é gerado automaticamente ao salvar.</p>`:`<p class="sub">Preencha os dados do bem. Número de patrimônio e etiquetas estão disponíveis nos planos pagos.</p>`):`<p class="sub">Cadastrado em ${b.criado_em?new Date(b.criado_em).toLocaleDateString("pt-BR"):"—"}${b.patrimonio?" · o número de patrimônio não muda.":""}</p>`}
+  ${E.modal.erro?`<div class="msg err">${esc(E.modal.erro)}</div>`:""}
+  <form onsubmit="event.preventDefault();salvarBem()">
+  <img id="fprev" class="foto-prev" ${E.modal.fotoUrl?`src="${E.modal.fotoUrl}"`:`style="display:none"`} alt="Foto do bem">
+  <label>Foto do bem<input id="ff" type="file" accept="image/*" capture="environment" onchange="prevFoto(this)"></label>
+  <label>Nome do bem *<input id="fn" required maxlength="120" value="${esc(b.nome)}" placeholder="Ex.: Cabine de secagem UV"></label>
+  <div class="row"><label>Categoria<select id="fc">${CAT.map(x=>`<option ${b.categoria==x?"selected":""}>${x}</option>`).join("")}</select></label>
+  <label>Estado<select id="fe">${EST.map(x=>`<option ${b.estado==x||(!b.estado&&x=="bom")?"selected":""}>${x}</option>`).join("")}</select></label></div>
+  <label>Ambiente<select id="fa">${E.amb.map(a=>`<option value="${a.id}" ${b.ambiente_id==a.id?"selected":""}>${esc(a.nome)}</option>`).join("")}</select></label>
+  <div class="row"><label>Marca<input id="fm" maxlength="60" value="${esc(b.marca)}"></label><label>Modelo<input id="fo" maxlength="60" value="${esc(b.modelo)}"></label></div>
+  <label>Número de série<input id="fs" maxlength="80" value="${esc(b.numero_serie)}" placeholder="Se tiver"></label>
+  <div class="row"><label>Valor (R$)<input id="fv" type="number" step="0.01" min="0" inputmode="decimal" value="${b.valor??""}"></label><label>Data de compra<input id="fd" type="date" value="${b.data_aquisicao||""}"></label></div>
+  <label>Observação<textarea id="fb" rows="2" maxlength="500">${esc(b.observacao)}</textarea></label>
+  <button class="btn amb full" id="fsalvar">${novo?"Salvar bem":"Salvar alterações"}</button>
+  <div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn ghost" style="flex:1" onclick="E.modal=null;render()">Cancelar</button>${novo?"":`<button type="button" class="btn ghost" style="flex:1;color:var(--bad)" onclick="inativar('${b.id}')">Dar baixa</button>`}</div>
+  </form></div></div>`;
+}
+
+/* ---------------- Ações ---------------- */
+async function iniciar(){
+  DB.aoMudar((ev)=>{if(ev=="PASSWORD_RECOVERY"){E.tela="senha";E.msg=null;render()}});
+  const hash=location.hash||"";
+  const convite=/type=(invite|recovery|signup)/.test(hash);
+  try{
+    const s=await DB.sessao();
+    if(s&&convite){E.tela="senha";render();return}
+    if(s){await abrirApp();return}
+  }catch(e){E.msg=["err",e.message]}
+  E.tela="login";render();
+}
+async function entrar(){E.msg=null;try{await DB.entrar($("#em").value.trim(),$("#se").value);await abrirApp(true)}catch(e){E.msg=["err",e.message];render()}}
+async function esqueci(){const em=($("#em")?.value||"").trim();if(!em){E.msg=["info","Digite seu e-mail no campo acima e toque de novo em “Esqueci minha senha”."];render();return}
+ try{await DB.esqueci(em);E.msg=["ok","Se o e-mail estiver cadastrado, você receberá um link para criar nova senha. Confira também a caixa de spam."]}catch(e){E.msg=["err",e.message]}render()}
+async function salvarSenha(){const a=$("#s1").value,b=$("#s2").value;if(a!==b){E.msg=["err","As senhas não são iguais."];render();return}if(a.length<8){E.msg=["err","Use pelo menos 8 caracteres."];render();return}
+ try{await DB.definirSenha(a);history.replaceState(null,"",location.pathname);toast("Senha criada.");await abrirApp(true)}catch(e){E.msg=["err",e.message];render()}}
+async function abrirApp(registrar){
+  E.v=await DB.meuVinculo();
+  if(!E.v){E.tela="semacesso";render();return}
+  const c=E.v.contratante_id;[E.amb,E.bens]=await Promise.all([DB.ambientes(c),DB.bens(c)]);
+  E.tela="app";render();if(registrar)DB.registrar(c,"entrou",null);
+}
+async function sair(){await DB.sair();E.v=null;E.tela="login";E.msg=null;render()}
+async function recarregar(){const c=E.v.contratante_id;[E.amb,E.bens]=await Promise.all([DB.ambientes(c),DB.bens(c)]);render()}
+async function abrirBem(id){const b=id?E.bens.find(x=>x.id==id):null;E.modal={bem:b?{...b}:null,foto:null,fotoUrl:b?.foto_path?(E.fotos[b.foto_path]||await DB.urlFoto(b.foto_path)):null};render()}
+function prevFoto(inp){const f=inp.files[0];if(!f)return;comprimir(f).then(bl=>{E.modal.foto=bl;const u=URL.createObjectURL(bl);const im=$("#fprev");im.src=u;im.style.display="block"}).catch(()=>toast("Não foi possível ler a foto."))}
+function comprimir(file){return new Promise((ok,er)=>{const img=new Image();img.onload=()=>{const M=1280,s=Math.min(1,M/Math.max(img.width,img.height));const cv=document.createElement("canvas");cv.width=Math.round(img.width*s);cv.height=Math.round(img.height*s);cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);cv.toBlob(b=>b?ok(b):er(),"image/jpeg",0.72)};img.onerror=er;img.src=URL.createObjectURL(file)})}
+async function salvarBem(){
+  const btn=$("#fsalvar");btn.disabled=true;btn.textContent="Salvando…";
+  const b=E.modal.bem||{},c=E.v.contratante_id;
+  const d={nome:$("#fn").value.trim(),categoria:$("#fc").value,estado:$("#fe").value,ambiente_id:$("#fa").value||null,marca:$("#fm").value.trim()||null,modelo:$("#fo").value.trim()||null,numero_serie:$("#fs").value.trim()||null,valor:$("#fv").value===""?null:Number($("#fv").value),data_aquisicao:$("#fd").value||null,observacao:$("#fb").value.trim()||null};
+  try{
+    if(E.modal.foto){d.foto_path=await DB.enviarFoto(c,E.modal.foto)}
+    let r;
+    if(b.id){r=await DB.updBem(b.id,d);toast("Alterações salvas.")}
+    else{r=await DB.addBem({...d,contratante_id:c});toast(r.patrimonio?"Bem cadastrado com o patrimônio "+r.patrimonio+".":"Bem cadastrado.");DB.registrar(c,"cadastrou bem",rot(r))}
+    E.modal=null;await recarregar();
+  }catch(e){E.modal.erro=e.message;render()}
+}
+async function inativar(id){const b=E.bens.find(x=>x.id==id);if(!b)return;
+  if(E.modal.confirmar!==id){E.modal.confirmar=id;E.modal.erro=`Toque de novo em “Dar baixa” para confirmar. O bem ${esc(rot(b))} sai da lista, mas o registro fica guardado${b.patrimonio?" e o número não é reaproveitado":""}.`;render();return}
+  try{await DB.updBem(id,{ativo:false,estado:"baixado"});DB.registrar(E.v.contratante_id,"deu baixa em bem",rot(b));toast("Baixa registrada: "+rot(b));E.modal=null;await recarregar()}catch(e){E.modal.erro=e.message;render()}}
+async function novoAmb(){try{await DB.addAmbiente(E.v.contratante_id,$("#na").value.trim());toast("Ambiente criado.");await recarregar()}catch(e){toast(e.message)}}
+async function renomear(id){const a=E.amb.find(x=>x.id==id);const nome=window.prompt("Novo nome do ambiente",a.nome);if(!nome||!nome.trim())return;try{await DB.renAmbiente(id,nome.trim());await recarregar()}catch(e){toast(e.message)}}
+async function carregarFotosVisiveis(){for(const el of document.querySelectorAll("[data-foto]")){const p=el.dataset.foto;if(!p)continue;let u=E.fotos[p];if(!u){u=await DB.urlFoto(p);if(u)E.fotos[p]=u}if(u&&el.isConnected){const im=document.createElement("img");im.className="ft";im.src=u;im.alt="";el.replaceWith(im)}}}
+function exportar(){
+  const cols=[...(temPat()?[["patrimonio","Patrimônio"]]:[]),["nome","Bem"],["categoria","Categoria"],["ambiente","Ambiente"],["marca","Marca"],["modelo","Modelo"],["numero_serie","Nº de série"],["estado","Estado"],["valor","Valor (R$)"],["data_aquisicao","Data de compra"],["observacao","Observação"]];
+  const linhas=[cols.map(c=>c[1]).join(";")].concat(E.bens.map(b=>cols.map(([k])=>{let v=k=="ambiente"?nomeAmb(b.ambiente_id):k=="data_aquisicao"?dtBR(b[k]):k=="valor"&&b[k]!=null?String(b[k]).replace(".",","):(b[k]??"");v=String(v).replace(/"/g,'""');return /[;"\n]/.test(v)?`"${v}"`:v}).join(";")));
+  const blob=new Blob(["﻿"+linhas.join("\r\n")],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`bens_${E.v.contratantes.sigla}_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  DB.registrar(E.v.contratante_id,"exportou planilha",String(E.bens.length));toast("Planilha baixada.");
+}
+iniciar();
+</script>
+</body>
+</html>
