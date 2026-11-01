@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atalaia System · Painel da Matriz</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1d1f23">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src https://ipwleoawvxmzvofcccjn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d1f23%27/%3E%3Cpath d=%27M50 18 L24 82 M50 18 L76 82%27 stroke=%27white%27 stroke-width=%2710%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3Cpath d=%27M35 58 L46 67 L67 44%27 stroke=%27%23f2a33a%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 fill=%27none%27/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
+<style>
+:root{--ink:#1d1f23;--amb:#f2a33a;--mut:#6b7078;--line:#e3e0da;--bg:#f5f3ef;--card:#fff;--ok:#1f9a55;--bad:#c8372d;--warn:#b7791f;--soft:#efece6}
+*{box-sizing:border-box}html,body{margin:0}
+body{font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+header{background:var(--ink);color:#fff;padding:12px 0}
+header .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header svg{width:32px;height:32px;flex-shrink:0}
+header b{font-size:1rem;letter-spacing:.04em;display:block}
+header small{color:#c9cdd2;font-size:.78rem}
+.pill{display:inline-block;background:var(--amb);color:var(--ink);font-weight:700;font-size:.7rem;padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:middle}
+header .sp{flex:1}
+header .who{font-size:.82rem;color:#c9cdd2;text-align:right}
+nav.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:16px 0;overflow-x:auto}
+nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;color:var(--mut);cursor:pointer;white-space:nowrap;font-weight:600}
+nav.tabs button[aria-current=true]{color:var(--ink);border-bottom-color:var(--amb)}
+h1{font-size:1.3rem;margin:0 0 4px}h2{font-size:1.02rem;margin:0 0 10px}
+.sub{color:var(--mut);margin:0 0 14px;font-size:.9rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.kpi span{display:block;color:var(--mut);font-size:.8rem}.kpi b{display:block;font-size:1.6rem;line-height:1.2;margin-top:2px}.kpi small{color:var(--mut);font-size:.78rem}
+.g2{display:grid;grid-template-columns:2fr 1fr;gap:14px}@media(max-width:860px){.g2{grid-template-columns:1fr}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;padding:10px 16px;background:var(--ink);color:#fff;font-weight:600;cursor:pointer;min-height:42px}
+.btn.amb{background:var(--amb);color:var(--ink)}.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}.btn.sm{min-height:32px;padding:5px 10px;font-size:.84rem}.btn.full{width:100%}
+label{display:grid;gap:5px;font-size:.86rem;font-weight:600;margin-bottom:12px}
+input,select{border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff;width:100%;font-weight:400}
+input:focus,select:focus{outline:2px solid var(--amb);border-color:var(--amb)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}@media(max-width:640px){.row,.row3{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th{text-align:left;color:var(--mut);font-weight:600;font-size:.76rem;text-transform:uppercase;letter-spacing:.03em;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tw{overflow-x:auto}
+td select{padding:5px 8px;font-size:.84rem;min-width:110px}
+.bar{height:7px;background:var(--soft);border-radius:4px;overflow:hidden;min-width:70px;margin-top:3px}.bar i{display:block;height:100%;background:var(--ink)}
+.tag{font-size:.74rem;border:1px solid var(--line);border-radius:99px;padding:2px 8px;white-space:nowrap}
+.tag.free{background:#fff4e2;border-color:#f2d3a0}.tag.ok{background:#e6f4ec;border-color:#bfe3cd;color:var(--ok)}
+.msg{padding:10px 12px;border-radius:10px;font-size:.9rem;margin-bottom:12px}
+.msg.err{background:#fbe9e7;color:var(--bad)}.msg.ok{background:#e6f4ec;color:var(--ok)}.msg.info{background:#fff4e2;color:#7a4e0c}
+.center{min-height:80vh;display:grid;align-content:center;max-width:440px;margin:0 auto}
+.muted{color:var(--mut);font-size:.86rem}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;z-index:30;font-size:.9rem;max-width:90vw}
+.qr{display:block;width:190px;height:190px;margin:8px auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px}
+.code{font-family:ui-monospace,Menlo,monospace;letter-spacing:.08em;word-break:break-all;background:var(--soft);padding:8px 10px;border-radius:8px;font-size:.85rem}
+.otp{font-size:1.5rem;letter-spacing:.4em;text-align:center;font-family:ui-monospace,Menlo,monospace}
+.demo{background:var(--amb);color:var(--ink);text-align:center;font-size:.8rem;font-weight:700;padding:4px}
+.lgpd{font-size:.8rem;color:var(--mut);text-align:center;margin:18px 0 30px}
+.hb{display:grid;grid-template-columns:90px 1fr 40px;gap:8px;align-items:center;margin:7px 0;font-size:.86rem}.hb .bar{height:12px;margin:0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* =====================================================================
+   ATALAIA SYSTEM · Painel da Matriz · versão 0.1.0
+   Uso exclusivo da equipe da Matriz. Mostra apenas QUANTIDADES de uso
+   dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
+   Entrada: e-mail + senha + código de duas etapas (obrigatório).
+   ===================================================================== */
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.1.0"};
+if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
+const DEMO=new URLSearchParams(location.search).has("demo");
+const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $=s=>document.querySelector(s);
+const brl=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const num=v=>Number(v||0).toLocaleString("pt-BR");
+const dh=d=>d?new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}):"—";
+function toast(t){const e=document.createElement("div");e.className="toast";e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),3500)}
+const PLANOS=[["free","Free"],["atalaia","Atalaia"],["pro","Pro"],["plus","Plus"]];
+const SIT={teste:"Em teste",ativo:"Ativo",leitura:"Só leitura",encerrado:"Encerrado"};
+function traduz(m){const t={"Invalid login credentials":"E-mail ou senha incorretos.","Invalid TOTP":"Código incorreto ou vencido. Confira o código atual no aplicativo.","rate limit":"Muitas tentativas. Aguarde alguns minutos.","duplicate key":"Já existe uma empresa com esta sigla.","sigla_check":"A sigla precisa ter de 2 a 4 letras maiúsculas, sem acentos.","contratantes_sigla_check":"A sigla precisa ter de 2 a 4 letras maiúsculas, sem acentos."};for(const k in t)if(m&&m.toLowerCase().includes(k.toLowerCase()))return t[k];return m||"Erro inesperado."}
+
+/* ---------------- Dados ---------------- */
+let sb=null;
+const DB=DEMO?mockDB():realDB();
+function realDB(){
+  sb=supabase.createClient(CONFIG.url,CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"atalaia-matriz"}});
+  const chk=({data,error})=>{if(error)throw new Error(traduz(error.message));return data};
+  const rpc=async(f,a)=>chk(await sb.rpc(f,a||{}));
+  return {
+    async sessao(){return chk(await sb.auth.getSession()).session},
+    async entrar(e,s){return chk(await sb.auth.signInWithPassword({email:e,password:s}))},
+    async sair(){await sb.auth.signOut()},
+    async usuario(){return (await sb.auth.getUser()).data.user},
+    async nivel(){return chk(await sb.auth.mfa.getAuthenticatorAssuranceLevel())},
+    async fatores(){const d=chk(await sb.auth.mfa.listFactors());return (d.all||[]).filter(f=>f.factor_type=="totp")},
+    async inscrever(){for(const f of await this.fatores())if(f.status!=="verified")await sb.auth.mfa.unenroll({factorId:f.id});return chk(await sb.auth.mfa.enroll({factorType:"totp",friendlyName:"Atalaia Matriz "+new Date().toISOString().slice(0,16)}))},
+    async verificar(id,code){return chk(await sb.auth.mfa.challengeAndVerify({factorId:id,code}))},
+    souMatriz:()=>rpc("sou_da_matriz"),
+    indicadores:()=>rpc("matriz_indicadores"),
+    contratantes:()=>rpc("matriz_contratantes"),
+    alterarPlano:(s,p)=>rpc("matriz_alterar_plano",{p_sigla:s,p_plano:p}),
+    alterarSituacao:(s,v)=>rpc("matriz_alterar_situacao",{p_sigla:s,p_situacao:v}),
+    exigir2:(s,v)=>rpc("matriz_exigir_2_etapas",{p_sigla:s,p_exigir:v}),
+    criar:(d)=>rpc("matriz_criar_contratante",{p_nome:d.nome,p_sigla:d.sigla,p_plano:d.plano,p_segmento:d.segmento||null,p_cnpj:d.cnpj||null,p_ambiente:d.ambiente||"Ambiente principal"}),
+    vincular:(e,s,n,p)=>rpc("matriz_vincular_usuario",{p_email:e,p_sigla:s,p_nome:n,p_perfil:p}),
+    registrar:(a,d)=>rpc("matriz_registrar",{p_acao:a,p_detalhe:d||null}).catch(()=>{}),
+    meusAcessos:()=>rpc("matriz_meus_acessos")
+  };
+}
+function mockDB(){
+  const w=ms=>new Promise(r=>setTimeout(r,ms));let log=false,nivel2=false,fat=[];
+  const P={free:[0,"Atalaia Free",1,1,50,1],atalaia:[690,"Atalaia",10,50,1000,5],pro:[1990,"Atalaia Pro",25,100,3000,20],plus:[4990,"Atalaia Plus",120,400,15000,100]};
+  const mk=(nome,sigla,plano,sit,u,a,b,mb,ac,at,dias)=>({id:sigla,nome,sigla,segmento:"Exemplo",plano_id:plano,plano_nome:P[plano][1],preco_mensal:P[plano][0],situacao:sit,criado_em:new Date(Date.now()-dias*864e5).toISOString(),exige_2_etapas:false,usuarios:u,ambientes:a,bens:b,lim_usuarios:P[plano][2],lim_ambientes:P[plano][3],lim_bens:P[plano][4],lim_gb:P[plano][5],fotos_mb:mb,acessos_30d:ac,usuarios_ativos_30d:at,ultimo_acesso:new Date(Date.now()-Math.random()*864e5*3).toISOString()});
+  const C=[mk("Studio Exemplo","SE","free","teste",1,1,44,61.2,38,1,12),mk("Barbearia Modelo","BM","free","teste",1,1,9,8.4,6,1,4),mk("Clínica Vida Exemplo","CV","atalaia","ativo",7,22,410,820.5,310,6,60),mk("Hospital Modelo","HM","pro","ativo",19,88,2350,9120,1460,17,120)];
+  return {async sessao(){return log?{}:null},async entrar(){await w(200);log=true},async sair(){log=false;nivel2=false},async usuario(){return {email:"matriz@exemplo"}},
+    async nivel(){const v=fat.some(f=>f.status=="verified");return {currentLevel:v&&nivel2?"aal2":"aal1",nextLevel:v?"aal2":"aal1"}},
+    async fatores(){return fat},async inscrever(){const f={id:"f1",status:"unverified",factor_type:"totp"};fat=[f];return {id:"f1",totp:{qr_code:"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#fff"/><path d="M1 1h3v3H1zM6 1h3v3H6zM1 6h3v3H1z" fill="#000"/></svg>'),secret:"DEMOMATRIZ2ETAPAS",uri:"otpauth://totp/demo"}}},
+    async verificar(id,c){await w(150);if(c!=="123456")throw new Error("Código incorreto. Na demonstração, use 123456.");fat[0].status="verified";nivel2=true},
+    async souMatriz(){return true},
+    async indicadores(){const pp={free:0,atalaia:0,pro:0,plus:0};C.forEach(c=>pp[c.plano_id]++);return {empresas:C.length,por_plano:pp,usuarios:28,ativos_hoje:9,ativos_7d:19,ativos_30d:25,acessos_7d:212,bens:C.reduce((s,c)=>s+c.bens,0),ambientes:112,receita_mensal:C.filter(c=>c.situacao=="ativo").reduce((s,c)=>s+c.preco_mensal,0),acessos_por_dia:Array.from({length:30},(_,i)=>({dia:new Date(Date.now()-(29-i)*864e5).toISOString().slice(0,10),usuarios:Math.round(6+8*Math.abs(Math.sin(i/3))+(i%7>4?-4:0))})),novas_por_mes:["2026-06","2026-07","2026-08","2026-09","2026-10","2026-11"].map((m,i)=>({mes:m,qtd:[0,1,0,1,1,1][i]}))}},
+    async contratantes(){return C.map(c=>({...c}))},
+    async alterarPlano(s,p){const c=C.find(x=>x.sigla==s);if(c.bens>P[p][4])throw new Error(`A empresa tem ${c.bens} bens; o plano ${p} permite ${P[p][4]}.`);Object.assign(c,{plano_id:p,plano_nome:P[p][1],preco_mensal:P[p][0],lim_usuarios:P[p][2],lim_ambientes:P[p][3],lim_bens:P[p][4],lim_gb:P[p][5]});return "ok"},
+    async alterarSituacao(s,v){C.find(x=>x.sigla==s).situacao=v},async exigir2(s,v){C.find(x=>x.sigla==s).exige_2_etapas=v},
+    async criar(d){if(C.some(c=>c.sigla==d.sigla))throw new Error("Já existe uma empresa com esta sigla.");C.unshift(mk(d.nome,d.sigla,d.plano,"teste",0,1,0,0,0,0,0))},
+    async vincular(e,s){const c=C.find(x=>x.sigla==s);c.usuarios++;return "Usuário "+e+" vinculado."},
+    async registrar(){},async meusAcessos(){return [{criado_em:new Date().toISOString(),acao:"Matriz: entrou no painel",detalhe:null}]}};
+}
+
+/* ---------------- Estado e telas ---------------- */
+const E={tela:"carregando",aba:"visao",msg:null,ind:null,cts:[],filtro:"todos",insc:null,email:"",acessos:[]};
+function render(){
+  const h={login:telaLogin,mfa:telaMfa,ativar:telaAtivar,negado:telaNegado,painel:telaPainel}[E.tela];
+  $("#app").innerHTML=(DEMO?`<div class="demo">MODO DEMONSTRAÇÃO · dados fictícios</div>`:"")+cab()+(h?h():`<div class="center"><p class="muted" style="text-align:center">Carregando…</p></div>`);
+}
+const cab=()=>`<header><div class="wrap">${LOGO}<div><b>ATALAIA SYSTEM<span class="pill">Matriz</span></b><small>Painel da Matriz · Sistema de Gestão de Patrimônio e Manutenção</small></div><div class="sp"></div>${E.tela=="painel"?`<div class="who">${esc(E.email)}<br><button class="btn ghost sm" style="color:#fff;border-color:#555;margin-top:4px" onclick="sair()">Sair</button></div>`:""}</div></header>`;
+const msgH=()=>E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:"";
+function telaLogin(){return `<div class="center wrap"><div class="card"><h1>Painel da Matriz</h1><p class="sub">Acesso restrito à equipe da Atalaia System.</p>${msgH()}<form onsubmit="event.preventDefault();entrar()"><label>E-mail<input id="em" type="email" autocomplete="username" required></label><label>Senha<input id="se" type="password" autocomplete="current-password" required></label><button class="btn full">Entrar</button></form></div><p class="muted" style="text-align:center">Versão ${CONFIG.versao}</p></div>`}
+function telaMfa(){return `<div class="center wrap"><div class="card"><h1>Verificação em duas etapas</h1><p class="sub">Digite o código de 6 números do aplicativo autenticador (Atalaia Matriz).</p>${msgH()}<form onsubmit="event.preventDefault();confirmarMfa()"><label>Código<input id="otp" class="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button class="btn full">Confirmar</button></form><p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="sair()">Sair</button></p></div></div>`}
+function telaAtivar(){const i=E.insc;return `<div class="center wrap" style="max-width:520px"><div class="card"><h1>Ativar verificação em duas etapas</h1><p class="sub">Obrigatória para a equipe da Matriz. Mesmo que alguém descubra a senha, não entra sem o código do seu celular.</p>${msgH()}
+ <p><b>1.</b> Instale no celular o <b>Google Authenticator</b> ou o <b>Microsoft Authenticator</b>.</p><p><b>2.</b> No aplicativo, toque em <b>+</b> e escaneie o código:</p>
+ ${i?`<img class="qr" src="${esc(i.totp.qr_code)}" alt="Código QR"><p class="muted">Se preferir, digite esta chave no aplicativo:</p><div class="code">${esc(i.totp.secret)}</div>`:`<p class="muted">Gerando código…</p>`}
+ <p style="margin-top:14px"><b>3.</b> Digite o código de 6 números que aparece no aplicativo:</p>
+ <form onsubmit="event.preventDefault();confirmarAtivacao()"><label>Código<input id="otp" class="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button class="btn full" ${i?"":"disabled"}>Ativar e entrar</button></form>
+ <p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="sair()">Sair</button></p></div></div>`}
+function telaNegado(){return `<div class="center wrap"><div class="card"><h2>Acesso não permitido</h2><p class="sub">Esta conta não faz parte da equipe da Matriz.</p><button class="btn ghost" onclick="sair()">Sair</button></div></div>`}
+function telaPainel(){
+  const abas=[["visao","Visão geral"],["empresas","Empresas"],["cadastrar","Cadastrar empresa"],["acessos","Registro de acessos"]];
+  const corpo={visao:abaVisao,empresas:abaEmpresas,cadastrar:abaCadastrar,acessos:abaAcessos}[E.aba]();
+  return `<div class="wrap"><nav class="tabs">${abas.map(([k,t])=>`<button aria-current="${E.aba==k}" onclick="irAba('${k}')">${t}</button>`).join("")}</nav>${msgH()}${corpo}
+  <p class="lgpd">A Matriz vê apenas quantidades de uso. Os dados cadastrados pelos clientes (bens, fotos, valores e pessoas) pertencem a eles e não aparecem neste painel (LGPD: cliente controlador, Atalaia System operadora).</p></div>`;
+}
+function kpi(t,v,s){return `<div class="kpi"><span>${t}</span><b>${v}</b>${s?`<small>${s}</small>`:""}</div>`}
+function abaVisao(){
+  const i=E.ind;if(!i)return `<p class="muted">Carregando indicadores…</p>`;
+  const pp=i.por_plano||{},tot=Math.max(1,i.empresas);
+  const perto=E.cts.filter(c=>c.plano_id=="free"&&c.situacao!="encerrado"&&(c.bens>=c.lim_bens*.8||c.fotos_mb>=c.lim_gb*1024*.8));
+  return `<div class="kpis">
+   ${kpi("Empresas",num(i.empresas),`${num(pp.free||0)} no Free · ${num((pp.atalaia||0)+(pp.pro||0)+(pp.plus||0))} pagantes`)}
+   ${kpi("Usuários cadastrados",num(i.usuarios),"em todas as empresas")}
+   ${kpi("Usuários ativos hoje",num(i.ativos_hoje),"entraram ou abriram o app")}
+   ${kpi("Ativos em 7 dias",num(i.ativos_7d),`${num(i.acessos_7d)} acessos`)}
+   ${kpi("Ativos em 30 dias",num(i.ativos_30d),i.usuarios?`${Math.round(i.ativos_30d/i.usuarios*100)}% dos cadastrados`:"")}
+   ${kpi("Bens cadastrados",num(i.bens),`${num(i.ambientes)} ambientes`)}
+   ${kpi("Receita mensal",brl(i.receita_mensal),"empresas ativas, plano base")}
+  </div>
+  <div class="g2"><div class="card"><h2>Usuários ativos por dia (30 dias)</h2>${grafDias(i.acessos_por_dia||[])}</div>
+  <div class="card"><h2>Empresas por plano</h2>${PLANOS.map(([k,t])=>`<div class="hb"><span>${t}</span><div class="bar"><i style="width:${(pp[k]||0)/tot*100}%;background:${k=="free"?"var(--amb)":"var(--ink)"}"></i></div><b style="text-align:right">${num(pp[k]||0)}</b></div>`).join("")}
+   <h2 style="margin-top:18px">Novas empresas por mês</h2>${grafMeses(i.novas_por_mes||[])}</div></div>
+  <div class="card"><h2>Free perto do limite</h2><p class="sub">Empresas no plano gratuito com 80% ou mais dos bens ou do espaço de fotos. Boas candidatas para conhecer os planos pagos.</p>
+  ${perto.length?`<div class="tw"><table><tr><th>Empresa</th><th>Bens</th><th>Fotos</th><th>Ativos 30 dias</th><th>Último acesso</th></tr>${perto.map(c=>`<tr><td><b>${esc(c.nome)}</b> <span class="muted">${esc(c.sigla)}</span></td><td>${c.bens} de ${c.lim_bens}</td><td>${num(c.fotos_mb)} MB de ${c.lim_gb} GB</td><td>${c.usuarios_ativos_30d}</td><td>${dh(c.ultimo_acesso)}</td></tr>`).join("")}</table></div>`:`<p class="muted">Nenhuma empresa Free perto do limite no momento.</p>`}</div>`;
+}
+function grafDias(d){if(!d.length)return `<p class="muted">Sem dados ainda.</p>`;const W=640,H=180,max=Math.max(1,...d.map(x=>x.usuarios)),bw=W/d.length;
+  return `<svg viewBox="0 0 ${W} ${H+22}" style="width:100%;height:auto" role="img" aria-label="Usuários ativos por dia">${[0,.5,1].map(f=>`<line x1="0" x2="${W}" y1="${H-f*H*.9}" y2="${H-f*H*.9}" stroke="#e3e0da"/><text x="2" y="${H-f*H*.9-3}" font-size="10" fill="#6b7078">${Math.round(max*f)}</text>`).join("")}
+  ${d.map((x,k)=>{const h=x.usuarios/max*H*.9;return `<rect x="${k*bw+2}" y="${H-h}" width="${bw-4}" height="${h}" rx="2" fill="${k==d.length-1?"#f2a33a":"#1d1f23"}"><title>${x.dia.split("-").reverse().join("/")}: ${x.usuarios} usuário(s)</title></rect>`}).join("")}
+  ${d.map((x,k)=>k%5==0||k==d.length-1?`<text x="${k*bw+bw/2}" y="${H+15}" font-size="10" text-anchor="middle" fill="#6b7078">${x.dia.slice(8,10)}/${x.dia.slice(5,7)}</text>`:"").join("")}</svg>`}
+function grafMeses(d){const max=Math.max(1,...d.map(x=>x.qtd));const M=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+  return d.map(x=>`<div class="hb"><span>${M[+x.mes.slice(5,7)-1]}/${x.mes.slice(2,4)}</span><div class="bar"><i style="width:${x.qtd/max*100}%"></i></div><b style="text-align:right">${x.qtd}</b></div>`).join("")}
+function uso(n,l){const p=l?Math.min(100,n/l*100):0;return `${num(n)} <span class="muted">de ${num(l)}</span><div class="bar"><i style="width:${p}%;background:${p>=100?"var(--bad)":p>=80?"var(--warn)":"var(--ink)"}"></i></div>`}
+function abaEmpresas(){
+  const L=E.cts.filter(c=>E.filtro=="todos"||c.plano_id==E.filtro);
+  return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px"><div><h1>Empresas</h1><p class="sub" style="margin:0">${E.cts.length} cadastrada(s). Troque o plano ou a situação direto na tabela.</p></div>
+  <div style="display:flex;gap:8px;align-items:center"><select onchange="E.filtro=this.value;render()" style="width:auto"><option value="todos">Todos os planos</option>${PLANOS.map(([k,t])=>`<option value="${k}" ${E.filtro==k?"selected":""}>${t}</option>`).join("")}</select><button class="btn ghost sm" onclick="recarregar()">Atualizar</button></div></div>
+  <div class="card tw" style="padding:6px 10px"><table><tr><th>Empresa</th><th>Plano</th><th>Situação</th><th>Usuários</th><th>Ambientes</th><th>Bens</th><th>Fotos</th><th>Ativos 30d</th><th>Último acesso</th><th>2 etapas</th></tr>
+  ${L.map(c=>`<tr><td><b>${esc(c.nome)}</b><div class="muted">${esc(c.sigla)}${c.segmento?" · "+esc(c.segmento):""} · desde ${new Date(c.criado_em).toLocaleDateString("pt-BR")}</div></td>
+   <td><select onchange="trocarPlano('${esc(c.sigla)}',this)">${PLANOS.map(([k,t])=>`<option value="${k}" ${c.plano_id==k?"selected":""}>${t}</option>`).join("")}</select></td>
+   <td><select onchange="trocarSituacao('${esc(c.sigla)}',this)">${Object.entries(SIT).map(([k,t])=>`<option value="${k}" ${c.situacao==k?"selected":""}>${t}</option>`).join("")}</select></td>
+   <td>${uso(c.usuarios,c.lim_usuarios)}</td><td>${uso(c.ambientes,c.lim_ambientes)}</td><td>${uso(c.bens,c.lim_bens)}</td>
+   <td>${num(c.fotos_mb)} MB<div class="muted">de ${c.lim_gb} GB</div></td><td>${num(c.usuarios_ativos_30d)} <span class="muted">(${num(c.acessos_30d)} acessos)</span></td><td>${dh(c.ultimo_acesso)}</td>
+   <td>${c.plano_id=="free"?`<span class="muted">—</span>`:`<label style="margin:0;display:flex;gap:6px;align-items:center;font-weight:400"><input type="checkbox" style="width:auto" ${c.exige_2_etapas?"checked":""} onchange="exigir2('${esc(c.sigla)}',this)">exigir</label>`}</td></tr>`).join("")||`<tr><td colspan="10" class="muted">Nenhuma empresa neste filtro.</td></tr>`}</table></div>`;
+}
+function abaCadastrar(){return `<h1>Cadastrar empresa</h1><p class="sub">Duas partes: primeiro a empresa, depois a pessoa que vai administrar.</p>
+ <div class="g2"><form class="card" onsubmit="event.preventDefault();cadastrar()"><h2>1. Empresa</h2>
+  <label>Nome da empresa *<input id="cn" required maxlength="120" oninput="sugerirSigla(this.value)"></label>
+  <div class="row3"><label>Segmento<input id="cg" maxlength="60" placeholder="Ex.: Salão, Clínica, Hospital"></label><label>Sigla * <span class="muted" style="font-weight:400">(2 a 4 letras)</span><input id="cs" required maxlength="4" pattern="[A-Za-z]{2,4}" style="text-transform:uppercase"></label><label>CNPJ<input id="cj" maxlength="18" inputmode="numeric"></label></div>
+  <div class="row"><label>Plano *<select id="cp">${PLANOS.map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select></label><label>Primeiro ambiente *<input id="ca" required maxlength="80" value="Ambiente principal"></label></div>
+  <h2 style="margin-top:6px">2. Administrador da empresa</h2>
+  <div class="msg info">Antes, crie o usuário no Supabase: <b>Authentication › Users › Add user › Create new user</b>, com senha provisória e <b>Auto Confirm User</b> marcado. No primeiro acesso, o sistema obriga a pessoa a criar a senha dela.</div>
+  <div class="row"><label>E-mail do administrador *<input id="ue" type="email" required></label><label>Nome do administrador *<input id="un" required maxlength="80"></label></div>
+  <button class="btn amb full">Cadastrar empresa e administrador</button></form>
+ <form class="card" onsubmit="event.preventDefault();vincularExtra()"><h2>Adicionar usuário a uma empresa existente</h2><p class="sub">Para empresas pagas com mais usuários. O usuário também precisa ser criado antes no Supabase.</p>
+  <label>Empresa<select id="vs">${E.cts.map(c=>`<option value="${esc(c.sigla)}">${esc(c.nome)} (${esc(c.sigla)}) · ${esc(c.usuarios)}/${esc(c.lim_usuarios)}</option>`).join("")}</select></label>
+  <label>E-mail<input id="ve" type="email" required></label><label>Nome<input id="vn" required maxlength="80"></label>
+  <label>Perfil<select id="vp"><option value="administrador">Administrador</option><option value="gestor">Gestor</option><option value="manutencionista">Manutencionista</option><option value="responsavel">Responsável de ambiente</option></select></label>
+  <button class="btn full">Adicionar usuário</button></form></div>`}
+function abaAcessos(){return `<h1>Registro de acessos da Matriz</h1><p class="sub">Últimas 30 ações feitas pela equipe da Matriz.</p><div class="card tw" style="padding:6px 10px"><table><tr><th>Data e hora</th><th>Ação</th><th>Detalhe</th></tr>${E.acessos.map(a=>`<tr><td>${dh(a.criado_em)}</td><td>${esc(a.acao)}</td><td>${esc(a.detalhe||"")}</td></tr>`).join("")||`<tr><td colspan="3" class="muted">Nenhum registro ainda.</td></tr>`}</table></div>`}
+
+/* ---------------- Ações ---------------- */
+async function iniciar(){try{if(await DB.sessao()){await posLogin(false);return}}catch(e){E.msg=["err",e.message]}E.tela="login";render()}
+async function entrar(){E.msg=null;try{await DB.entrar($("#em").value.trim(),$("#se").value);await posLogin(true)}catch(e){E.msg=["err",e.message];render()}}
+async function posLogin(novo){
+  const u=await DB.usuario();E.email=u?.email||"";
+  if(!(await DB.souMatriz())){E.tela="negado";render();return}
+  const n=await DB.nivel();
+  if(n.nextLevel=="aal2"&&n.currentLevel!="aal2"){E.tela="mfa";E.msg=null;render();return}
+  if(n.currentLevel!="aal2"){E.tela="ativar";E.insc=null;E.msg=null;render();try{E.insc=await DB.inscrever()}catch(e){E.msg=["err",e.message]}render();return}
+  E.tela="painel";E.msg=null;render();if(novo)DB.registrar("entrou no painel");await recarregar();
+}
+async function confirmarMfa(){try{const f=(await DB.fatores()).find(x=>x.status=="verified");await DB.verificar(f.id,$("#otp").value.trim());await posLogin(true)}catch(e){E.msg=["err",e.message];render()}}
+async function confirmarAtivacao(){try{await DB.verificar(E.insc.id,$("#otp").value.trim());E.insc=null;toast("Verificação em duas etapas ativada.");await posLogin(true);DB.registrar("ativou a verificação em duas etapas")}catch(e){E.msg=["err",e.message];render()}}
+async function recarregar(){try{[E.ind,E.cts,E.acessos]=await Promise.all([DB.indicadores(),DB.contratantes(),DB.meusAcessos()])}catch(e){E.msg=["err",e.message]}render()}
+function irAba(k){E.aba=k;E.msg=null;render();scrollTo(0,0)}
+async function sair(){await DB.sair();Object.assign(E,{tela:"login",msg:null,ind:null,cts:[],acessos:[],aba:"visao"});render()}
+async function trocarPlano(s,sel){const novo=sel.value,c=E.cts.find(x=>x.sigla==s);
+  if(!confirm(`Trocar o plano de ${c.nome} de ${c.plano_nome} para ${PLANOS.find(p=>p[0]==novo)[1]}?`)){sel.value=c.plano_id;return}
+  try{await DB.alterarPlano(s,novo);toast("Plano alterado.");await recarregar()}catch(e){sel.value=c.plano_id;E.msg=["err",e.message];render()}}
+async function trocarSituacao(s,sel){const c=E.cts.find(x=>x.sigla==s);if(!confirm(`Mudar a situação de ${c.nome} para "${SIT[sel.value]}"?`)){sel.value=c.situacao;return}
+  try{await DB.alterarSituacao(s,sel.value);toast("Situação alterada.");await recarregar()}catch(e){sel.value=c.situacao;E.msg=["err",e.message];render()}}
+async function exigir2(s,cb){try{await DB.exigir2(s,cb.checked);toast(cb.checked?"Duas etapas exigidas dos administradores.":"Duas etapas opcionais.");await recarregar()}catch(e){cb.checked=!cb.checked;E.msg=["err",e.message];render()}}
+function sugerirSigla(n){const el=$("#cs");if(el.dataset.mexeu)return;const p=n.normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/[^A-Z ]/g,"").split(/\s+/).filter(x=>x.length>2||/^[A-Z]{2}$/.test(x));el.value=(p.map(x=>x[0]).join("")||n.slice(0,2)).slice(0,4).toUpperCase()}
+document.addEventListener("input",e=>{if(e.target.id=="cs")e.target.dataset.mexeu="1"});
+async function cadastrar(){
+  const d={nome:$("#cn").value.trim(),sigla:$("#cs").value.trim().toUpperCase(),segmento:$("#cg").value.trim(),cnpj:$("#cj").value.trim(),plano:$("#cp").value,ambiente:$("#ca").value.trim()};
+  const email=$("#ue").value.trim(),nome=$("#un").value.trim();
+  if(!/^[A-Z]{2,4}$/.test(d.sigla)){E.msg=["err","A sigla precisa ter de 2 a 4 letras, sem acentos."];render();return}
+  try{await DB.criar(d)}catch(e){E.msg=["err",e.message];render();return}
+  try{await DB.vincular(email,d.sigla,nome,"administrador");DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["ok",`Empresa ${d.nome} (${d.sigla}) cadastrada no plano ${d.plano} e ${email} ligado como administrador. Envie a ela o link do aplicativo e a senha provisória (em mensagens separadas).`]}
+  catch(e){DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["info",`A empresa ${d.sigla} foi criada, mas o usuário não foi ligado: ${e.message} Crie o usuário no Supabase e use “Adicionar usuário a uma empresa existente”.`]}
+  await recarregar();}
+async function vincularExtra(){const s=$("#vs").value;try{const r=await DB.vincular($("#ve").value.trim(),s,$("#vn").value.trim(),$("#vp").value);DB.registrar("adicionou usuário",s);E.msg=["ok",r];await recarregar()}catch(e){E.msg=["err",e.message];render()}}
+iniciar();
+</script>
+</body>
+</html>

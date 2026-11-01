@@ -91,7 +91,8 @@ const brl=v=>v==null||v===""?"—":Number(v).toLocaleString("pt-BR",{style:"curr
 const dtBR=d=>d?d.split("-").reverse().join("/"):"—";
 const temPat=()=>!!(E.v&&E.v.contratantes.planos.funcoes.includes("etiquetas"));
 const rot=b=>b.patrimonio||b.nome;
-const FUNCOES={chamados:"Chamados pelo QR Code",etiquetas:"Número de patrimônio e etiquetas",auditoria:"Auditoria com leitor",calibracoes:"Calibrações e preventivas",rondas:"Rondas",relatorios:"Relatórios e indicadores",termos:"Termos de responsabilidade",avalie:"Avalie (elogios e reclamações)"};
+const FUNCOES={chamados:"Chamados pelo QR Code",etiquetas:"Número de patrimônio e etiquetas",auditoria:"Auditoria com leitor",calibracoes:"Calibrações e preventivas",rondas:"Rondas",relatorios:"Relatórios e indicadores",termos:"Termos de responsabilidade",avalie:"Avalie (elogios e reclamações)",duas_etapas:"Verificação em duas etapas"};
+const tem2=()=>!!(E.v&&E.v.contratantes.planos.funcoes.includes("duas_etapas"));
 
 /* ---------------- Camada de dados: Supabase real ou demonstração ---------------- */
 let sb=null;
@@ -261,8 +262,8 @@ function contaHTML(){
   const dh=d=>new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
   return `<div class="card"><h2>Sua conta e segurança</h2><p style="margin:0 0 6px" class="muted">${esc(E.v.nome)} · ${esc(E.v.email||"")} · ${esc(E.v.perfil)}</p>
   <p style="margin:0 0 12px" class="muted">${ant?`Acesso anterior: ${dh(ant.criado_em)} · ${esc(ant.aparelho||"")}. Não reconhece? Troque a senha e use “Sair de todos os aparelhos”.`:"Este é o seu primeiro acesso registrado."}</p>
-  <p style="margin:0 0 8px"><b>Verificação em duas etapas:</b> ${ativo?`<span style="color:var(--ok)">ativada ✓</span>`:`<span style="color:var(--warn)">desativada</span> <span class="muted">(recomendada)</span>`}</p>
-  <div style="display:flex;gap:8px;flex-wrap:wrap">${ativo?(E.obrig?"":`<button class="btn ghost sm" onclick="desativar2()">Desativar duas etapas</button>`):`<button class="btn amb sm" onclick="ativar2()">Ativar duas etapas</button>`}
+  ${tem2()||ativo?`<p style="margin:0 0 8px"><b>Verificação em duas etapas:</b> ${ativo?`<span style="color:var(--ok)">ativada ✓</span>`:`<span style="color:var(--warn)">desativada</span> <span class="muted">(recomendada)</span>`}</p>`:""}
+  <div style="display:flex;gap:8px;flex-wrap:wrap">${ativo?(E.obrig?"":`<button class="btn ghost sm" onclick="desativar2()">Desativar duas etapas</button>`):tem2()?`<button class="btn amb sm" onclick="ativar2()">Ativar duas etapas</button>`:""}
   <button class="btn ghost sm" onclick="E.modoSenha='trocar';E.tela='senha';E.msg=null;render()">Trocar senha</button>
   <button class="btn ghost sm" onclick="sair()">Sair</button>
   <button class="btn ghost sm" onclick="sairTodos()">Sair de todos os aparelhos</button></div></div>`;
@@ -352,11 +353,14 @@ async function abrirApp(registrar){
   E.v=await DB.meuVinculo();
   if(!E.v){E.tela="semacesso";render();return}
   E.fatores=await DB.fatores();
-  const exige=E.v.contratantes.exige_2_etapas&&E.v.perfil=="administrador";
+  const exige=tem2()&&E.v.contratantes.exige_2_etapas&&E.v.perfil=="administrador";
   if(exige&&!E.fatores.some(f=>f.status=="verified")){E.obrig=true;await ativar2();return}
   E.obrig=exige;
   const c=E.v.contratante_id;
   if(registrar)await DB.registrar(c,"entrou",null);
+  else{/* conta o uso do app (no máximo 1 registro a cada 6 horas por aparelho), para a Matriz saber quantos usam */
+    let ult=0;try{ult=+localStorage.getItem("atalaia_abriu")||0}catch(e){}
+    if(Date.now()-ult>216e5){DB.registrar(c,"abriu o app",null);try{localStorage.setItem("atalaia_abriu",String(Date.now()))}catch(e){}}}
   [E.amb,E.bens,E.acessos]=await Promise.all([DB.ambientes(c),DB.bens(c),DB.ultimosAcessos().catch(()=>[])]);
   E.tela="app";render();
 }
