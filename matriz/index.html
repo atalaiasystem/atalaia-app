@@ -7,16 +7,30 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#1d1f23">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src https://ipwleoawvxmzvofcccjn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://ipwleoawvxmzvofcccjn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d1f23%27/%3E%3Cpath d=%27M50 18 L24 82 M50 18 L76 82%27 stroke=%27white%27 stroke-width=%2710%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3Cpath d=%27M35 58 L46 67 L67 44%27 stroke=%27%23f2a33a%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 fill=%27none%27/%3E%3C/svg%3E">
+<link id="gf" rel="stylesheet" href="data:text/css,">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
 <style>
-:root{--ink:#1d1f23;--amb:#f2a33a;--mut:#6b7078;--line:#e3e0da;--bg:#f5f3ef;--card:#fff;--ok:#1f9a55;--bad:#c8372d;--warn:#b7791f;--soft:#efece6}
+:root{--ink:#1d1f23;--amb:#f2a33a;--mut:#6b7078;--line:#e3e0da;--bg:#f5f3ef;--card:#fff;--ok:#1f9a55;--bad:#c8372d;--warn:#b7791f;--soft:#efece6;--brand:#1d1f23;--brand-ink:#fff;--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+:root[data-theme="escuro"]{--ink:#e8e9eb;--mut:#a0a5ad;--line:#2c3036;--bg:#111316;--card:#1a1d21;--soft:#23272c;color-scheme:dark}
+@media (prefers-color-scheme:dark){:root[data-theme="auto"]{--ink:#e8e9eb;--mut:#a0a5ad;--line:#2c3036;--bg:#111316;--card:#1a1d21;--soft:#23272c;color-scheme:dark}}
 *{box-sizing:border-box}html,body{margin:0}
-body{font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
-button,input,select{font:inherit;color:inherit}
+body{font:15px/1.45 var(--font);background:var(--bg);color:var(--ink)}
+.shell{display:grid;grid-template-columns:250px 1fr;min-height:100vh}
+aside.side{background:var(--card);border-right:1px solid var(--line);padding:14px 10px;position:sticky;top:0;height:100vh;overflow:auto}
+.sbrand{display:flex;gap:10px;align-items:center;padding:4px 6px 12px;border-bottom:1px solid var(--line);margin-bottom:8px}.sbrand .lg{width:36px;height:36px;border-radius:9px;background:var(--brand);display:grid;place-items:center}.sbrand .lg svg{width:24px;height:24px}
+.sbrand b{display:block;font-size:.95rem}.sbrand small{color:var(--mut);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em}
+.smenu{display:grid;gap:1px}.smenu button{display:flex;gap:8px;align-items:center;background:none;border:0;border-radius:8px;padding:7px 10px;font-weight:600;font-size:.88rem;text-align:left;cursor:pointer;color:var(--ink)}
+.smenu button[aria-current=true]{background:var(--soft);box-shadow:inset 3px 0 0 var(--amb)}.smenu .sep{height:1px;background:var(--line);margin:6px 4px}.smenu .grp{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);padding:8px 10px 2px}
+.smenu .bdg{margin-left:auto;background:var(--amb);color:#1d1f23;border-radius:99px;font-size:.7rem;padding:0 7px}.smenu .soon{margin-left:auto;font-size:.66rem;color:var(--mut)}
+main.mn{padding:18px 22px 40px;min-width:0}.mn .wrap{max-width:1180px;padding:0}
+.kpi.clk{cursor:pointer;transition:border-color .15s}.kpi.clk:hover{border-color:var(--amb)}
+.mod{position:fixed;inset:0;background:rgba(0,0,0,.45);display:grid;place-items:center;z-index:40;padding:16px}.mod .card{width:min(720px,100%);max-height:90vh;overflow:auto}
+@media(max-width:900px){.shell{grid-template-columns:1fr}aside.side{position:static;height:auto}.smenu{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}main.mn{padding:14px}}
+button,input,select,textarea{font:inherit;color:inherit}input,select,textarea{background:var(--card)}
 .wrap{max-width:1180px;margin:0 auto;padding:0 16px}
-header{background:var(--ink);color:#fff;padding:12px 0}
+header{background:var(--brand);color:var(--brand-ink);padding:12px 0}
 header .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 header svg{width:32px;height:32px;flex-shrink:0}
 header b{font-size:1rem;letter-spacing:.04em;display:block}
@@ -34,10 +48,10 @@ h1{font-size:1.3rem;margin:0 0 4px}h2{font-size:1.02rem;margin:0 0 10px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
 .kpi span{display:block;color:var(--mut);font-size:.8rem}.kpi b{display:block;font-size:1.6rem;line-height:1.2;margin-top:2px}.kpi small{color:var(--mut);font-size:.78rem}
 .g2{display:grid;grid-template-columns:2fr 1fr;gap:14px}@media(max-width:860px){.g2{grid-template-columns:1fr}}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;padding:10px 16px;background:var(--ink);color:#fff;font-weight:600;cursor:pointer;min-height:42px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;padding:10px 16px;background:var(--brand);color:var(--brand-ink);font-weight:600;cursor:pointer;min-height:42px}
 .btn.amb{background:var(--amb);color:var(--ink)}.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}.btn.sm{min-height:32px;padding:5px 10px;font-size:.84rem}.btn.full{width:100%}
 label{display:grid;gap:5px;font-size:.86rem;font-weight:600;margin-bottom:12px}
-input,select{border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff;width:100%;font-weight:400}
+input,select,textarea{border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--card);color:var(--ink);width:100%;font-weight:400}
 input:focus,select:focus{outline:2px solid var(--amb);border-color:var(--amb)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.row3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}@media(max-width:640px){.row,.row3{grid-template-columns:1fr}}
 table{width:100%;border-collapse:collapse;font-size:.86rem}
@@ -52,7 +66,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
 .msg.err{background:#fbe9e7;color:var(--bad)}.msg.ok{background:#e6f4ec;color:var(--ok)}.msg.info{background:#fff4e2;color:#7a4e0c}
 .center{min-height:80vh;display:grid;align-content:center;max-width:440px;margin:0 auto}
 .muted{color:var(--mut);font-size:.86rem}
-.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;z-index:30;font-size:.9rem;max-width:90vw}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1d1f23;color:#fff;padding:10px 16px;border-radius:10px;z-index:30;font-size:.9rem;max-width:90vw}
 .qr{display:block;width:190px;height:190px;margin:8px auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px}
 .code{font-family:ui-monospace,Menlo,monospace;letter-spacing:.08em;word-break:break-all;background:var(--soft);padding:8px 10px;border-radius:8px;font-size:.85rem}
 .otp{font-size:1.5rem;letter-spacing:.4em;text-align:center;font-family:ui-monospace,Menlo,monospace}
@@ -70,7 +84,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.2.0"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.0"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -114,15 +128,26 @@ function realDB(){
     interessados:async()=>chk(await sb.from("interessados").select("*").order("atualizado_em",{ascending:false})),
     salvarInteressado:async(d)=>d.id?chk(await sb.from("interessados").update({...d,atualizado_em:new Date().toISOString()}).eq("id",d.id).select().single()):chk(await sb.from("interessados").insert(d).select().single()),
     chamados:async()=>chk(await sb.from("suporte_chamados").select("*, contratantes(nome,sigla,plano_id)").order("criado_em",{ascending:false}).limit(300)),
-    responder:async(id,d)=>chk(await sb.from("suporte_chamados").update(d).eq("id",id).select().single())
+    responder:async(id,d)=>chk(await sb.from("suporte_chamados").update(d).eq("id",id).select().single()),
+    planos:async()=>chk(await sb.from("planos").select("*").order("preco_mensal")),
+    salvarPlano:(d)=>rpc("matriz_atualizar_plano",{p_id:d.id,p_preco:d.preco,p_filiais:d.filiais,p_ambientes:d.ambientes,p_bens:d.bens,p_usuarios:d.usuarios,p_gb:d.gb}),
+    adicionais:async()=>chk(await sb.from("contratante_adicionais").select("*").order("criado_em",{ascending:false})),
+    incluirAdicional:(s,t,q,v)=>rpc("matriz_adicional_incluir",{p_sigla:s,p_tipo:t,p_qtd:q,p_valor:v}),
+    encerrarAdicional:(id)=>rpc("matriz_adicional_encerrar",{p_id:id}),
+    atualizarContratante:(s,n,g,c)=>rpc("matriz_atualizar_contratante",{p_sigla:s,p_nome:n,p_segmento:g,p_cnpj:c}),
+    acessosDia:(id)=>rpc("matriz_acessos_dia",{p_contratante:id}),
+    historico:(id)=>rpc("matriz_historico",{p_contratante:id}),
+    receitaAdicionais:()=>rpc("matriz_receita_adicionais")
   };
 }
 function mockDB(){
   const w=ms=>new Promise(r=>setTimeout(r,ms));let log=false,nivel2=false,fat=[];
-  const P={free:[0,"Atalaia Free",1,1,50,1],atalaia:[690,"Atalaia",10,50,1000,5],pro:[1990,"Atalaia Pro",25,100,3000,20],plus:[4990,"Atalaia Plus",120,400,15000,100]};
-  const mk=(nome,sigla,plano,sit,u,a,b,mb,ac,at,dias)=>({id:sigla,nome,sigla,segmento:"Exemplo",plano_id:plano,plano_nome:P[plano][1],preco_mensal:P[plano][0],situacao:sit,criado_em:new Date(Date.now()-dias*864e5).toISOString(),exige_2_etapas:false,usuarios:u,ambientes:a,bens:b,lim_usuarios:P[plano][2],lim_ambientes:P[plano][3],lim_bens:P[plano][4],lim_gb:P[plano][5],fotos_mb:mb,acessos_30d:ac,usuarios_ativos_30d:at,ultimo_acesso:new Date(Date.now()-Math.random()*864e5*3).toISOString()});
+  const P={free:[0,"Atalaia Free",1,1,50,1,0],atalaia:[690,"Atalaia",10,50,1000,5,3],pro:[1990,"Atalaia Pro",25,100,3000,20,7],plus:[4990,"Atalaia Plus",120,400,15000,100,10]};
+  const mk=(nome,sigla,plano,sit,u,a,b,mb,ac,at,dias)=>({id:sigla,nome,sigla,segmento:"Exemplo",cnpj:null,filiais:0,lim_filiais:P[plano][6]||0,adicionais_valor:0,plano_id:plano,plano_nome:P[plano][1],preco_mensal:P[plano][0],situacao:sit,criado_em:new Date(Date.now()-dias*864e5).toISOString(),exige_2_etapas:false,usuarios:u,ambientes:a,bens:b,lim_usuarios:P[plano][2],lim_ambientes:P[plano][3],lim_bens:P[plano][4],lim_gb:P[plano][5],fotos_mb:mb,acessos_30d:ac,usuarios_ativos_30d:at,ultimo_acesso:new Date(Date.now()-Math.random()*864e5*3).toISOString()});
   const I=[{id:1,empresa:"Ótica Exemplo",contato:"Paula",telefone:"(69) 9 0000-0000",segmento:"Loja",origem:"Indicação",plano:"atalaia",etapa:"proposta",proximo_passo:"Ligar sexta para fechar",criado_em:new Date(Date.now()-9*864e5).toISOString(),atualizado_em:new Date().toISOString()},{id:2,empresa:"Escola Modelo",contato:"Rui",segmento:"Escola",origem:"Site",plano:"pro",etapa:"demonstracao",proximo_passo:"Demonstração terça 14h",criado_em:new Date(Date.now()-4*864e5).toISOString(),atualizado_em:new Date().toISOString()},{id:3,empresa:"Academia Exemplo",segmento:"Academia",origem:"Redes sociais",plano:"free",etapa:"contato",criado_em:new Date().toISOString(),atualizado_em:new Date().toISOString()}];
   const T=[{id:1,contratante_id:"SE",contratantes:{nome:"Studio Exemplo",sigla:"SE",plano_id:"free"},autor:"Dona do studio",tipo:"duvida",prioridade:"media",assunto:"Como tirar foto pelo celular?",mensagem:"Não aparece a câmera.",situacao:"aberto",resposta:null,criado_em:new Date(Date.now()-3*36e5).toISOString()},{id:2,contratante_id:"CV",contratantes:{nome:"Clínica Vida Exemplo",sigla:"CV",plano_id:"atalaia"},autor:"Administração",tipo:"melhoria",prioridade:"baixa",assunto:"Relatório por categoria",mensagem:"Seria bom filtrar por categoria.",situacao:"resolvido",resposta:"Anotado para a próxima versão.",respondido_em:new Date(Date.now()-20*36e5).toISOString(),criado_em:new Date(Date.now()-26*36e5).toISOString()}];
+  const PL=[{id:"free",nome:"Atalaia Free",preco_mensal:0,filiais:0,ambientes:1,bens:50,usuarios:1,armazenamento_gb:1,funcoes:["bens"]},{id:"atalaia",nome:"Atalaia",preco_mensal:690,filiais:3,ambientes:50,bens:1000,usuarios:10,armazenamento_gb:5,funcoes:[]},{id:"pro",nome:"Atalaia Pro",preco_mensal:1990,filiais:7,ambientes:100,bens:3000,usuarios:25,armazenamento_gb:20,funcoes:[]},{id:"plus",nome:"Atalaia Plus",preco_mensal:4990,filiais:10,ambientes:400,bens:15000,usuarios:120,armazenamento_gb:100,funcoes:[]}];
+  const AD=[{id:1,contratante_id:"HM",tipo:"usuario",quantidade:5,valor_unit:39,inicio:"2026-09-01",fim:null},{id:2,contratante_id:"CV",tipo:"ia",quantidade:1,valor_unit:190,inicio:"2026-10-01",fim:null}];
   const C=[mk("Studio Exemplo","SE","free","teste",1,1,44,61.2,38,1,12),mk("Barbearia Modelo","BM","free","teste",1,1,9,8.4,6,1,4),mk("Clínica Vida Exemplo","CV","atalaia","ativo",7,22,410,820.5,310,6,60),mk("Hospital Modelo","HM","pro","ativo",19,88,2350,9120,1460,17,120)];
   return {async sessao(){return log?{}:null},async entrar(){await w(200);log=true},async sair(){log=false;nivel2=false},async usuario(){return {email:"matriz@exemplo"}},
     async nivel(){const v=fat.some(f=>f.status=="verified");return {currentLevel:v&&nivel2?"aal2":"aal1",nextLevel:v?"aal2":"aal1"}},
@@ -138,14 +163,20 @@ function mockDB(){
     async registrar(){},async meusAcessos(){return [{criado_em:new Date().toISOString(),acao:"Matriz: entrou no painel",detalhe:null}]},
     async infra(){return {banco_mb:42.3,fotos_mb:C.reduce((s,c)=>s+c.fotos_mb,0),fotos_qtd:1830,contas:31,ativos_mes:25,chamados_abertos:T.filter(t=>t.situacao!="resolvido").length}},
     async interessados(){return I},async salvarInteressado(d){if(d.id){Object.assign(I.find(x=>x.id==d.id),d,{atualizado_em:new Date().toISOString()})}else I.unshift({...d,id:I.length+1,criado_em:new Date().toISOString(),atualizado_em:new Date().toISOString()})},
+    async planos(){return PL},async salvarPlano(d){Object.assign(PL.find(p=>p.id==d.id),{preco_mensal:d.preco,filiais:d.filiais,ambientes:d.ambientes,bens:d.bens,usuarios:d.usuarios,armazenamento_gb:d.gb});return "ok"},
+    async adicionais(){return AD},async incluirAdicional(s,t,q,v){const c=C.find(x=>x.sigla==s);if(c.plano_id=="free")throw new Error("O plano Free não aceita adicionais. Mude para um plano pago.");AD.unshift({id:AD.length+1,contratante_id:c.id,tipo:t,quantidade:q,valor_unit:v,inicio:new Date().toISOString().slice(0,10),fim:null});return "ok"},
+    async encerrarAdicional(id){AD.find(a=>a.id==id).fim=new Date().toISOString().slice(0,10)},
+    async atualizarContratante(s,n,g,cj){Object.assign(C.find(x=>x.sigla==s),{nome:n,segmento:g,cnpj:cj})},
+    async acessosDia(){return Array.from({length:30},(_,i)=>({dia:new Date(Date.now()-(29-i)*864e5).toISOString().slice(0,10),usuarios:Math.max(0,Math.round(3*Math.sin(i/2)+2))}))},
+    async historico(){return [{criado_em:new Date().toISOString(),acao:"Matriz alterou a situação",detalhe:"ativo"}]},async receitaAdicionais(){return AD.filter(a=>!a.fim).reduce((s,a)=>s+a.quantidade*a.valor_unit,0)},
     async chamados(){return T},async responder(id,d){const t=T.find(x=>x.id==id);if(d.resposta&&!t.resposta)t.respondido_em=new Date().toISOString();Object.assign(t,d)}};
 }
 
 /* ---------------- Estado e telas ---------------- */
-const E={tela:"carregando",aba:"visao",msg:null,ind:null,cts:[],filtro:"todos",insc:null,email:"",acessos:[],infra:null,leads:[],tks:[],lead:null,tk:null,tf:"abertos",hc:null};
+const E={tela:"carregando",aba:"visao",msg:null,ind:null,cts:[],filtro:"todos",insc:null,email:"",acessos:[],infra:null,leads:[],tks:[],lead:null,tk:null,tf:"abertos",hc:null,planos:[],ads:[],recAd:0,ficha:null,fichaDia:[],fichaHist:[],det:null,hist:[],editPl:null};
 function render(){
   const h={login:telaLogin,mfa:telaMfa,ativar:telaAtivar,negado:telaNegado,painel:telaPainel}[E.tela];
-  $("#app").innerHTML=(DEMO?`<div class="demo">MODO DEMONSTRAÇÃO · dados fictícios</div>`:"")+cab()+(h?h():`<div class="center"><p class="muted" style="text-align:center">Carregando…</p></div>`);
+  $("#app").innerHTML=(DEMO?`<div class="demo">MODO DEMONSTRAÇÃO · dados fictícios</div>`:"")+(E.tela=="painel"?"":cab())+(h?h():`<div class="center"><p class="muted" style="text-align:center">Carregando…</p></div>`);
 }
 const cab=()=>`<header><div class="wrap">${LOGO}<div><b>ATALAIA SYSTEM<span class="pill">Matriz</span></b><small>Painel da Matriz · Sistema de Gestão de Patrimônio e Manutenção</small></div><div class="sp"></div>${E.tela=="painel"?`<div class="who">${esc(E.email)}<br><button class="btn ghost sm" style="color:#fff;border-color:#555;margin-top:4px" onclick="sair()">Sair</button></div>`:""}</div></header>`;
 const msgH=()=>E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:"";
@@ -158,26 +189,35 @@ function telaAtivar(){const i=E.insc;return `<div class="center wrap" style="max
  <form onsubmit="event.preventDefault();confirmarAtivacao()"><label>Código<input id="otp" class="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button class="btn full" ${i?"":"disabled"}>Ativar e entrar</button></form>
  <p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="sair()">Sair</button></p></div></div>`}
 function telaNegado(){return `<div class="center wrap"><div class="card"><h2>Acesso não permitido</h2><p class="sub">Esta conta não faz parte da equipe da Matriz.</p><button class="btn ghost" onclick="sair()">Sair</button></div></div>`}
+const MENU=[["grp","Negócio"],["visao","Visão geral"],["fin","Receita e métricas"],["saude","Saúde dos clientes"],["uso","Uso e adoção"],["funil","Funil comercial"],
+ ["grp","Clientes"],["empresas","Contratantes"],["cadastrar","Cadastrar empresa"],["planos","Planos e limites"],["mods","Adicionais de uso"],["fat","Cobrança","B"],["atend","Atendimento ao cliente"],["sup","Acessos de suporte","B"],["com","Comunicados","B"],
+ ["grp","Operação"],["infra","Infraestrutura e versões"],["ind","Indicadores"],["acessos","Registro de acessos"],["seg","Segurança e LGPD","C"],
+ ["grp","Painel"],["design","Design do painel"],["ajuda","Como usar","C"]];
 function telaPainel(){
   const ab=E.tks.filter(t=>t.situacao!="resolvido").length;
-  const abas=[["visao","Visão geral"],["empresas","Empresas"],["saude","Saúde dos clientes"],["fin","Financeiro"],["uso","Uso"],["funil","Funil comercial"],["atend","Atendimento"+(ab?` (${ab})`:"")],["infra","Infraestrutura"],["ind","Indicadores"],["cadastrar","Cadastrar empresa"],["acessos","Registro de acessos"]];
-  const corpo={visao:abaVisao,empresas:abaEmpresas,saude:abaSaude,fin:abaFin,uso:abaUso,funil:abaFunil,atend:abaAtend,infra:abaInfra,ind:abaInd,cadastrar:abaCadastrar,acessos:abaAcessos}[E.aba]();
-  return `<div class="wrap"><nav class="tabs">${abas.map(([k,t])=>`<button aria-current="${E.aba==k}" onclick="irAba('${k}')">${t}</button>`).join("")}</nav>${msgH()}${corpo}
-  <p class="lgpd">A Matriz vê apenas quantidades de uso. Os dados cadastrados pelos clientes (bens, fotos, valores e pessoas) pertencem a eles e não aparecem neste painel (LGPD: cliente controlador, Atalaia System operadora).</p></div>`;
+  const T={visao:abaVisao,empresas:abaEmpresas,saude:abaSaude,fin:abaFin,uso:abaUso,funil:abaFunil,atend:abaAtend,infra:abaInfra,ind:abaInd,cadastrar:abaCadastrar,acessos:abaAcessos,planos:abaPlanos,mods:abaMods,design:abaDesign,ficha:abaFicha};
+  const it=MENU.find(m=>m[0]==E.aba),corpo=T[E.aba]?T[E.aba]():emBreve(it);
+  return `<div class="shell"><aside class="side"><div class="sbrand"><div class="lg">${LOGO}</div><div><b>Painel da Matriz</b><small>Atalaia System</small></div></div>
+  <nav class="smenu">${MENU.map(m=>m[0]=="grp"?`<div class="grp">${m[1]}</div>`:`<button aria-current="${E.aba==m[0]||(E.aba=="ficha"&&m[0]=="empresas")}" onclick="irAba('${m[0]}')">${m[1]}${m[0]=="atend"&&ab?`<span class="bdg">${ab}</span>`:""}${m[2]?`<span class="soon">parte ${m[2]}</span>`:""}</button>`).join("")}</nav>
+  <div style="border-top:1px solid var(--line);margin-top:10px;padding:10px 8px 0" class="muted">${esc(E.email)}<br><button class="btn ghost sm" style="margin-top:6px" onclick="sair()">Sair</button></div></aside>
+  <main class="mn"><div class="wrap">${E.hist.length?`<button class="btn ghost sm" style="margin-bottom:10px" onclick="voltar()">← Voltar</button>`:""}${msgH()}${corpo}
+  <p class="lgpd">A Matriz vê apenas quantidades de uso. Os dados cadastrados pelos clientes (bens, fotos, valores e pessoas) pertencem a eles e não aparecem neste painel (LGPD: cliente controlador, Atalaia System operadora).</p></div></main></div>${E.det?detalheHTML():""}`;
 }
-function kpi(t,v,s){return `<div class="kpi"><span>${t}</span><b>${v}</b>${s?`<small>${s}</small>`:""}</div>`}
+function emBreve(it){const D={fat:["Cobrança","Faturas mensais de cada contratante, vencimentos, pagamentos e atrasos. Após 15 dias de atraso, o contratante passa para somente leitura, sem perder dados."],sup:["Acessos de suporte","Quando um cliente pede ajuda, ele autoriza um acesso temporário da equipe, com prazo, motivo e registro de tudo o que foi visto."],com:["Comunicados","Avisos da equipe para os clientes (novidades, manutenções programadas), que aparecem no aplicativo e no Painel do Gestor."],seg:["Segurança e LGPD","Resumo das proteções, termos de tratamento de dados, pedidos de titulares e registro de incidentes."],ajuda:["Como usar","Guia rápido de cada tela do Painel da Matriz."]}[it?.[0]]||["Em implantação",""];
+ return `<h1>${D[0]}</h1><p class="sub">${D[1]}</p><div class="msg info">Esta tela entra na parte ${it?.[2]||""} da atualização do Painel da Matriz, igual ao protótipo.</div>`}
+function kpi(t,v,s,k){return `<div class="kpi${k?" clk":""}" ${k?`onclick="E.det='${k}';render()" title="Clique para ver o detalhe"`:""}><span>${t}</span><b>${v}</b>${s?`<small>${s}</small>`:""}</div>`}
 function abaVisao(){
   const i=E.ind;if(!i)return `<p class="muted">Carregando indicadores…</p>`;
   const pp=i.por_plano||{},tot=Math.max(1,i.empresas);
   const perto=E.cts.filter(c=>c.plano_id=="free"&&c.situacao!="encerrado"&&(c.bens>=c.lim_bens*.8||c.fotos_mb>=c.lim_gb*1024*.8));
   return `<div class="kpis">
-   ${kpi("Empresas",num(i.empresas),`${num(pp.free||0)} no Free · ${num((pp.atalaia||0)+(pp.pro||0)+(pp.plus||0))} pagantes`)}
-   ${kpi("Usuários cadastrados",num(i.usuarios),"em todas as empresas")}
-   ${kpi("Usuários ativos hoje",num(i.ativos_hoje),"entraram ou abriram o app")}
-   ${kpi("Ativos em 7 dias",num(i.ativos_7d),`${num(i.acessos_7d)} acessos`)}
-   ${kpi("Ativos em 30 dias",num(i.ativos_30d),i.usuarios?`${Math.round(i.ativos_30d/i.usuarios*100)}% dos cadastrados`:"")}
-   ${kpi("Bens cadastrados",num(i.bens),`${num(i.ambientes)} ambientes`)}
-   ${kpi("Receita mensal",brl(i.receita_mensal),"empresas ativas, plano base")}
+   ${kpi("Empresas",num(i.empresas),`${num(pp.free||0)} no Free · ${num((pp.atalaia||0)+(pp.pro||0)+(pp.plus||0))} pagantes`,"empresas")}
+   ${kpi("Usuários cadastrados",num(i.usuarios),"em todas as empresas","usuarios")}
+   ${kpi("Usuários ativos hoje",num(i.ativos_hoje),"entraram ou abriram o app","ativos")}
+   ${kpi("Ativos em 7 dias",num(i.ativos_7d),`${num(i.acessos_7d)} acessos`,"ativos")}
+   ${kpi("Ativos em 30 dias",num(i.ativos_30d),i.usuarios?`${Math.round(i.ativos_30d/i.usuarios*100)}% dos cadastrados`:"","ativos")}
+   ${kpi("Bens cadastrados",num(i.bens),`${num(i.ambientes)} ambientes`,"bens")}
+   ${kpi("Receita mensal",brl(Number(i.receita_mensal)+Number(E.recAd||0)),"planos + adicionais (empresas ativas)","receita")}
   </div>
   <div class="g2"><div class="card"><h2>Usuários ativos por dia (30 dias)</h2>${grafDias(i.acessos_por_dia||[])}</div>
   <div class="card"><h2>Empresas por plano</h2>${PLANOS.map(([k,t])=>`<div class="hb"><span>${t}</span><div class="bar"><i style="width:${(pp[k]||0)/tot*100}%;background:${k=="free"?"var(--amb)":"var(--ink)"}"></i></div><b style="text-align:right">${num(pp[k]||0)}</b></div>`).join("")}
@@ -197,7 +237,7 @@ function abaEmpresas(){
   return `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px"><div><h1>Empresas</h1><p class="sub" style="margin:0">${E.cts.length} cadastrada(s). Troque o plano ou a situação direto na tabela.</p></div>
   <div style="display:flex;gap:8px;align-items:center"><select onchange="E.filtro=this.value;render()" style="width:auto"><option value="todos">Todos os planos</option>${PLANOS.map(([k,t])=>`<option value="${k}" ${E.filtro==k?"selected":""}>${t}</option>`).join("")}</select><button class="btn ghost sm" onclick="recarregar()">Atualizar</button></div></div>
   <div class="card tw" style="padding:6px 10px"><table><tr><th>Empresa</th><th>Plano</th><th>Situação</th><th>Usuários</th><th>Ambientes</th><th>Bens</th><th>Fotos</th><th>Ativos 30d</th><th>Último acesso</th><th>2 etapas</th></tr>
-  ${L.map(c=>`<tr><td><b>${esc(c.nome)}</b><div class="muted">${esc(c.sigla)}${c.segmento?" · "+esc(c.segmento):""} · desde ${new Date(c.criado_em).toLocaleDateString("pt-BR")}</div></td>
+  ${L.map(c=>`<tr><td><b><a href="#" onclick="event.preventDefault();abrirFicha('${c.id}')">${esc(c.nome)}</a></b><div class="muted">${esc(c.sigla)}${c.segmento?" · "+esc(c.segmento):""} · desde ${new Date(c.criado_em).toLocaleDateString("pt-BR")}</div></td>
    <td><select onchange="trocarPlano('${esc(c.sigla)}',this)">${PLANOS.map(([k,t])=>`<option value="${k}" ${c.plano_id==k?"selected":""}>${t}</option>`).join("")}</select></td>
    <td><select onchange="trocarSituacao('${esc(c.sigla)}',this)">${Object.entries(SIT).map(([k,t])=>`<option value="${k}" ${c.situacao==k?"selected":""}>${t}</option>`).join("")}</select></td>
    <td>${uso(c.usuarios,c.lim_usuarios)}</td><td>${uso(c.ambientes,c.lim_ambientes)}</td><td>${uso(c.bens,c.lim_bens)}</td>
@@ -333,6 +373,81 @@ function abaInd(){
   return cab2("Indicadores","Cada número com a explicação de como é calculado.")+`<div class="card tw" style="padding:6px 10px"><table><tr><th>Indicador</th><th>Valor</th><th>Como é calculado</th></tr>${R.map(r=>`<tr><td><b>${r[0]}</b></td><td style="font-size:1.05rem;font-weight:700;white-space:nowrap">${r[1]}</td><td class="muted">${r[2]}</td></tr>`).join("")}</table></div>`;
 }
 
+
+/* ---------- detalhe dos indicadores (clique) ---------- */
+function detalheHTML(){const k=E.det,at=E.cts.filter(c=>c.situacao!="encerrado");let t="",x="",rows=[];
+ if(k=="empresas"){t="Empresas";x="Contratantes cadastrados, menos os encerrados.";rows=at.map(c=>[c.nome,c.plano_nome+" · "+(SIT[c.situacao]||c.situacao)])}
+ if(k=="usuarios"){t="Usuários cadastrados";x="Pessoas com login, somadas por empresa.";rows=at.map(c=>[c.nome,`${c.usuarios} de ${c.lim_usuarios}`])}
+ if(k=="ativos"){t="Usuários ativos";x="Pessoas diferentes que entraram ou abriram o app nos últimos 30 dias, por empresa.";rows=at.slice().sort((a,b)=>b.usuarios_ativos_30d-a.usuarios_ativos_30d).map(c=>[c.nome,`${c.usuarios_ativos_30d} ativo(s) · ${c.acessos_30d} acesso(s)`])}
+ if(k=="bens"){t="Bens cadastrados";x="Bens ativos (sem os que receberam baixa), por empresa.";rows=at.slice().sort((a,b)=>b.bens-a.bens).map(c=>[c.nome,`${num(c.bens)} de ${num(c.lim_bens)}`])}
+ if(k=="receita"){t="Receita mensal";x="Mensalidade base do plano + adicionais ativos, só das empresas com situação Ativo.";rows=E.cts.filter(c=>c.situacao=="ativo").map(c=>[c.nome,brl(Number(c.preco_mensal)+Number(c.adicionais_valor||0))])}
+ return `<div class="mod" onclick="if(event.target==this){E.det=null;render()}"><div class="card"><div style="display:flex;justify-content:space-between;gap:10px"><h2>${t}</h2><button class="btn ghost sm" onclick="E.det=null;render()">Fechar</button></div><p class="sub">${x}</p>
+ <div class="tw"><table><tr><th>Empresa</th><th>Valor</th></tr>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join("")||`<tr><td colspan="2" class="muted">Sem dados.</td></tr>`}</table></div></div></div>`}
+
+/* ---------- ficha do contratante ---------- */
+async function abrirFicha(id){E.ficha=id;irAba("ficha");try{[E.fichaDia,E.fichaHist]=await Promise.all([DB.acessosDia(id),DB.historico(id)])}catch(e){E.msg=["err",e.message]}render()}
+function abaFicha(){const c=E.cts.find(x=>x.id==E.ficha);if(!c)return `<p class="muted">Contratante não encontrado.</p>`;const h=saudeDe(c),f=faixa(h.t),ads=E.ads.filter(a=>a.contratante_id==c.id),tk=E.tks.filter(t=>t.contratante_id==c.id);
+ return cab2(esc(c.nome),`${esc(c.sigla)} · ${esc(c.segmento||"sem segmento")} · cliente desde ${new Date(c.criado_em).toLocaleDateString("pt-BR")}`,pill(h.t+" · "+f[0],f[1]))+
+ `<div class="kpis">${kpi("Plano",esc(c.plano_nome),brl(c.preco_mensal)+" por mês")}${kpi("Adicionais",brl(c.adicionais_valor||0),`${ads.filter(a=>!a.fim).length} ativo(s)`)}${kpi("Usuários ativos 30d",num(c.usuarios_ativos_30d),`${num(c.acessos_30d)} acessos`)}${kpi("Último acesso",c.ultimo_acesso?new Date(c.ultimo_acesso).toLocaleDateString("pt-BR"):"—",h.d==null?"nunca entrou":`há ${h.d} dia(s)`)}</div>
+ <div class="g2"><div class="card"><h2>Uso dos limites (plano + adicionais)</h2>
+  ${[["Usuários",c.usuarios,c.lim_usuarios],["Ambientes",c.ambientes,c.lim_ambientes],["Bens",c.bens,c.lim_bens],["Filiais",c.filiais,c.lim_filiais]].map(([n,v,l])=>`<div class="hb"><span>${n}</span><div>${uso(v,l)}</div><span></span></div>`).join("")}
+  <div class="hb"><span>Fotos</span><div>${num(c.fotos_mb)} MB <span class="muted">de ${num(c.lim_gb)} GB</span></div><span></span></div></div>
+ <div class="card"><h2>Usuários ativos por dia (30 dias)</h2>${grafDias(E.fichaDia||[])}</div></div>
+ <div class="g2"><form class="card" onsubmit="event.preventDefault();salvarFicha('${esc(c.sigla)}')"><h2>Dados do contratante</h2>
+  <label>Nome<input id="fn" required maxlength="120" value="${esc(c.nome)}"></label><div class="row"><label>Segmento<input id="fg" maxlength="60" value="${esc(c.segmento||"")}"></label><label>CNPJ<input id="fc" maxlength="18" value="${esc(c.cnpj||"")}"></label></div>
+  <div class="row"><label>Plano<select onchange="trocarPlano('${esc(c.sigla)}',this)">${PLANOS.map(([k,t])=>`<option value="${k}" ${c.plano_id==k?"selected":""}>${t}</option>`).join("")}</select></label><label>Situação<select onchange="trocarSituacao('${esc(c.sigla)}',this)">${Object.entries(SIT).map(([k,t])=>`<option value="${k}" ${c.situacao==k?"selected":""}>${t}</option>`).join("")}</select></label></div>
+  ${c.plano_id!="free"?`<label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" style="width:auto" ${c.exige_2_etapas?"checked":""} onchange="exigir2('${esc(c.sigla)}',this)">Exigir verificação em duas etapas dos administradores</label>`:""}
+  <button class="btn">Salvar dados</button></form>
+ <div class="card"><h2>Ações sugeridas</h2><ul style="margin:0;padding-left:18px">${acoes(c,h).map(a=>`<li>${a}</li>`).join("")}</ul>
+  <h2 style="margin-top:14px">Adicionais</h2>${ads.length?`<div class="tw"><table><tr><th>Tipo</th><th>Qtd.</th><th>Mensal</th><th>Situação</th></tr>${ads.map(a=>`<tr><td>${TADD[a.tipo]?.[0]||a.tipo}</td><td>${a.quantidade}</td><td>${brl(a.quantidade*a.valor_unit)}</td><td>${a.fim?"encerrado":"ativo"}</td></tr>`).join("")}</table></div>`:`<p class="muted">Nenhum adicional.</p>`}
+  <button class="btn ghost sm" onclick="irAba('mods')">Gerenciar adicionais</button></div></div>
+ <div class="g2"><div class="card"><h2>Chamados de suporte</h2>${tk.length?`<div class="tw"><table><tr><th>Nº</th><th>Assunto</th><th>Situação</th></tr>${tk.map(t=>`<tr><td>${t.id}</td><td><a href="#" onclick="event.preventDefault();E.tk=${t.id};irAba('atend')">${esc(t.assunto)}</a></td><td>${SITC[t.situacao]}</td></tr>`).join("")}</table></div>`:`<p class="muted">Nenhum chamado.</p>`}</div>
+ <div class="card"><h2>Histórico de alterações</h2>${E.fichaHist.length?`<div class="tw"><table><tr><th>Data</th><th>Ação</th><th>Detalhe</th></tr>${E.fichaHist.map(r=>`<tr><td>${dh(r.criado_em)}</td><td>${esc(r.acao)}</td><td>${esc((r.detalhe||"").slice(0,60))}</td></tr>`).join("")}</table></div>`:`<p class="muted">Sem alterações registradas.</p>`}</div></div>`}
+async function salvarFicha(s){try{await DB.atualizarContratante(s,$("#fn").value,$("#fg").value,$("#fc").value);toast("Dados salvos.");await recarregar()}catch(e){E.msg=["err",e.message];render()}}
+
+/* ---------- planos e limites ---------- */
+function abaPlanos(){const ed=E.editPl;
+ return cab2("Planos e limites","Preço e limites de cada plano. A mudança vale para todas as empresas do plano a partir de agora (o contrato de quem já assinou segue o que foi assinado).")+
+ `<div class="card tw" style="padding:6px 10px"><table><tr><th>Plano</th><th>Preço mensal</th><th>Filiais</th><th>Ambientes</th><th>Bens</th><th>Usuários</th><th>Fotos (GB)</th><th>Empresas</th><th>Receita</th><th></th></tr>
+ ${E.planos.map(p=>{const cs=E.cts.filter(c=>c.plano_id==p.id&&c.situacao!="encerrado"),rec=cs.filter(c=>c.situacao=="ativo").length*p.preco_mensal;
+  return ed==p.id?`<tr><td><b>${esc(p.nome)}</b></td>${[["pp",p.preco_mensal,"0.01"],["pf",p.filiais,"1"],["pa",p.ambientes,"1"],["pb",p.bens,"1"],["pu",p.usuarios,"1"],["pg",p.armazenamento_gb,"0.5"]].map(([i,v,st])=>`<td><input id="${i}" type="number" min="0" step="${st}" value="${v}" style="width:90px"></td>`).join("")}<td>${cs.length}</td><td></td><td style="white-space:nowrap"><button class="btn sm" onclick="salvarPlano('${p.id}')">Salvar</button> <button class="btn ghost sm" onclick="E.editPl=null;render()">Cancelar</button></td></tr>`
+  :`<tr><td><b>${esc(p.nome)}</b></td><td>${p.id=="plus"?"a partir de ":""}${brl(p.preco_mensal)}</td><td>${num(p.filiais)}</td><td>${num(p.ambientes)}</td><td>${num(p.bens)}</td><td>${num(p.usuarios)}</td><td>${num(p.armazenamento_gb)}</td><td>${cs.length}</td><td>${brl(rec)}</td><td><button class="btn ghost sm" onclick="E.editPl='${p.id}';render()">Editar</button></td></tr>`}).join("")}</table></div>
+ <div class="g2"><div class="card"><h2>Regras dos planos</h2><ul style="margin:0;padding-left:18px;font-size:.9rem"><li>Free: 1 empresa, 1 ambiente, 50 bens, 1 usuário, 1 GB, só cadastro de bens, sem número de patrimônio.</li><li>Limites somam a empresa e todas as filiais.</li><li>Cada limite pode crescer no máximo 50% com adicionais; acima disso, muda de plano.</li><li>Implantação: R$ 990 / 2.490 / 4.990 + R$ 290 por filial. Plano anual = 11 mensalidades.</li><li>Verificação em duas etapas só nos planos pagos.</li></ul></div>
+ <div class="card"><h2>Empresas por plano</h2>${hbar(E.planos.map(p=>[p.nome,E.cts.filter(c=>c.plano_id==p.id&&c.situacao!="encerrado").length]))}</div></div>`}
+async function salvarPlano(id){const v=i=>Number($("#"+i).value);if(!confirm("Salvar os novos valores deste plano? Vale para todas as empresas do plano."))return;
+ try{await DB.salvarPlano({id,preco:v("pp"),filiais:v("pf"),ambientes:v("pa"),bens:v("pb"),usuarios:v("pu"),gb:v("pg")});E.editPl=null;toast("Plano atualizado.");await recarregar()}catch(e){E.msg=["err",e.message];render()}}
+
+/* ---------- adicionais de uso ---------- */
+const TADD={filial:["Filial a mais",390,"+1 filial"],usuario:["Usuário a mais",39,"+1 usuário"],ambientes:["Pacote de 50 ambientes",90,"+50 ambientes"],bens:["Pacote de 1.000 bens",90,"+1.000 bens"],gb:["Pacote de 50 GB",49,"+50 GB de fotos"],ia:["Assistente com IA",190,"resumos e sugestões"],whatsapp:["Avisos por WhatsApp",0,"custo da mensagem + 20%"]};
+function abaMods(){const at=E.ads.filter(a=>!a.fim),cN=id=>(E.cts.find(c=>c.id==id)||{}).nome||"—",pag=E.cts.filter(c=>c.plano_id!="free"&&c.situacao!="encerrado");
+ return cab2("Adicionais de uso","Itens contratados além do plano. Somam aos limites da empresa na hora; cada limite cresce no máximo 50%.")+
+ `<div class="kpis">${kpi("Adicionais ativos",at.length,"em todas as empresas")}${kpi("Receita de adicionais",brl(at.reduce((s,a)=>s+a.quantidade*a.valor_unit,0)),"por mês")}${kpi("Empresas com adicionais",new Set(at.map(a=>a.contratante_id)).size,"")}</div>
+ <div class="g2"><form class="card" onsubmit="event.preventDefault();incluirAd()"><h2>Incluir adicional</h2>
+  ${pag.length?`<label>Empresa (planos pagos)<select id="as">${pag.map(c=>`<option value="${esc(c.sigla)}">${esc(c.nome)} (${esc(c.sigla)}) · ${esc(c.plano_nome)}</option>`).join("")}</select></label>
+  <div class="row"><label>Adicional<select id="at" onchange="$('#av').value=TADD[this.value][1]">${Object.entries(TADD).map(([k,t])=>`<option value="${k}">${t[0]} (${t[2]})</option>`).join("")}</select></label><label>Quantidade<input id="aq" type="number" min="1" value="1"></label></div>
+  <label>Valor unitário por mês (R$)<input id="av" type="number" min="0" step="0.01" value="390"></label><button class="btn">Incluir</button>`:`<p class="muted">Nenhuma empresa em plano pago. O Free não aceita adicionais.</p>`}</form>
+ <div class="card"><h2>Tabela de adicionais</h2><div class="tw"><table><tr><th>Adicional</th><th>O que acrescenta</th><th>Valor</th></tr>${Object.values(TADD).map(t=>`<tr><td>${t[0]}</td><td>${t[2]}</td><td>${t[1]?brl(t[1]):"custo + 20%"}</td></tr>`).join("")}</table></div></div></div>
+ <div class="card tw" style="padding:6px 10px"><table><tr><th>Empresa</th><th>Adicional</th><th>Qtd.</th><th>Mensal</th><th>Desde</th><th>Situação</th><th></th></tr>
+ ${E.ads.map(a=>`<tr><td>${esc(cN(a.contratante_id))}</td><td>${TADD[a.tipo]?.[0]||esc(a.tipo)}</td><td>${a.quantidade}</td><td>${brl(a.quantidade*a.valor_unit)}</td><td>${dh(a.inicio).slice(0,8)}</td><td>${a.fim?"Encerrado":pill("Ativo","var(--ok)")}</td><td>${a.fim?"":`<button class="btn ghost sm" onclick="encerrarAd(${a.id})">Encerrar</button>`}</td></tr>`).join("")||`<tr><td colspan="7" class="muted">Nenhum adicional contratado.</td></tr>`}</table></div>`}
+async function incluirAd(){try{await DB.incluirAdicional($("#as").value,$("#at").value,Number($("#aq").value),Number($("#av").value));toast("Adicional incluído.");await recarregar()}catch(e){E.msg=["err",e.message];render()}}
+async function encerrarAd(id){if(!confirm("Encerrar este adicional? O limite da empresa volta ao do plano."))return;try{await DB.encerrarAdicional(id);toast("Adicional encerrado.");await recarregar()}catch(e){E.msg=["err",e.message];render()}}
+
+/* ---------- design do painel ---------- */
+const FONTES={sistema:["Padrão do sistema",'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',""],sora:["Sora (marca Atalaia)",'"Sora",system-ui,sans-serif',"Sora:wght@400;600;700;800"],archivo:["Archivo",'"Archivo",system-ui,sans-serif',"Archivo:wght@400;600;700;800"],inter:["Inter",'"Inter",system-ui,sans-serif',"Inter:wght@400;600;700;800"],source:["Source Sans 3",'"Source Sans 3",system-ui,sans-serif',"Source+Sans+3:wght@400;600;700;800"]};
+const CORES=["#1d1f23","#3a3d43","#7a4e0c","#b7791f","#c0392b","#8e3b2e","#2f4f4f","#4a4a6a"];
+function lum(h){const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+const contraste=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
+function lerDesign(){try{return JSON.parse(localStorage.getItem("atalaia_matriz_design")||"{}")}catch(e){return {}}}
+function aplicarDesign(d){d=d||{};const r=document.documentElement,cor=/^#[0-9a-f]{6}$/i.test(d.cor||"")?d.cor:"#1d1f23";r.style.setProperty("--brand",cor);r.style.setProperty("--brand-ink",contraste(cor,"#ffffff")>=4.5?"#ffffff":"#1d1f23");r.dataset.theme=d.tema||"claro";const f=FONTES[d.fonte]||FONTES.sistema;r.style.setProperty("--font",f[1]);const gf=$("#gf");if(gf)gf.href=f[2]?`https://fonts.googleapis.com/css2?family=${f[2]}&display=swap`:"data:text/css,"}
+function abaDesign(){const d=E.dz||(E.dz=lerDesign()),cor=d.cor||"#1d1f23",ct=Math.max(contraste(cor,"#ffffff"),contraste(cor,"#1d1f23"));
+ return cab2("Design do painel","Cor, tema e fonte do Painel da Matriz neste computador.")+`<div class="g2"><div class="card">
+  <label>Cor principal<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><input type="color" value="${cor}" oninput="E.dz.cor=this.value;aplicarDesign(E.dz)" style="width:56px;height:40px;padding:2px"><span style="display:flex;gap:6px">${CORES.map(c=>`<button type="button" title="${c}" onclick="E.dz.cor='${c}';aplicarDesign(E.dz);render()" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:${c};cursor:pointer"></button>`).join("")}</span></div></label>
+  <div class="msg ${ct>=4.5?"ok":"err"}">Contraste do texto sobre a cor: ${ct.toFixed(1)} : 1 ${ct>=4.5?"· bom para leitura":"· baixo, escolha outra cor"} (mínimo 4,5 : 1).</div>
+  <label>Tema<select onchange="E.dz.tema=this.value;aplicarDesign(E.dz)">${[["claro","Claro"],["escuro","Escuro"],["auto","Automático"]].map(([k,t])=>`<option value="${k}" ${(d.tema||"claro")==k?"selected":""}>${t}</option>`).join("")}</select></label>
+  <label>Fonte<select onchange="E.dz.fonte=this.value;aplicarDesign(E.dz)">${Object.entries(FONTES).map(([k,f])=>`<option value="${k}" ${(d.fonte||"sistema")==k?"selected":""}>${f[0]}</option>`).join("")}</select></label>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="try{localStorage.setItem('atalaia_matriz_design',JSON.stringify(E.dz))}catch(e){};toast('Design salvo neste computador.')">Salvar</button><button class="btn ghost" onclick="E.dz={};aplicarDesign({});try{localStorage.removeItem('atalaia_matriz_design')}catch(e){};render()">Voltar ao padrão Atalaia</button></div></div>
+ <div class="card"><h2>Prévia</h2><div style="border:1px solid var(--line);border-radius:12px;overflow:hidden"><div style="background:var(--brand);color:var(--brand-ink);padding:14px"><b>Painel da Matriz</b><div style="opacity:.85;font-size:.85rem">Atalaia System</div></div><div style="padding:14px;display:grid;gap:10px">${kpi("Empresas",num(E.cts.length),"exemplo")}<div><button class="btn">Botão principal</button> <button class="btn ghost">Secundário</button></div></div></div></div></div>`}
+
 function abaCadastrar(){return `<h1>Cadastrar empresa</h1><p class="sub">Duas partes: primeiro a empresa, depois a pessoa que vai administrar.</p>
  <div class="g2"><form class="card" onsubmit="event.preventDefault();cadastrar()"><h2>1. Empresa</h2>
   <label>Nome da empresa *<input id="cn" required maxlength="120" oninput="sugerirSigla(this.value)"></label>
@@ -350,6 +465,7 @@ function abaCadastrar(){return `<h1>Cadastrar empresa</h1><p class="sub">Duas pa
 function abaAcessos(){return `<h1>Registro de acessos da Matriz</h1><p class="sub">Últimas 30 ações feitas pela equipe da Matriz.</p><div class="card tw" style="padding:6px 10px"><table><tr><th>Data e hora</th><th>Ação</th><th>Detalhe</th></tr>${E.acessos.map(a=>`<tr><td>${dh(a.criado_em)}</td><td>${esc(a.acao)}</td><td>${esc(a.detalhe||"")}</td></tr>`).join("")||`<tr><td colspan="3" class="muted">Nenhum registro ainda.</td></tr>`}</table></div>`}
 
 /* ---------------- Ações ---------------- */
+aplicarDesign(lerDesign());
 async function iniciar(){try{if(await DB.sessao()){await posLogin(false);return}}catch(e){E.msg=["err",e.message]}E.tela="login";render()}
 async function entrar(){E.msg=null;try{await DB.entrar($("#em").value.trim(),$("#se").value);await posLogin(true)}catch(e){E.msg=["err",e.message];render()}}
 async function posLogin(novo){
@@ -362,8 +478,9 @@ async function posLogin(novo){
 }
 async function confirmarMfa(){try{const f=(await DB.fatores()).find(x=>x.status=="verified");await DB.verificar(f.id,$("#otp").value.trim());await posLogin(true)}catch(e){E.msg=["err",e.message];render()}}
 async function confirmarAtivacao(){try{await DB.verificar(E.insc.id,$("#otp").value.trim());E.insc=null;toast("Verificação em duas etapas ativada.");await posLogin(true);DB.registrar("ativou a verificação em duas etapas")}catch(e){E.msg=["err",e.message];render()}}
-async function recarregar(){try{[E.ind,E.cts,E.acessos,E.infra,E.leads,E.tks]=await Promise.all([DB.indicadores(),DB.contratantes(),DB.meusAcessos(),DB.infra(),DB.interessados(),DB.chamados()])}catch(e){E.msg=["err",e.message]}render()}
-function irAba(k){E.aba=k;E.msg=null;render();scrollTo(0,0)}
+async function recarregar(){try{[E.ind,E.cts,E.acessos,E.infra,E.leads,E.tks,E.planos,E.ads,E.recAd]=await Promise.all([DB.indicadores(),DB.contratantes(),DB.meusAcessos(),DB.infra(),DB.interessados(),DB.chamados(),DB.planos(),DB.adicionais(),DB.receitaAdicionais()])}catch(e){E.msg=["err",e.message]}render()}
+function irAba(k){if(E.aba!==k)E.hist.push(E.aba);if(E.hist.length>20)E.hist.shift();E.aba=k;E.msg=null;render();scrollTo(0,0)}
+function voltar(){E.aba=E.hist.pop()||"visao";E.msg=null;render();scrollTo(0,0)}
 async function sair(){await DB.sair();Object.assign(E,{tela:"login",msg:null,ind:null,cts:[],acessos:[],aba:"visao"});render()}
 async function trocarPlano(s,sel){const novo=sel.value,c=E.cts.find(x=>x.sigla==s);
   if(!confirm(`Trocar o plano de ${c.nome} de ${c.plano_nome} para ${PLANOS.find(p=>p[0]==novo)[1]}?`)){sel.value=c.plano_id;return}
