@@ -70,7 +70,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.1.0"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.2.0"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -109,13 +109,20 @@ function realDB(){
     criar:(d)=>rpc("matriz_criar_contratante",{p_nome:d.nome,p_sigla:d.sigla,p_plano:d.plano,p_segmento:d.segmento||null,p_cnpj:d.cnpj||null,p_ambiente:d.ambiente||"Ambiente principal"}),
     vincular:(e,s,n,p)=>rpc("matriz_vincular_usuario",{p_email:e,p_sigla:s,p_nome:n,p_perfil:p}),
     registrar:(a,d)=>rpc("matriz_registrar",{p_acao:a,p_detalhe:d||null}).catch(()=>{}),
-    meusAcessos:()=>rpc("matriz_meus_acessos")
+    meusAcessos:()=>rpc("matriz_meus_acessos"),
+    infra:()=>rpc("matriz_infra"),
+    interessados:async()=>chk(await sb.from("interessados").select("*").order("atualizado_em",{ascending:false})),
+    salvarInteressado:async(d)=>d.id?chk(await sb.from("interessados").update({...d,atualizado_em:new Date().toISOString()}).eq("id",d.id).select().single()):chk(await sb.from("interessados").insert(d).select().single()),
+    chamados:async()=>chk(await sb.from("suporte_chamados").select("*, contratantes(nome,sigla,plano_id)").order("criado_em",{ascending:false}).limit(300)),
+    responder:async(id,d)=>chk(await sb.from("suporte_chamados").update(d).eq("id",id).select().single())
   };
 }
 function mockDB(){
   const w=ms=>new Promise(r=>setTimeout(r,ms));let log=false,nivel2=false,fat=[];
   const P={free:[0,"Atalaia Free",1,1,50,1],atalaia:[690,"Atalaia",10,50,1000,5],pro:[1990,"Atalaia Pro",25,100,3000,20],plus:[4990,"Atalaia Plus",120,400,15000,100]};
   const mk=(nome,sigla,plano,sit,u,a,b,mb,ac,at,dias)=>({id:sigla,nome,sigla,segmento:"Exemplo",plano_id:plano,plano_nome:P[plano][1],preco_mensal:P[plano][0],situacao:sit,criado_em:new Date(Date.now()-dias*864e5).toISOString(),exige_2_etapas:false,usuarios:u,ambientes:a,bens:b,lim_usuarios:P[plano][2],lim_ambientes:P[plano][3],lim_bens:P[plano][4],lim_gb:P[plano][5],fotos_mb:mb,acessos_30d:ac,usuarios_ativos_30d:at,ultimo_acesso:new Date(Date.now()-Math.random()*864e5*3).toISOString()});
+  const I=[{id:1,empresa:"Ótica Exemplo",contato:"Paula",telefone:"(69) 9 0000-0000",segmento:"Loja",origem:"Indicação",plano:"atalaia",etapa:"proposta",proximo_passo:"Ligar sexta para fechar",criado_em:new Date(Date.now()-9*864e5).toISOString(),atualizado_em:new Date().toISOString()},{id:2,empresa:"Escola Modelo",contato:"Rui",segmento:"Escola",origem:"Site",plano:"pro",etapa:"demonstracao",proximo_passo:"Demonstração terça 14h",criado_em:new Date(Date.now()-4*864e5).toISOString(),atualizado_em:new Date().toISOString()},{id:3,empresa:"Academia Exemplo",segmento:"Academia",origem:"Redes sociais",plano:"free",etapa:"contato",criado_em:new Date().toISOString(),atualizado_em:new Date().toISOString()}];
+  const T=[{id:1,contratante_id:"SE",contratantes:{nome:"Studio Exemplo",sigla:"SE",plano_id:"free"},autor:"Dona do studio",tipo:"duvida",prioridade:"media",assunto:"Como tirar foto pelo celular?",mensagem:"Não aparece a câmera.",situacao:"aberto",resposta:null,criado_em:new Date(Date.now()-3*36e5).toISOString()},{id:2,contratante_id:"CV",contratantes:{nome:"Clínica Vida Exemplo",sigla:"CV",plano_id:"atalaia"},autor:"Administração",tipo:"melhoria",prioridade:"baixa",assunto:"Relatório por categoria",mensagem:"Seria bom filtrar por categoria.",situacao:"resolvido",resposta:"Anotado para a próxima versão.",respondido_em:new Date(Date.now()-20*36e5).toISOString(),criado_em:new Date(Date.now()-26*36e5).toISOString()}];
   const C=[mk("Studio Exemplo","SE","free","teste",1,1,44,61.2,38,1,12),mk("Barbearia Modelo","BM","free","teste",1,1,9,8.4,6,1,4),mk("Clínica Vida Exemplo","CV","atalaia","ativo",7,22,410,820.5,310,6,60),mk("Hospital Modelo","HM","pro","ativo",19,88,2350,9120,1460,17,120)];
   return {async sessao(){return log?{}:null},async entrar(){await w(200);log=true},async sair(){log=false;nivel2=false},async usuario(){return {email:"matriz@exemplo"}},
     async nivel(){const v=fat.some(f=>f.status=="verified");return {currentLevel:v&&nivel2?"aal2":"aal1",nextLevel:v?"aal2":"aal1"}},
@@ -128,11 +135,14 @@ function mockDB(){
     async alterarSituacao(s,v){C.find(x=>x.sigla==s).situacao=v},async exigir2(s,v){C.find(x=>x.sigla==s).exige_2_etapas=v},
     async criar(d){if(C.some(c=>c.sigla==d.sigla))throw new Error("Já existe uma empresa com esta sigla.");C.unshift(mk(d.nome,d.sigla,d.plano,"teste",0,1,0,0,0,0,0))},
     async vincular(e,s){const c=C.find(x=>x.sigla==s);c.usuarios++;return "Usuário "+e+" vinculado."},
-    async registrar(){},async meusAcessos(){return [{criado_em:new Date().toISOString(),acao:"Matriz: entrou no painel",detalhe:null}]}};
+    async registrar(){},async meusAcessos(){return [{criado_em:new Date().toISOString(),acao:"Matriz: entrou no painel",detalhe:null}]},
+    async infra(){return {banco_mb:42.3,fotos_mb:C.reduce((s,c)=>s+c.fotos_mb,0),fotos_qtd:1830,contas:31,ativos_mes:25,chamados_abertos:T.filter(t=>t.situacao!="resolvido").length}},
+    async interessados(){return I},async salvarInteressado(d){if(d.id){Object.assign(I.find(x=>x.id==d.id),d,{atualizado_em:new Date().toISOString()})}else I.unshift({...d,id:I.length+1,criado_em:new Date().toISOString(),atualizado_em:new Date().toISOString()})},
+    async chamados(){return T},async responder(id,d){const t=T.find(x=>x.id==id);if(d.resposta&&!t.resposta)t.respondido_em=new Date().toISOString();Object.assign(t,d)}};
 }
 
 /* ---------------- Estado e telas ---------------- */
-const E={tela:"carregando",aba:"visao",msg:null,ind:null,cts:[],filtro:"todos",insc:null,email:"",acessos:[]};
+const E={tela:"carregando",aba:"visao",msg:null,ind:null,cts:[],filtro:"todos",insc:null,email:"",acessos:[],infra:null,leads:[],tks:[],lead:null,tk:null,tf:"abertos",hc:null};
 function render(){
   const h={login:telaLogin,mfa:telaMfa,ativar:telaAtivar,negado:telaNegado,painel:telaPainel}[E.tela];
   $("#app").innerHTML=(DEMO?`<div class="demo">MODO DEMONSTRAÇÃO · dados fictícios</div>`:"")+cab()+(h?h():`<div class="center"><p class="muted" style="text-align:center">Carregando…</p></div>`);
@@ -149,8 +159,9 @@ function telaAtivar(){const i=E.insc;return `<div class="center wrap" style="max
  <p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="sair()">Sair</button></p></div></div>`}
 function telaNegado(){return `<div class="center wrap"><div class="card"><h2>Acesso não permitido</h2><p class="sub">Esta conta não faz parte da equipe da Matriz.</p><button class="btn ghost" onclick="sair()">Sair</button></div></div>`}
 function telaPainel(){
-  const abas=[["visao","Visão geral"],["empresas","Empresas"],["cadastrar","Cadastrar empresa"],["acessos","Registro de acessos"]];
-  const corpo={visao:abaVisao,empresas:abaEmpresas,cadastrar:abaCadastrar,acessos:abaAcessos}[E.aba]();
+  const ab=E.tks.filter(t=>t.situacao!="resolvido").length;
+  const abas=[["visao","Visão geral"],["empresas","Empresas"],["saude","Saúde dos clientes"],["fin","Financeiro"],["uso","Uso"],["funil","Funil comercial"],["atend","Atendimento"+(ab?` (${ab})`:"")],["infra","Infraestrutura"],["ind","Indicadores"],["cadastrar","Cadastrar empresa"],["acessos","Registro de acessos"]];
+  const corpo={visao:abaVisao,empresas:abaEmpresas,saude:abaSaude,fin:abaFin,uso:abaUso,funil:abaFunil,atend:abaAtend,infra:abaInfra,ind:abaInd,cadastrar:abaCadastrar,acessos:abaAcessos}[E.aba]();
   return `<div class="wrap"><nav class="tabs">${abas.map(([k,t])=>`<button aria-current="${E.aba==k}" onclick="irAba('${k}')">${t}</button>`).join("")}</nav>${msgH()}${corpo}
   <p class="lgpd">A Matriz vê apenas quantidades de uso. Os dados cadastrados pelos clientes (bens, fotos, valores e pessoas) pertencem a eles e não aparecem neste painel (LGPD: cliente controlador, Atalaia System operadora).</p></div>`;
 }
@@ -175,7 +186,7 @@ function abaVisao(){
   ${perto.length?`<div class="tw"><table><tr><th>Empresa</th><th>Bens</th><th>Fotos</th><th>Ativos 30 dias</th><th>Último acesso</th></tr>${perto.map(c=>`<tr><td><b>${esc(c.nome)}</b> <span class="muted">${esc(c.sigla)}</span></td><td>${c.bens} de ${c.lim_bens}</td><td>${num(c.fotos_mb)} MB de ${c.lim_gb} GB</td><td>${c.usuarios_ativos_30d}</td><td>${dh(c.ultimo_acesso)}</td></tr>`).join("")}</table></div>`:`<p class="muted">Nenhuma empresa Free perto do limite no momento.</p>`}</div>`;
 }
 function grafDias(d){if(!d.length)return `<p class="muted">Sem dados ainda.</p>`;const W=640,H=180,max=Math.max(1,...d.map(x=>x.usuarios)),bw=W/d.length;
-  return `<svg viewBox="0 0 ${W} ${H+22}" style="width:100%;height:auto" role="img" aria-label="Usuários ativos por dia">${[0,.5,1].map(f=>`<line x1="0" x2="${W}" y1="${H-f*H*.9}" y2="${H-f*H*.9}" stroke="#e3e0da"/><text x="2" y="${H-f*H*.9-3}" font-size="10" fill="#6b7078">${Math.round(max*f)}</text>`).join("")}
+  return `<svg viewBox="0 0 ${W} ${H+22}" style="width:100%;height:auto" role="img" aria-label="Usuários ativos por dia">${[...new Set([0,Math.round(max/2),max])].map(v=>{const y=H-v/max*H*.9;return `<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="#e3e0da"/><text x="2" y="${y-3}" font-size="10" fill="#6b7078">${v}</text>`}).join("")}
   ${d.map((x,k)=>{const h=x.usuarios/max*H*.9;return `<rect x="${k*bw+2}" y="${H-h}" width="${bw-4}" height="${h}" rx="2" fill="${k==d.length-1?"#f2a33a":"#1d1f23"}"><title>${x.dia.split("-").reverse().join("/")}: ${x.usuarios} usuário(s)</title></rect>`}).join("")}
   ${d.map((x,k)=>k%5==0||k==d.length-1?`<text x="${k*bw+bw/2}" y="${H+15}" font-size="10" text-anchor="middle" fill="#6b7078">${x.dia.slice(8,10)}/${x.dia.slice(5,7)}</text>`:"").join("")}</svg>`}
 function grafMeses(d){const max=Math.max(1,...d.map(x=>x.qtd));const M=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
@@ -193,6 +204,135 @@ function abaEmpresas(){
    <td>${num(c.fotos_mb)} MB<div class="muted">de ${c.lim_gb} GB</div></td><td>${num(c.usuarios_ativos_30d)} <span class="muted">(${num(c.acessos_30d)} acessos)</span></td><td>${dh(c.ultimo_acesso)}</td>
    <td>${c.plano_id=="free"?`<span class="muted">—</span>`:`<label style="margin:0;display:flex;gap:6px;align-items:center;font-weight:400"><input type="checkbox" style="width:auto" ${c.exige_2_etapas?"checked":""} onchange="exigir2('${esc(c.sigla)}',this)">exigir</label>`}</td></tr>`).join("")||`<tr><td colspan="10" class="muted">Nenhuma empresa neste filtro.</td></tr>`}</table></div>`;
 }
+
+/* ---------- utilidades ---------- */
+const PRECO={free:0,atalaia:690,pro:1990,plus:4990};
+const diasDesde=d=>d?Math.floor((Date.now()-new Date(d))/864e5):null;
+const pill=(t,c)=>`<span class="tag" style="border-color:${c};color:${c};font-weight:600">${t}</span>`;
+function hbar(rows,fmt){const max=Math.max(1,...rows.map(r=>r[1]));return rows.map(([n,v])=>`<div class="hb" style="grid-template-columns:minmax(110px,40%) 1fr auto"><span>${n}</span><div class="bar"><i style="width:${v/max*100}%"></i></div><b style="text-align:right">${fmt?fmt(v):num(v)}</b></div>`).join("")}
+function cab2(t,s,extra){return `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px"><div><h1>${t}</h1><p class="sub" style="margin:0">${s}</p></div>${extra||""}</div>`}
+
+/* ---------- saúde dos clientes ---------- */
+function saudeDe(c){
+  const uso=c.usuarios?Math.min(1,(c.usuarios_ativos_30d/c.usuarios)/.7)*100:0;
+  const d=diasDesde(c.ultimo_acesso),atv=d==null?0:d<=2?100:d<=7?70:d<=14?40:d<=30?15:0;
+  const ado=Math.min(100,c.bens/Math.max(10,c.lim_bens*.1)*100);
+  const abertos=E.tks.filter(t=>t.contratante_id==c.id&&t.situacao!="resolvido"),alta=abertos.filter(t=>t.prioridade=="alta").length;
+  const sup=Math.max(0,100-abertos.length*12-alta*25);
+  return {t:Math.round(uso*.4+atv*.25+ado*.2+sup*.15),uso:Math.round(uso),atv,ado:Math.round(ado),sup,d,abertos:abertos.length};
+}
+const faixa=t=>t>=75?["Saudável","var(--ok)"]:t>=50?["Atenção","var(--warn)"]:t>=25?["Em risco","#e4572e"]:["Crítico","var(--bad)"];
+function acoes(c,h){const A=[];if(h.d==null)A.push("Ainda não entrou no sistema: confirmar se recebeu o link e a senha provisória.");else if(h.d>14)A.push(`Sem acesso há ${h.d} dias: ligar ou mandar mensagem para entender o motivo.`);
+  if(h.uso<50&&c.usuarios>1)A.push("Poucos usuários entram: oferecer um treinamento curto.");if(h.ado<40)A.push("Poucos bens cadastrados: ajudar a cadastrar os primeiros bens (importar planilha, quando disponível).");
+  if(h.abertos)A.push(`Há ${h.abertos} chamado(s) de suporte aberto(s): responder.`);if(c.plano_id=="free"&&c.bens>=c.lim_bens*.8)A.push("Free perto do limite: apresentar o plano Atalaia.");
+  if(!A.length)A.push(h.t>=85?"Cliente saudável: candidato a depoimento, indicação ou ampliação de plano.":"Manter acompanhamento mensal.");return A}
+function abaSaude(){
+  const L=E.cts.filter(c=>c.situacao!="encerrado").map(c=>({c,h:saudeDe(c)})).sort((a,b)=>a.h.t-b.h.t);
+  const sel=L.find(x=>x.c.id==E.hc);
+  const cont=[0,0,0,0];L.forEach(x=>{const t=x.h.t;cont[t>=75?0:t>=50?1:t>=25?2:3]++});
+  return cab2("Saúde dos clientes","Nota de 0 a 100 que ajuda a evitar cancelamentos. Calculada só com números de uso, nunca com o conteúdo dos clientes.")+
+  `<div class="kpis">${kpi("Saudáveis",cont[0],"nota 75 a 100")}${kpi("Atenção",cont[1],"nota 50 a 74")}${kpi("Em risco",cont[2],"nota 25 a 49")}${kpi("Críticos",cont[3],"abaixo de 25")}</div>
+  <div class="card"><h2>Como a nota é calculada</h2><div class="kpis" style="margin:0">${[["Uso · 40%","usuários que entraram em 30 dias ÷ cadastrados (meta 70%)"],["Atividade · 25%","dias desde o último acesso"],["Cadastro · 20%","bens cadastrados em relação ao plano"],["Suporte · 15%","desconta chamados abertos, mais para prioridade alta"]].map(([n,d])=>`<div style="background:var(--soft);border-radius:10px;padding:10px"><b>${n}</b><br><span class="muted">${d}</span></div>`).join("")}</div><p class="muted" style="margin:8px 0 0">Quando a cobrança estiver no sistema, o pagamento em dia também entra na nota.</p></div>
+  ${sel?`<div class="card" style="border-color:var(--amb)"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>${esc(sel.c.nome)} · ${pill(sel.h.t+" · "+faixa(sel.h.t)[0],faixa(sel.h.t)[1])}</h2><button class="btn ghost sm" onclick="E.hc=null;render()">Fechar</button></div>
+   <div class="kpis" style="margin:8px 0">${kpi("Uso",sel.h.uso,`${sel.c.usuarios_ativos_30d} de ${sel.c.usuarios} usuários em 30 dias`)}${kpi("Atividade",sel.h.atv,sel.h.d==null?"nunca entrou":`último acesso há ${sel.h.d} dia(s)`)}${kpi("Cadastro",sel.h.ado,`${sel.c.bens} bens`)}${kpi("Suporte",sel.h.sup,`${sel.h.abertos} chamado(s) aberto(s)`)}</div>
+   <h2>Ações sugeridas</h2><ul style="margin:0;padding-left:18px">${acoes(sel.c,sel.h).map(a=>`<li>${a}</li>`).join("")}</ul></div>`:""}
+  <div class="card tw" style="padding:6px 10px"><table><tr><th>Empresa</th><th>Plano</th><th>Nota</th><th>Uso</th><th>Atividade</th><th>Cadastro</th><th>Suporte</th><th>Último acesso</th><th></th></tr>
+  ${L.map(({c,h})=>{const f=faixa(h.t);return `<tr><td><b>${esc(c.nome)}</b> <span class="muted">${esc(c.sigla)}</span></td><td>${esc(c.plano_nome)}</td><td>${pill(h.t+" · "+f[0],f[1])}</td><td>${h.uso}</td><td>${h.atv}</td><td>${h.ado}</td><td>${h.sup}</td><td>${dh(c.ultimo_acesso)}</td><td><button class="btn ghost sm" onclick="E.hc='${c.id}';render();scrollTo(0,0)">Ver ações</button></td></tr>`}).join("")||`<tr><td colspan="9" class="muted">Nenhuma empresa ainda.</td></tr>`}</table></div>`;
+}
+
+/* ---------- financeiro ---------- */
+function abaFin(){
+  const at=E.cts.filter(c=>c.situacao=="ativo"),tes=E.cts.filter(c=>c.situacao=="teste"&&c.plano_id!="free"),fr=E.cts.filter(c=>c.plano_id=="free"&&c.situacao!="encerrado");
+  const mrr=at.reduce((s,c)=>s+Number(c.preco_mensal),0),pag=at.filter(c=>c.preco_mensal>0).length,tk=pag?mrr/pag:0;
+  const potT=tes.reduce((s,c)=>s+Number(c.preco_mensal),0),potF=fr.length*PRECO.atalaia;
+  const porPlano=PLANOS.map(([k,t])=>{const l=at.filter(c=>c.plano_id==k);return [t,l.length,l.reduce((s,c)=>s+Number(c.preco_mensal),0)]});
+  return cab2("Financeiro","Receita estimada pelos planos das empresas ativas (valor base, sem adicionais e sem implantação). Quando a cobrança estiver no sistema, entram os valores pagos de verdade.")+
+  `<div class="kpis">${kpi("Receita mensal (MRR)",brl(mrr),`${pag} empresa(s) pagante(s) ativa(s)`)}${kpi("Receita anual (ARR)",brl(mrr*12),"MRR × 12")}${kpi("Ticket médio",brl(tk),"MRR ÷ pagantes")}${kpi("Em teste (planos pagos)",brl(potT),`${tes.length} empresa(s) que podem virar receita`)}${kpi("Potencial do Free",brl(potF),`${fr.length} empresa(s) Free × plano Atalaia`)}</div>
+  <div class="g2"><div class="card"><h2>Receita por plano (empresas ativas)</h2><div class="tw"><table><tr><th>Plano</th><th>Empresas</th><th>Mensal</th><th>Anual</th></tr>${porPlano.map(([t,n,v])=>`<tr><td>${t}</td><td>${n}</td><td>${brl(v)}</td><td>${brl(v*12)}</td></tr>`).join("")}<tr><td><b>Total</b></td><td><b>${at.length}</b></td><td><b>${brl(mrr)}</b></td><td><b>${brl(mrr*12)}</b></td></tr></table></div></div>
+  <div class="card"><h2>Distribuição da receita</h2>${hbar(porPlano.filter(p=>p[2]>0).map(p=>[p[0],p[2]]),brl)||`<p class="muted">Ainda sem receita: as empresas atuais estão no Free ou em teste.</p>`}
+   <h2 style="margin-top:16px">Referência de preços</h2><p class="muted" style="margin:0">Atalaia R$ 690 · Pro R$ 1.990 · Plus a partir de R$ 4.990 por mês. Implantação R$ 990 / 2.490 / 4.990. Plano anual = 11 mensalidades (PS-026 e PS-027).</p></div></div>`;
+}
+
+/* ---------- uso ---------- */
+function abaUso(){
+  const at=E.cts.filter(c=>c.situacao!="encerrado"),tf=at.reduce((s,c)=>s+Number(c.fotos_mb),0);
+  return cab2("Uso do sistema","Quanto cada empresa usa, só em quantidades. Nenhum bem, foto ou nome de pessoa aparece aqui.")+
+  `<div class="kpis">${kpi("Bens cadastrados",num(at.reduce((s,c)=>s+Number(c.bens),0)),"todas as empresas")}${kpi("Ambientes",num(at.reduce((s,c)=>s+Number(c.ambientes),0)),"")}${kpi("Usuários",num(at.reduce((s,c)=>s+Number(c.usuarios),0)),"com login")}${kpi("Fotos",tf>=1024?(tf/1024).toLocaleString("pt-BR",{maximumFractionDigits:2})+" GB":num(tf)+" MB","espaço ocupado")}${kpi("Acessos em 30 dias",num(at.reduce((s,c)=>s+Number(c.acessos_30d),0)),"entradas e aberturas do app")}</div>
+  <div class="g2"><div class="card"><h2>Bens por empresa</h2>${hbar(at.slice().sort((a,b)=>b.bens-a.bens).slice(0,12).map(c=>[esc(c.nome),Number(c.bens)]))||`<p class="muted">Sem dados.</p>`}</div>
+  <div class="card"><h2>Acessos em 30 dias por empresa</h2>${hbar(at.slice().sort((a,b)=>b.acessos_30d-a.acessos_30d).slice(0,12).map(c=>[esc(c.nome),Number(c.acessos_30d)]))||`<p class="muted">Sem dados.</p>`}</div></div>
+  <div class="card"><h2>Fotos por empresa</h2>${hbar(at.slice().sort((a,b)=>b.fotos_mb-a.fotos_mb).slice(0,12).map(c=>[esc(c.nome),Number(c.fotos_mb)]),v=>num(v)+" MB")||`<p class="muted">Sem dados.</p>`}</div>`;
+}
+
+/* ---------- funil comercial ---------- */
+const ETAPAS=[["contato","Contato"],["demonstracao","Demonstração"],["proposta","Proposta"],["teste","Teste gratuito"],["contrato","Contrato"],["perdido","Perdido"]];
+function abaFunil(){
+  const L=E.leads,ab=L.filter(l=>!["contrato","perdido"].includes(l.etapa)),ganhos=L.filter(l=>l.etapa=="contrato").length,fech=L.filter(l=>["contrato","perdido"].includes(l.etapa)).length;
+  const neg=ab.reduce((s,l)=>s+(PRECO[l.plano]||0),0);const f=E.lead;
+  return cab2("Funil comercial","Empresas interessadas, da primeira conversa ao contrato. Só a equipe da Matriz vê esta lista.",`<button class="btn amb" onclick="E.lead={etapa:'contato',plano:'atalaia'};render()">+ Novo interessado</button>`)+
+  (f?`<form class="card" style="border-color:var(--amb)" onsubmit="event.preventDefault();salvarLead()"><h2>${f.id?"Editar interessado":"Novo interessado"}</h2>
+   <div class="row3"><label>Empresa *<input id="le" required maxlength="120" value="${esc(f.empresa)}"></label><label>Segmento<input id="lg" maxlength="60" value="${esc(f.segmento)}"></label><label>Origem<select id="lo">${["","Indicação","Site","Redes sociais","Visita","WhatsApp","Evento","Outro"].map(o=>`<option ${f.origem==o?"selected":""}>${o}</option>`).join("")}</select></label></div>
+   <div class="row3"><label>Pessoa de contato<input id="lc" maxlength="80" value="${esc(f.contato)}"></label><label>Telefone<input id="lt" maxlength="30" value="${esc(f.telefone)}"></label><label>E-mail<input id="lm" type="email" maxlength="120" value="${esc(f.email)}"></label></div>
+   <div class="row3"><label>Próximo passo<input id="lp" maxlength="160" value="${esc(f.proximo_passo)}" placeholder="Ex.: demonstração terça 14h"></label><label>Plano previsto<select id="ll">${PLANOS.map(([k,t])=>`<option value="${k}" ${f.plano==k?"selected":""}>${t}</option>`).join("")}</select></label><label>Etapa<select id="la">${ETAPAS.map(([k,t])=>`<option value="${k}" ${f.etapa==k?"selected":""}>${t}</option>`).join("")}</select></label></div>
+   <label>Observação<input id="lb" maxlength="300" value="${esc(f.observacao)}"></label>
+   <div style="display:flex;gap:8px"><button class="btn">Salvar</button><button type="button" class="btn ghost" onclick="E.lead=null;render()">Cancelar</button></div></form>`:"")+
+  `<div class="kpis">${kpi("Em negociação",ab.length,"interessados em aberto")}${kpi("Receita em negociação",brl(neg),"por mês, se todos fecharem")}${kpi("Contratos fechados",ganhos,"etapa Contrato")}${kpi("Taxa de fechamento",fech?Math.round(ganhos/fech*100)+"%":"—","contratos ÷ (contratos + perdidos)")}</div>
+  <div class="g2"><div class="card"><h2>Interessados por etapa</h2>${hbar(ETAPAS.map(([k,t])=>[t,L.filter(l=>l.etapa==k).length]))}</div>
+  <div class="card"><h2>Receita em negociação por etapa</h2>${hbar(ETAPAS.slice(0,4).map(([k,t])=>[t,ab.filter(l=>l.etapa==k).reduce((s,l)=>s+(PRECO[l.plano]||0),0)]),brl)}</div></div>
+  <div class="card tw" style="padding:6px 10px"><table><tr><th>Empresa</th><th>Contato</th><th>Origem</th><th>Plano</th><th>Etapa</th><th>Próximo passo</th><th>Atualizado</th><th></th></tr>
+  ${L.map(l=>`<tr><td><b>${esc(l.empresa)}</b><div class="muted">${esc(l.segmento||"")}</div></td><td>${esc(l.contato||"")}<div class="muted">${esc(l.telefone||"")} ${esc(l.email||"")}</div></td><td>${esc(l.origem||"")}</td><td>${esc((PLANOS.find(p=>p[0]==l.plano)||["",""])[1])}</td>
+   <td><select onchange="mudarEtapa(${l.id},this.value)">${ETAPAS.map(([k,t])=>`<option value="${k}" ${l.etapa==k?"selected":""}>${t}</option>`).join("")}</select></td><td>${esc(l.proximo_passo||"")}</td><td>${dh(l.atualizado_em)}</td>
+   <td style="white-space:nowrap"><button class="btn ghost sm" onclick="E.lead=E.leads.find(x=>x.id==${l.id});render();scrollTo(0,0)">Editar</button> ${l.etapa=="contrato"&&!l.contratante_id?`<button class="btn amb sm" onclick="converter(${l.id})">Cadastrar empresa</button>`:""}</td></tr>`).join("")||`<tr><td colspan="8" class="muted">Nenhum interessado cadastrado. Clique em “+ Novo interessado”.</td></tr>`}</table></div>`;
+}
+
+/* ---------- atendimento ---------- */
+const TIPOS={duvida:"Dúvida",problema:"Problema",melhoria:"Melhoria",financeiro:"Financeiro"},SITC={aberto:"Aberto",em_atendimento:"Em atendimento",resolvido:"Resolvido"},PRI={baixa:"Baixa",media:"Média",alta:"Alta"};
+function abaAtend(){
+  const T=E.tks,ab=T.filter(t=>t.situacao!="resolvido"),resp=T.filter(t=>t.respondido_em),med=resp.length?resp.reduce((s,t)=>s+(new Date(t.respondido_em)-new Date(t.criado_em)),0)/resp.length/36e5:null;
+  const L=T.filter(t=>E.tf=="todos"||(E.tf=="abertos"?t.situacao!="resolvido":t.tipo==E.tf));const sel=T.find(t=>t.id==E.tk);
+  return cab2("Atendimento","Chamados que os clientes abrem pelo aplicativo (aba Plano › Suporte). Aqui a equipe responde; não há acesso aos dados cadastrados pelo cliente.")+
+  `<div class="kpis">${kpi("Abertos",ab.length,`${ab.filter(t=>t.prioridade=="alta").length} de prioridade alta`)}${kpi("1ª resposta (média)",med==null?"—":med<1?Math.round(med*60)+" min":med.toLocaleString("pt-BR",{maximumFractionDigits:1})+" h","meta: até 1 dia útil")}${kpi("Resolvidos",T.filter(t=>t.situacao=="resolvido").length,"no total")}${kpi("Pedidos de melhoria",T.filter(t=>t.tipo=="melhoria").length,"viram itens das próximas versões")}</div>
+  ${sel?`<div class="card" style="border-color:var(--amb)"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h2>Nº ${sel.id} · ${esc(sel.assunto)}</h2><button class="btn ghost sm" onclick="E.tk=null;render()">Fechar</button></div>
+   <p class="muted" style="margin:0 0 8px">${esc(sel.contratantes?.nome||"")} (${esc(sel.contratantes?.sigla||"")}) · ${esc(sel.autor||"")} · ${TIPOS[sel.tipo]} · aberto em ${dh(sel.criado_em)}</p>
+   <div style="background:var(--soft);border-radius:10px;padding:10px;white-space:pre-wrap">${esc(sel.mensagem)}</div>
+   <form onsubmit="event.preventDefault();responder(${sel.id})" style="margin-top:12px"><label>Resposta para o cliente<textarea id="tr" rows="4" maxlength="2000" style="border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;width:100%;font:inherit">${esc(sel.resposta||"")}</textarea></label>
+   <div class="row3"><label>Situação<select id="ts">${Object.entries(SITC).map(([k,t])=>`<option value="${k}" ${sel.situacao==k?"selected":""}>${t}</option>`).join("")}</select></label><label>Prioridade<select id="tp">${Object.entries(PRI).map(([k,t])=>`<option value="${k}" ${sel.prioridade==k?"selected":""}>${t}</option>`).join("")}</select></label><label>&nbsp;<button class="btn amb">Salvar resposta</button></label></div></form></div>`:""}
+  <div class="card tw" style="padding:6px 10px"><div style="display:flex;gap:8px;align-items:center;margin:6px 0"><span class="muted">Mostrar:</span><select style="width:auto" onchange="E.tf=this.value;render()">${[["abertos","Abertos"],["todos","Todos"],...Object.entries(TIPOS)].map(([k,t])=>`<option value="${k}" ${E.tf==k?"selected":""}>${t}</option>`).join("")}</select></div>
+  <table><tr><th>Nº</th><th>Empresa</th><th>Assunto</th><th>Tipo</th><th>Prioridade</th><th>Aberto</th><th>Situação</th><th></th></tr>
+  ${L.map(t=>`<tr><td>${t.id}</td><td>${esc(t.contratantes?.nome||"")}</td><td>${esc(t.assunto)}</td><td>${TIPOS[t.tipo]||esc(t.tipo)}</td><td>${t.prioridade=="alta"?pill("Alta","var(--bad)"):PRI[t.prioridade]}</td><td>${dh(t.criado_em)}</td><td>${t.situacao=="resolvido"?pill("Resolvido","var(--ok)"):SITC[t.situacao]}</td><td><button class="btn ghost sm" onclick="E.tk=${t.id};render();scrollTo(0,0)">Abrir</button></td></tr>`).join("")||`<tr><td colspan="8" class="muted">Nenhum chamado neste filtro.</td></tr>`}</table></div>`;
+}
+
+/* ---------- infraestrutura ---------- */
+const LIM={banco:500,fotos:1024,contas:50000};
+function abaInfra(){
+  const i=E.infra||{};const b=(n,v,l,u)=>{const p=Math.min(100,v/l*100);return `<div style="margin:10px 0"><div style="display:flex;justify-content:space-between"><span>${n}</span><b>${num(v)} ${u} de ${num(l)} ${u} (${p.toLocaleString("pt-BR",{maximumFractionDigits:1})}%)</b></div><div class="bar" style="height:10px"><i style="width:${p}%;background:${p>=75?"var(--bad)":p>=50?"var(--warn)":"var(--ok)"}"></i></div></div>`};
+  const alerta=[(i.banco_mb||0)/LIM.banco,(i.fotos_mb||0)/LIM.fotos].some(x=>x>=.75);
+  return cab2("Infraestrutura","Uso dos serviços que mantêm o sistema no ar, comparado com os limites do plano gratuito do Supabase.")+
+  `<div class="kpis">${kpi("Banco de dados",num(i.banco_mb)+" MB","limite gratuito: 500 MB")}${kpi("Fotos",num(i.fotos_mb)+" MB",`${num(i.fotos_qtd)} arquivo(s) · limite 1 GB`)}${kpi("Contas de acesso",num(i.contas),"limite gratuito: 50.000 ativas/mês")}${kpi("Versões em uso","App 0.1.2","Painel da Matriz "+CONFIG.versao)}</div>
+  ${alerta?`<div class="msg err">Algum limite passou de 75%. Hora de migrar o Supabase para o plano Pro (cerca de US$ 25 por mês), antes de travar.</div>`:""}
+  <div class="g2"><div class="card"><h2>Uso dos limites gratuitos</h2>${b("Banco de dados",i.banco_mb||0,LIM.banco,"MB")}${b("Fotos dos bens",i.fotos_mb||0,LIM.fotos,"MB")}${b("Contas ativas no mês",i.ativos_mes||0,LIM.contas,"")}
+   <p class="muted" style="margin:0">Regra: ao passar de 75% em qualquer item, migrar para o plano Pro do Supabase (8 GB de banco e 100 GB de arquivos).</p></div>
+  <div class="card"><h2>Custos de operação por mês</h2><div class="tw"><table><tr><th>Serviço</th><th>Para que serve</th><th>Valor</th></tr>
+   <tr><td>Supabase (plano gratuito)</td><td>Banco, login e fotos</td><td>R$ 0</td></tr><tr><td>GitHub Pages</td><td>Hospedagem do aplicativo</td><td>R$ 0</td></tr><tr><td>Registro.br</td><td>Domínio atalaiasystem.com.br (R$ 40/ano)</td><td>R$ 3,33</td></tr><tr><td><b>Total</b></td><td></td><td><b>R$ 3,33</b></td></tr></table></div>
+   <h2 style="margin-top:14px">Segurança</h2><ul style="margin:0;padding-left:18px;font-size:.9rem"><li>Dados no Brasil (Supabase, região São Paulo).</li><li>Cada empresa só vê os próprios dados (regras no banco).</li><li>Matriz com senha + código de duas etapas.</li><li>Endereço com cadeado (HTTPS).</li></ul></div></div>`;
+}
+
+/* ---------- indicadores ---------- */
+function abaInd(){
+  const i=E.ind||{},at=E.cts.filter(c=>c.situacao=="ativo"),pag=at.filter(c=>c.preco_mensal>0),mrr=at.reduce((s,c)=>s+Number(c.preco_mensal),0);
+  const fr=E.cts.filter(c=>c.plano_id=="free"),pagosTot=E.cts.filter(c=>c.plano_id!="free");
+  const R=[["Receita recorrente mensal (MRR)",brl(mrr),"Soma das mensalidades das empresas com situação Ativo (valor base do plano)."],
+   ["Receita anual recorrente (ARR)",brl(mrr*12),"MRR × 12: tamanho anual do negócio se nada mudar."],
+   ["Empresas pagantes",pag.length,"Empresas ativas em plano pago. Em teste e encerradas não contam."],
+   ["Ticket médio",brl(pag.length?mrr/pag.length:0),"MRR ÷ empresas pagantes."],
+   ["Conversão do Free",E.cts.length?Math.round(pagosTot.length/E.cts.length*100)+"%":"—","Empresas em plano pago ÷ todas as empresas cadastradas."],
+   ["Ativação de usuários (30 dias)",i.usuarios?Math.round((i.ativos_30d||0)/i.usuarios*100)+"%":"—","Usuários que entraram ou abriram o app em 30 dias ÷ usuários cadastrados. Meta: 70%."],
+   ["Usuários ativos hoje",num(i.ativos_hoje),"Pessoas diferentes que entraram ou abriram o app hoje."],
+   ["Chamados de suporte abertos",E.tks.filter(t=>t.situacao!="resolvido").length,"Chamados ainda não resolvidos. Meta: responder em até 1 dia útil."],
+   ["Free perto do limite",fr.filter(c=>c.bens>=c.lim_bens*.8).length,"Empresas Free com 80% ou mais dos bens: oportunidades de venda."],
+   ["Cancelamento e retenção","em breve","Precisam do histórico de cobrança, que entra com o módulo financeiro."]];
+  return cab2("Indicadores","Cada número com a explicação de como é calculado.")+`<div class="card tw" style="padding:6px 10px"><table><tr><th>Indicador</th><th>Valor</th><th>Como é calculado</th></tr>${R.map(r=>`<tr><td><b>${r[0]}</b></td><td style="font-size:1.05rem;font-weight:700;white-space:nowrap">${r[1]}</td><td class="muted">${r[2]}</td></tr>`).join("")}</table></div>`;
+}
+
 function abaCadastrar(){return `<h1>Cadastrar empresa</h1><p class="sub">Duas partes: primeiro a empresa, depois a pessoa que vai administrar.</p>
  <div class="g2"><form class="card" onsubmit="event.preventDefault();cadastrar()"><h2>1. Empresa</h2>
   <label>Nome da empresa *<input id="cn" required maxlength="120" oninput="sugerirSigla(this.value)"></label>
@@ -222,7 +362,7 @@ async function posLogin(novo){
 }
 async function confirmarMfa(){try{const f=(await DB.fatores()).find(x=>x.status=="verified");await DB.verificar(f.id,$("#otp").value.trim());await posLogin(true)}catch(e){E.msg=["err",e.message];render()}}
 async function confirmarAtivacao(){try{await DB.verificar(E.insc.id,$("#otp").value.trim());E.insc=null;toast("Verificação em duas etapas ativada.");await posLogin(true);DB.registrar("ativou a verificação em duas etapas")}catch(e){E.msg=["err",e.message];render()}}
-async function recarregar(){try{[E.ind,E.cts,E.acessos]=await Promise.all([DB.indicadores(),DB.contratantes(),DB.meusAcessos()])}catch(e){E.msg=["err",e.message]}render()}
+async function recarregar(){try{[E.ind,E.cts,E.acessos,E.infra,E.leads,E.tks]=await Promise.all([DB.indicadores(),DB.contratantes(),DB.meusAcessos(),DB.infra(),DB.interessados(),DB.chamados()])}catch(e){E.msg=["err",e.message]}render()}
 function irAba(k){E.aba=k;E.msg=null;render();scrollTo(0,0)}
 async function sair(){await DB.sair();Object.assign(E,{tela:"login",msg:null,ind:null,cts:[],acessos:[],aba:"visao"});render()}
 async function trocarPlano(s,sel){const novo=sel.value,c=E.cts.find(x=>x.sigla==s);
@@ -242,6 +382,11 @@ async function cadastrar(){
   catch(e){DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["info",`A empresa ${d.sigla} foi criada, mas o usuário não foi ligado: ${e.message} Crie o usuário no Supabase e use “Adicionar usuário a uma empresa existente”.`]}
   await recarregar();}
 async function vincularExtra(){const s=$("#vs").value;try{const r=await DB.vincular($("#ve").value.trim(),s,$("#vn").value.trim(),$("#vp").value);DB.registrar("adicionou usuário",s);E.msg=["ok",r];await recarregar()}catch(e){E.msg=["err",e.message];render()}}
+async function salvarLead(){const f=E.lead;const d={empresa:$("#le").value.trim(),segmento:$("#lg").value.trim()||null,origem:$("#lo").value||null,contato:$("#lc").value.trim()||null,telefone:$("#lt").value.trim()||null,email:$("#lm").value.trim()||null,proximo_passo:$("#lp").value.trim()||null,plano:$("#ll").value,etapa:$("#la").value,observacao:$("#lb").value.trim()||null};if(f.id)d.id=f.id;
+  try{await DB.salvarInteressado(d);E.lead=null;toast("Interessado salvo.");E.leads=await DB.interessados();render()}catch(e){E.msg=["err",e.message];render()}}
+async function mudarEtapa(id,etapa){try{await DB.salvarInteressado({id,etapa});E.leads=await DB.interessados();toast("Etapa atualizada.");render()}catch(e){E.msg=["err",e.message];render()}}
+function converter(id){const l=E.leads.find(x=>x.id==id);E.aba="cadastrar";render();$("#cn").value=l.empresa;sugerirSigla(l.empresa);$("#cg").value=l.segmento||"";$("#cp").value=l.plano||"atalaia";if(l.email)$("#ue").value=l.email;if(l.contato)$("#un").value=l.contato;scrollTo(0,0)}
+async function responder(id){const d={resposta:$("#tr").value.trim()||null,situacao:$("#ts").value,prioridade:$("#tp").value};try{await DB.responder(id,d);DB.registrar("respondeu chamado","Nº "+id);toast("Resposta salva. O cliente vê no aplicativo.");E.tks=await DB.chamados();render()}catch(e){E.msg=["err",e.message];render()}}
 iniciar();
 </script>
 </body>

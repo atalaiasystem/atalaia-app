@@ -74,7 +74,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.1.1",
+  versao:"0.1.2",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -123,6 +123,8 @@ function realDB(){
     },
     async verificarCodigo(factorId,code){return chk(await sb.auth.mfa.challengeAndVerify({factorId,code}))},
     async removerFator(factorId){return chk(await sb.auth.mfa.unenroll({factorId}))},
+    async chamados(c){return chk(await sb.from("suporte_chamados").select("id,tipo,assunto,mensagem,situacao,resposta,criado_em,respondido_em").eq("contratante_id",c).order("criado_em",{ascending:false}).limit(20))},
+    async abrirChamado(c,d){return chk(await sb.from("suporte_chamados").insert({contratante_id:c,autor:E.v.nome,tipo:d.tipo,assunto:d.assunto,mensagem:d.mensagem}).select().single())},
     async ultimosAcessos(){const u=await this.usuario();return chk(await sb.from("registro_acessos").select("criado_em,aparelho").eq("user_id",u.id).eq("acao","entrou").order("criado_em",{ascending:false}).limit(2))},
     async meuVinculo(){const u=(await sb.auth.getUser()).data.user;const d=chk(await sb.from("membros").select("perfil,nome,contratante_id,contratantes(id,nome,sigla,situacao,plano_id,exige_2_etapas,planos(*))").eq("user_id",u.id).eq("ativo",true).limit(1));return d[0]?{...d[0],email:u.email}:null},
     async ambientes(c){return chk(await sb.from("ambientes").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em"))},
@@ -139,7 +141,7 @@ function realDB(){
 function mockDB(){
   const plano={id:"free",nome:"Atalaia Free",preco_mensal:0,filiais:0,ambientes:1,bens:50,usuarios:1,armazenamento_gb:1,funcoes:["bens"]};
   const c={id:"c-demo",nome:"Studio de Unhas (demonstração)",sigla:"SU",situacao:"teste",plano_id:"free",planos:plano};
-  let logado=false,prox=4,fotos={},fat=[],nivel2=false;
+  let logado=false,prox=4,fotos={},fat=[],nivel2=false,chs=[{id:1,tipo:"duvida",assunto:"Como exportar a planilha?",mensagem:"Onde fica o botão?",situacao:"resolvido",resposta:"Na aba Bens, botão Planilha, ao lado de Cadastrar bem.",criado_em:new Date(Date.now()-864e5).toISOString()}];
   const amb=[{id:"a1",contratante_id:c.id,nome:"Salão",ativo:true}];
   const bens=[{id:"b3",criado_em:"2026-03-10",contratante_id:c.id,ambiente_id:"a1",nome:"Cabine de secagem UV/LED",categoria:"Equipamento",marca:"Exemplo",modelo:"48W",numero_serie:"UV48-0091",estado:"bom",valor:189.9,data_aquisicao:"2026-03-10",ativo:true},
    {id:"b2",criado_em:"2025-11-02",contratante_id:c.id,ambiente_id:"a1",nome:"Cadeira de manicure",categoria:"Mobiliário",estado:"bom",valor:450,data_aquisicao:"2025-11-02",ativo:true},
@@ -156,6 +158,8 @@ function mockDB(){
     async inscrever(){fat=fat.filter(f=>f.status=="verified");const f={id:"f"+Date.now(),status:"unverified",factor_type:"totp"};fat.push(f);return {id:f.id,totp:{qr_code:"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="#fff"/><path d="M1 1h3v3H1zM6 1h3v3H6zM1 6h3v3H1zM6 6h1v1H6zM8 8h1v1H8z" fill="#000"/></svg>'),secret:"DEMO2ETAPAS7QK3",uri:"otpauth://totp/Atalaia:demo?secret=DEMO2ETAPAS7QK3"}}},
     async verificarCodigo(id,code){await w(200);if(code!=="123456")throw new Error("Código incorreto ou vencido. Na demonstração, use 123456.");const f=fat.find(x=>x.id==id);f.status="verified";nivel2=true},
     async removerFator(id){fat=fat.filter(f=>f.id!=id)},
+    async chamados(){return chs},
+    async abrirChamado(c,d){await w(200);const n={id:chs.length+1,...d,situacao:"aberto",resposta:null,criado_em:new Date().toISOString()};chs.unshift(n);return n},
     async ultimosAcessos(){return [{criado_em:new Date().toISOString(),aparelho:aparelho()},{criado_em:new Date(Date.now()-864e5).toISOString(),aparelho:"Celular · Chrome"}]},
     async meuVinculo(){return {perfil:"administrador",nome:"Demonstração",contratante_id:c.id,contratantes:{...c,exige_2_etapas:false},email:"demo@atalaia"}},
     async ambientes(){return amb.filter(a=>a.ativo)},
@@ -180,7 +184,7 @@ function traduz(m){
 function aparelho(){const u=navigator.userAgent;return (/Mobi|Android|iPhone/.test(u)?"Celular":"Computador")+" · "+(/Edg\//.test(u)?"Edge":/Chrome\//.test(u)?"Chrome":/Safari\//.test(u)?"Safari":/Firefox\//.test(u)?"Firefox":"Navegador")}
 
 /* ---------------- Estado e telas ---------------- */
-const E={tela:"carregando",aba:"bens",v:null,amb:[],bens:[],busca:"",fotos:{},msg:null,modal:null,modoSenha:"link",depois:null,fatores:[],insc:null,obrig:false,acessos:[]};
+const E={tela:"carregando",aba:"bens",v:null,amb:[],bens:[],busca:"",fotos:{},msg:null,modal:null,modoSenha:"link",depois:null,fatores:[],insc:null,obrig:false,acessos:[],chamados:[],suporte:false};
 function render(){
   const h=E.tela=="login"?telaLogin():E.tela=="senha"?telaSenha():E.tela=="mfa"?telaMfa():E.tela=="ativar2"?telaAtivar():E.tela=="semacesso"?telaSemAcesso():E.tela=="app"?telaApp():`<div class="center wrap"><p class="muted" style="text-align:center">Carregando…</p></div>`;
   $("#app").innerHTML=(DEMO?`<div class="demo">MODO DEMONSTRAÇÃO · os dados não são salvos</div>`:"")+h+(E.modal?modalHTML():"");
@@ -255,8 +259,22 @@ function abaPlano(p){
   ${bloq.length?`<div class="card"><h2>Disponível nos planos pagos</h2><div class="lock">${bloq.map(([k,t])=>`<div><b>🔒 ${t}</b></div>`).join("")}</div>
   <p class="muted" style="margin:12px 0 0">Atalaia a partir de R$ 690 por mês: até 1.000 bens, 50 ambientes, 10 usuários e todas as funções. Fale com a equipe do Atalaia System para mudar de plano sem perder nada do que já foi cadastrado.</p></div>`:""}
   ${contaHTML()}
+  ${suporteHTML()}
   <p class="muted" style="text-align:center">Atalaia System · versão ${CONFIG.versao} · Seus dados pertencem à sua empresa e podem ser baixados a qualquer momento pela planilha.</p>`;
 }
+const TIPOS={duvida:"Dúvida",problema:"Problema",melhoria:"Sugestão de melhoria",financeiro:"Financeiro"},SITC={aberto:"Aberto",em_atendimento:"Em atendimento",resolvido:"Resolvido"};
+function suporteHTML(){
+  return `<div class="card"><h2>Suporte Atalaia System</h2><p class="sub" style="margin-bottom:10px">Dúvidas, problemas ou ideias? Escreva para a nossa equipe. A resposta aparece aqui.</p>
+  ${E.suporte?`<form onsubmit="event.preventDefault();enviarChamado()"><label>Tipo<select id="st">${Object.entries(TIPOS).map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select></label>
+  <label>Assunto<input id="sa" required minlength="3" maxlength="120"></label><label>Mensagem<textarea id="sm" rows="4" required minlength="3" maxlength="2000"></textarea></label>
+  <p class="muted" style="margin-top:-6px">Não escreva senhas nem dados pessoais de clientes na mensagem.</p>
+  <div style="display:flex;gap:8px"><button class="btn" style="flex:1">Enviar</button><button type="button" class="btn ghost" onclick="E.suporte=false;render()">Cancelar</button></div></form>`
+  :`<button class="btn ghost sm" onclick="E.suporte=true;render()">Abrir um chamado</button>`}
+  ${E.chamados.length?`<div style="margin-top:12px">${E.chamados.map(c=>`<div style="border-top:1px solid var(--line);padding:10px 0"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(c.assunto)}</b><span class="tag">${SITC[c.situacao]||esc(c.situacao)}</span></div>
+   <div class="muted">${TIPOS[c.tipo]||esc(c.tipo)} · Nº ${esc(c.id)} · ${new Date(c.criado_em).toLocaleDateString("pt-BR")}</div>
+   ${c.resposta?`<div class="msg ok" style="margin:8px 0 0"><b>Resposta da equipe:</b> ${esc(c.resposta)}</div>`:""}</div>`).join("")}</div>`:""}</div>`;
+}
+async function enviarChamado(){try{await DB.abrirChamado(E.v.contratante_id,{tipo:$("#st").value,assunto:$("#sa").value.trim(),mensagem:$("#sm").value.trim()});E.suporte=false;E.chamados=await DB.chamados(E.v.contratante_id);toast("Chamado enviado. Responderemos em breve.");render()}catch(e){toast(e.message)}}
 function contaHTML(){
   const ativo=E.fatores.some(f=>f.status=="verified"),ant=E.acessos[1];
   const dh=d=>new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
@@ -361,7 +379,7 @@ async function abrirApp(registrar){
   else{/* conta o uso do app (no máximo 1 registro a cada 6 horas por aparelho), para a Matriz saber quantos usam */
     let ult=0;try{ult=+localStorage.getItem("atalaia_abriu")||0}catch(e){}
     if(Date.now()-ult>216e5){DB.registrar(c,"abriu o app",null);try{localStorage.setItem("atalaia_abriu",String(Date.now()))}catch(e){}}}
-  [E.amb,E.bens,E.acessos]=await Promise.all([DB.ambientes(c),DB.bens(c),DB.ultimosAcessos().catch(()=>[])]);
+  [E.amb,E.bens,E.acessos,E.chamados]=await Promise.all([DB.ambientes(c),DB.bens(c),DB.ultimosAcessos().catch(()=>[]),DB.chamados(c).catch(()=>[])]);
   E.tela="app";render();
 }
 async function sair(){await DB.sair();E.v=null;E.tela="login";E.msg=null;E.modal=null;render()}
