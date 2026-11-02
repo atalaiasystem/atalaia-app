@@ -6,7 +6,7 @@
 <title>Atalaia System · Cadastro de bens</title>
 <meta name="theme-color" content="#1d1f23">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://ipwleoawvxmzvofcccjn.supabase.co; connect-src https://ipwleoawvxmzvofcccjn.supabase.co wss://ipwleoawvxmzvofcccjn.supabase.co; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://ipwleoawvxmzvofcccjn.supabase.co; connect-src 'self' https://ipwleoawvxmzvofcccjn.supabase.co wss://ipwleoawvxmzvofcccjn.supabase.co; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'none'; form-action 'self'">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d1f23%27/%3E%3Cpath d=%27M50 18 L24 82 M50 18 L76 82%27 stroke=%27white%27 stroke-width=%2710%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3Cpath d=%27M35 58 L46 67 L67 44%27 stroke=%27%23f2a33a%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 fill=%27none%27/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
 <style>
@@ -59,6 +59,13 @@ nav.tabs svg{width:22px;height:22px}
 .code{font-family:ui-monospace,Menlo,monospace;letter-spacing:.08em;word-break:break-all;background:var(--soft);padding:8px 10px;border-radius:8px;font-size:.85rem}
 .otp{font-size:1.6rem;letter-spacing:.4em;text-align:center;font-family:ui-monospace,Menlo,monospace}
 .demo{background:var(--amb);color:var(--ink);text-align:center;font-size:.8rem;font-weight:700;padding:4px}
+.senha-box{position:relative;display:block}.senha-box input{padding-right:86px}.senha-olho{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;font-size:.82rem;font-weight:700;cursor:pointer;padding:6px 8px;border-radius:8px;opacity:.85}.senha-olho:hover,.senha-olho:focus{opacity:1;text-decoration:underline}
+.voltar{background:none;border:0;font-weight:700;padding:6px 0;margin:0 0 8px;cursor:pointer;color:var(--ink);font-size:.95rem}
+.fotos-grade{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}.fg{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--soft)}.fg img{width:100%;height:100%;object-fit:cover;display:block}
+.fg-x{position:absolute;top:4px;right:4px;width:28px;height:28px;border-radius:50%;border:0;background:rgba(29,31,35,.8);color:#fff;font-weight:700;cursor:pointer}.fg-capa{position:absolute;left:4px;bottom:4px;background:var(--amb);color:var(--ink);font-size:.7rem;font-weight:700;padding:2px 6px;border-radius:6px}
+.btn-foto{display:inline-flex!important;align-items:center;gap:6px;cursor:pointer}
+.nova-versao{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:30;background:var(--ink);color:#fff;border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:560px;margin:0 auto}
+.opc-baixar{display:grid;gap:10px;margin:12px 0}.opc-baixar button{text-align:left;padding:14px}
 </style>
 </head>
 <body>
@@ -74,7 +81,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.1.2",
+  versao:"0.1.4",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -135,11 +142,14 @@ function realDB(){
     async updBem(id,b){return chk(await sb.from("bens").update(b).eq("id",id).select().single())},
     async enviarFoto(c,blob){const p=`${c}/${crypto.randomUUID()}.jpg`;chk(await sb.storage.from("fotos-bens").upload(p,blob,{contentType:"image/jpeg"}));return p},
     async urlFoto(p){if(!p)return null;const r=await sb.storage.from("fotos-bens").createSignedUrl(p,3600);return r.data?.signedUrl||null},
+    async excluir(t,id,motivo){return chk(await sb.rpc("excluir_item",{p_tabela:t,p_id:id,p_motivo:motivo}))},
+    async desfazer(t,id){return chk(await sb.rpc("desfazer_exclusao",{p_tabela:t,p_id:id}))},
+    async apagarFotos(ps){if(ps.length)try{await sb.storage.from("fotos-bens").remove(ps)}catch(e){}},
     async registrar(c,acao,detalhe){try{await sb.from("registro_acessos").insert({contratante_id:c,acao,detalhe,aparelho:aparelho()})}catch(e){}}
   };
 }
 function mockDB(){
-  const plano={id:"free",nome:"Atalaia Free",preco_mensal:0,filiais:0,ambientes:1,bens:50,usuarios:1,armazenamento_gb:1,funcoes:["bens"]};
+  const plano={id:"free",nome:"Atalaia Free",preco_mensal:0,filiais:0,ambientes:1,bens:50,usuarios:1,armazenamento_gb:1,fotos_por_bem:3,funcoes:["bens"]};
   const c={id:"c-demo",nome:"Studio de Unhas (demonstração)",sigla:"SU",situacao:"teste",plano_id:"free",planos:plano};
   let logado=false,prox=4,fotos={},fat=[],nivel2=false,chs=[{id:1,tipo:"duvida",assunto:"Como exportar a planilha?",mensagem:"Onde fica o botão?",situacao:"resolvido",resposta:"Na aba Bens, botão Planilha, ao lado de Cadastrar bem.",criado_em:new Date(Date.now()-864e5).toISOString()}];
   const amb=[{id:"a1",contratante_id:c.id,nome:"Salão",ativo:true}];
@@ -161,7 +171,7 @@ function mockDB(){
     async chamados(){return chs},
     async abrirChamado(c,d){await w(200);const n={id:chs.length+1,...d,situacao:"aberto",resposta:null,criado_em:new Date().toISOString()};chs.unshift(n);return n},
     async ultimosAcessos(){return [{criado_em:new Date().toISOString(),aparelho:aparelho()},{criado_em:new Date(Date.now()-864e5).toISOString(),aparelho:"Celular · Chrome"}]},
-    async meuVinculo(){return {perfil:"administrador",nome:"Demonstração",contratante_id:c.id,contratantes:{...c,exige_2_etapas:false},email:"demo@atalaia"}},
+    async meuVinculo(){return {perfil:"gestor",nome:"Demonstração",contratante_id:c.id,contratantes:{...c,exige_2_etapas:false},email:"demo@atalaia"}},
     async ambientes(){return amb.filter(a=>a.ativo)},
     async addAmbiente(ci,nome){if(amb.filter(a=>a.ativo).length>=plano.ambientes)throw new Error(`Limite do plano atingido: ${plano.ambientes} ambiente(s).`);const a={id:"a"+Date.now(),contratante_id:ci,nome,ativo:true};amb.push(a);return a},
     async renAmbiente(id,nome){const a=amb.find(x=>x.id==id);a.nome=nome;return a},
@@ -169,7 +179,9 @@ function mockDB(){
     async addBem(b){await w(250);if(bens.filter(x=>x.ativo).length>=plano.bens)throw new Error(`Limite do plano atingido: ${plano.bens} bens. Para cadastrar mais, conheça os planos pagos.`);if(b.numero_serie&&bens.some(x=>x.numero_serie==b.numero_serie))throw new Error("Já existe um bem com este número de série.");const n={...b,id:"b"+Date.now(),patrimonio:null,criado_em:new Date().toISOString(),ativo:true};bens.push(n);return n},
     async updBem(id,b){const x=bens.find(y=>y.id==id);Object.assign(x,b);return x},
     async enviarFoto(ci,blob){const p="demo/"+Date.now();fotos[p]=URL.createObjectURL(blob);return p},
-    async urlFoto(p){return fotos[p]||null},async registrar(){}
+    async urlFoto(p){return fotos[p]||null},async apagarFotos(){},async registrar(){},
+    async excluir(t,id,m){const x=bens.find(y=>y.id==id);x.ativo=false;x.excluido_em=new Date().toISOString();x.excluido_motivo=m},
+    async desfazer(t,id){const x=bens.find(y=>y.id==id);x.ativo=true;x.excluido_em=null}
   };
 }
 function traduz(m){
@@ -201,7 +213,7 @@ function chkSenha(v){const ul=$("#chk");if(ul)ul.innerHTML=REGRAS.map(([f,t])=>`
 function telaSenha(){
   const m=E.modoSenha,tit=m=="primeiro"?"Crie sua senha pessoal":m=="trocar"?"Trocar senha":"Crie uma nova senha";
   const sub=m=="primeiro"?"Por segurança, a senha provisória precisa ser trocada no primeiro acesso.":m=="trocar"?"Confirme a senha atual e escolha a nova.":"Escolha uma senha nova para a sua conta.";
-  return cab()+`<div class="wrap center"><div class="card"><h1 style="margin-top:0">${tit}</h1><p class="sub">${sub} Não use a mesma senha de outros sites e não compartilhe.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
+  return cab()+`<div class="wrap center"><div class="card">${m=="trocar"?`<button type="button" class="voltar" onclick="voltar()">← Voltar</button>`:""}<h1 style="margin-top:0">${tit}</h1><p class="sub">${sub} Não use a mesma senha de outros sites e não compartilhe.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
  <form onsubmit="event.preventDefault();salvarSenha()">
  ${m=="trocar"?`<label>Senha atual<input id="s0" type="password" autocomplete="current-password" required></label>`:""}
  <label>Nova senha<input id="s1" type="password" minlength="10" autocomplete="new-password" required oninput="chkSenha(this.value)"></label>
@@ -209,7 +221,7 @@ function telaSenha(){
  <label>Repita a nova senha<input id="s2" type="password" minlength="10" autocomplete="new-password" required></label>
  ${m=="trocar"?captchaHTML():""}
  <button class="btn full">Salvar senha</button></form>
- ${m=="trocar"?`<p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="E.tela='app';E.msg=null;render()">Cancelar</button></p>`:m=="primeiro"?`<p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="sair()">Sair</button></p>`:""}</div></div>`}
+ ${m=="trocar"?`<p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="voltar()">Cancelar</button></p>`:m=="primeiro"?`<p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="sair()">Sair</button></p>`:""}</div></div>`}
 function telaMfa(){return cab()+`<div class="wrap center"><div class="card"><h1 style="margin-top:0">Verificação em duas etapas</h1><p class="sub">Abra o aplicativo autenticador no seu celular (Google Authenticator ou Microsoft Authenticator) e digite o código de 6 números do Atalaia System.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
  <form onsubmit="event.preventDefault();confirmarMfa()"><label>Código<input id="otp" class="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button class="btn full">Confirmar</button></form>
  <p class="muted" style="margin:12px 0 0">Perdeu o celular? Fale com a equipe do Atalaia System para liberar o acesso com segurança.</p>
@@ -231,27 +243,28 @@ function telaSemAcesso(){return cab()+`<div class="wrap center"><div class="card
 function telaApp(){
   const c=E.v.contratantes,p=c.planos;
   const corpo=E.aba=="bens"?abaBens(p):E.aba=="amb"?abaAmb(p):abaPlano(p);
-  return cab(esc(c.nome))+`<div class="wrap">${corpo}</div><nav class="tabs">${[["bens","Bens"],["amb",p.ambientes>1?"Ambientes":"Ambiente"],["plano","Plano"]].map(([k,t])=>`<button aria-current="${E.aba==k}" onclick="E.aba='${k}';render();scrollTo(0,0)">${ic(k=="amb"?"amb":k)}${t}</button>`).join("")}</nav>`;
+  return cab(esc(c.nome))+`<div class="wrap">${corpo}</div><nav class="tabs">${[["bens","Bens"],["amb",p.ambientes>1?"Ambientes":"Ambiente"],["plano","Plano"]].map(([k,t])=>`<button aria-current="${E.aba==k}" onclick="irAba('${k}')">${ic(k=="amb"?"amb":k)}${t}</button>`).join("")}</nav>`;
 }
 function uso(n,lim,neutro){const p=Math.min(100,n/lim*100);return `<div class="bar"><i style="width:${p}%;background:${neutro?"var(--ink)":p>=100?"var(--bad)":p>=75?"var(--warn)":"var(--ink)"}"></i></div>`}
 function abaBens(p){
   const q=E.busca.toLowerCase();const L=E.bens.filter(b=>!q||(b.nome+" "+(b.patrimonio||"")+" "+(b.numero_serie||"")+" "+(b.marca||"")).toLowerCase().includes(q));
   const cheio=E.bens.length>=p.bens;
   return `<h1>Bens</h1><p class="sub">${E.bens.length} de ${p.bens} bens cadastrados</p>${uso(E.bens.length,p.bens)}
-  <div style="display:flex;gap:8px;margin:14px 0"><button class="btn amb" style="flex:1" ${cheio?"disabled":""} onclick="abrirBem()">+ Cadastrar bem</button><button class="btn ghost" onclick="exportar()" title="Baixar planilha">Planilha</button></div>
+  <div style="display:flex;gap:8px;margin:14px 0"><button class="btn amb" style="flex:1" ${cheio?"disabled":""} onclick="abrirBem()">+ Cadastrar bem</button><button class="btn ghost" onclick="exportar()" title="Baixar em Excel ou PDF">⬇ Baixar</button></div>
+  ${E.desfazer&&Date.now()<E.desfazer.ate?`<div class="msg ok" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span>Excluído: <b>${esc(E.desfazer.nome)}</b></span><button class="btn ghost sm" onclick="desfazer()">↶ Desfazer</button></div>`:""}
   ${cheio?`<div class="msg info">Limite do plano ${esc(p.nome)} atingido. Para cadastrar mais bens, conheça os planos pagos na aba Plano.</div>`:""}
   <input placeholder="Buscar por nome${temPat()?", patrimônio":""}, série ou marca" value="${esc(E.busca)}" oninput="E.busca=this.value;render();const i=document.querySelector('input[placeholder^=Buscar]');i.focus();i.setSelectionRange(i.value.length,i.value.length)" style="margin-bottom:12px">
   <div class="card" style="padding:4px 16px">${L.map(b=>`<div class="bem" onclick="abrirBem('${b.id}')"><div class="ft" data-foto="${esc(b.foto_path||"")}">${b.foto_path?"…":"sem foto"}</div><div><b>${esc(b.nome)}</b>${b.patrimonio?`<span class="pat">${esc(b.patrimonio)}</span>`:""} <span class="muted">· ${esc(nomeAmb(b.ambiente_id))}</span></div><span class="tag">${esc(b.estado)}</span></div>`).join("")||`<p class="muted" style="padding:14px 0">${E.bens.length?"Nenhum bem encontrado na busca.":"Nenhum bem cadastrado ainda. Toque em “Cadastrar bem” para começar."}</p>`}</div>`;
 }
 function abaAmb(p){
-  const pode=E.v.perfil=="administrador";
-  return `<h1>${p.ambientes>1?"Ambientes":"Ambiente"}</h1><p class="sub">${E.amb.length} de ${p.ambientes} · os bens ficam ligados a um ambiente</p>
+  const pode=["gestor","administrador"].includes(E.v.perfil);
+  return `<button type="button" class="voltar" onclick="voltar()">← Voltar</button><h1>${p.ambientes>1?"Ambientes":"Ambiente"}</h1><p class="sub">${E.amb.length} de ${p.ambientes} · os bens ficam ligados a um ambiente</p>
   <div class="card">${E.amb.map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)"><div><b>${esc(a.nome)}</b><div class="muted">${E.bens.filter(b=>b.ambiente_id==a.id).length} bem(ns)</div></div>${pode?`<button class="btn ghost sm" onclick="renomear('${a.id}')">Renomear</button>`:""}</div>`).join("")}</div>
   ${pode&&E.amb.length<p.ambientes?`<form class="card" onsubmit="event.preventDefault();novoAmb()"><label>Novo ambiente<input id="na" required placeholder="Ex.: Recepção"></label><button class="btn">Criar ambiente</button></form>`:`<p class="muted">${E.amb.length>=p.ambientes?`O plano ${esc(p.nome)} permite ${p.ambientes} ambiente(s).`:""}</p>`}`;
 }
 function abaPlano(p){
   const bloq=Object.entries(FUNCOES).filter(([k])=>!p.funcoes.includes(k));
-  return `<h1>Plano ${esc(p.nome)}</h1><p class="sub">${p.preco_mensal>0?brl(p.preco_mensal)+" por mês":"Gratuito"} · ${E.v.contratantes.situacao=="teste"?"em teste":E.v.contratantes.situacao}</p>
+  return `<button type="button" class="voltar" onclick="voltar()">← Voltar</button><h1>Plano ${esc(p.nome)}</h1><p class="sub">${p.preco_mensal>0?brl(p.preco_mensal)+" por mês":"Gratuito"} · ${E.v.contratantes.situacao=="teste"?"em teste":E.v.contratantes.situacao}</p>
   <div class="card"><h2>Uso do plano</h2>
   <p style="margin:0 0 4px">Bens: <b>${E.bens.length} de ${p.bens}</b></p>${uso(E.bens.length,p.bens)}
   <p style="margin:12px 0 4px">Ambientes: <b>${E.amb.length} de ${p.ambientes}</b></p>${uso(E.amb.length,p.ambientes,true)}
@@ -282,19 +295,21 @@ function contaHTML(){
   <p style="margin:0 0 12px" class="muted">${ant?`Acesso anterior: ${dh(ant.criado_em)} · ${esc(ant.aparelho||"")}. Não reconhece? Troque a senha e use “Sair de todos os aparelhos”.`:"Este é o seu primeiro acesso registrado."}</p>
   ${tem2()||ativo?`<p style="margin:0 0 8px"><b>Verificação em duas etapas:</b> ${ativo?`<span style="color:var(--ok)">ativada ✓</span>`:`<span style="color:var(--warn)">desativada</span> <span class="muted">(recomendada)</span>`}</p>`:""}
   <div style="display:flex;gap:8px;flex-wrap:wrap">${ativo?(E.obrig?"":`<button class="btn ghost sm" onclick="desativar2()">Desativar duas etapas</button>`):tem2()?`<button class="btn amb sm" onclick="ativar2()">Ativar duas etapas</button>`:""}
-  <button class="btn ghost sm" onclick="E.modoSenha='trocar';E.tela='senha';E.msg=null;render()">Trocar senha</button>
+  <button class="btn ghost sm" onclick="E.modoSenha='trocar';E.tela='senha';E.msg=null;abrirNivel();render()">Trocar senha</button>
   <button class="btn ghost sm" onclick="sair()">Sair</button>
   <button class="btn ghost sm" onclick="sairTodos()">Sair de todos os aparelhos</button></div></div>`;
 }
 const nomeAmb=id=>E.amb.find(a=>a.id==id)?.nome||"Sem ambiente";
 const CAT=["Equipamento","Mobiliário","Eletrônico","Utensílio","Ferramenta","Outro"],EST=["novo","bom","regular","ruim","em manutenção"];
 function modalHTML(){
-  const b=E.modal.bem||{},novo=!b.id;
-  return `<div class="modal" onclick="if(event.target==this){E.modal=null;render()}"><div class="sheet"><h2>${novo?"Cadastrar bem":esc(rot(b))}</h2>${novo?(temPat()?`<p class="sub">O número de patrimônio é gerado automaticamente ao salvar.</p>`:`<p class="sub">Preencha os dados do bem. Número de patrimônio e etiquetas estão disponíveis nos planos pagos.</p>`):`<p class="sub">Cadastrado em ${b.criado_em?new Date(b.criado_em).toLocaleDateString("pt-BR"):"—"}${b.patrimonio?" · o número de patrimônio não muda.":""}</p>`}
+  if(E.modal.tipo=="baixar")return baixarHTML();
+  const b=E.modal.bem||{},novo=!b.id,lim=limFotos(),fs=E.modal.fotos||[];
+  return `<div class="modal" onclick="if(event.target==this)voltar()"><div class="sheet"><button type="button" class="voltar" onclick="voltar()">← Voltar</button><h2>${novo?"Cadastrar bem":esc(rot(b))}</h2>${novo?(temPat()?`<p class="sub">O número de patrimônio é gerado automaticamente ao salvar.</p>`:`<p class="sub">Preencha os dados do bem. Número de patrimônio e etiquetas estão disponíveis nos planos pagos.</p>`):`<p class="sub">Cadastrado em ${b.criado_em?new Date(b.criado_em).toLocaleDateString("pt-BR"):"—"}${b.patrimonio?" · o número de patrimônio não muda.":""}</p>`}
   ${E.modal.erro?`<div class="msg err">${esc(E.modal.erro)}</div>`:""}
   <form onsubmit="event.preventDefault();salvarBem()">
-  <img id="fprev" class="foto-prev" ${E.modal.fotoUrl?`src="${E.modal.fotoUrl}"`:`style="display:none"`} alt="Foto do bem">
-  <label>Foto do bem<input id="ff" type="file" accept="image/*" capture="environment" onchange="prevFoto(this)"></label>
+  <p style="margin:0 0 6px;font-weight:600;font-size:.88rem">Fotos do bem <span class="muted" style="font-weight:400">· ${fs.length} de ${lim}${lim>1?" · a primeira é a capa":""}</span></p>
+  ${fs.length?`<div class="fotos-grade">${fs.map((f,i)=>`<div class="fg">${f.url?`<img src="${f.url}" alt="Foto ${i+1}">`:""}${i==0&&lim>1?`<span class="fg-capa">Capa</span>`:""}<button type="button" class="fg-x" onclick="removerFoto(${i})" aria-label="Remover foto ${i+1}">✕</button></div>`).join("")}</div>`:""}
+  ${fs.length<lim?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><label class="btn ghost sm btn-foto">📷 Tirar foto<input type="file" accept="image/*" capture="environment" onchange="prevFoto(this)" style="display:none"></label><label class="btn ghost sm btn-foto">🖼 Da galeria<input type="file" accept="image/*" ${lim-fs.length>1?"multiple":""} onchange="prevFoto(this)" style="display:none"></label></div>`:`<p class="muted" style="margin:0 0 12px">Limite de ${lim} foto(s) por bem do seu plano. Remova uma foto para trocar.</p>`}
   <label>Nome do bem *<input id="fn" required maxlength="120" value="${esc(b.nome)}" placeholder="Ex.: Cabine de secagem UV"></label>
   <div class="row"><label>Categoria<select id="fc">${CAT.map(x=>`<option ${b.categoria==x?"selected":""}>${x}</option>`).join("")}</select></label>
   <label>Estado<select id="fe">${EST.map(x=>`<option ${b.estado==x||(!b.estado&&x=="bom")?"selected":""}>${x}</option>`).join("")}</select></label></div>
@@ -304,7 +319,11 @@ function modalHTML(){
   <div class="row"><label>Valor (R$)<input id="fv" type="number" step="0.01" min="0" inputmode="decimal" value="${b.valor??""}"></label><label>Data de compra<input id="fd" type="date" value="${b.data_aquisicao||""}"></label></div>
   <label>Observação<textarea id="fb" rows="2" maxlength="500">${esc(b.observacao)}</textarea></label>
   <button class="btn amb full" id="fsalvar">${novo?"Salvar bem":"Salvar alterações"}</button>
-  <div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn ghost" style="flex:1" onclick="E.modal=null;render()">Cancelar</button>${novo?"":`<button type="button" class="btn ghost" style="flex:1;color:var(--bad)" onclick="inativar('${b.id}')">Dar baixa</button>`}</div>
+  <div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn ghost" style="flex:1" onclick="voltar()">Cancelar</button>${novo?"":`<button type="button" class="btn ghost" style="flex:1;color:var(--bad)" onclick="inativar('${b.id}')">Dar baixa</button>`}</div>
+  ${novo?"":E.modal.excluindo?`<div class="msg err" style="margin-top:12px"><b>Excluir este cadastro?</b> Use só para cadastro feito por engano (para bem que saiu da empresa, use “Dar baixa”). O registro fica guardado para o Gestor, com o motivo.
+   <label style="margin:10px 0 8px">Motivo da exclusão *<textarea id="xm" rows="2" maxlength="300" placeholder="Ex.: cadastrado em duplicidade"></textarea></label>
+   <div style="display:flex;gap:8px"><button type="button" class="btn" style="flex:1;background:var(--bad)" onclick="confirmarExclusao('${b.id}')">Confirmar exclusão</button><button type="button" class="btn ghost" onclick="guardarForm();E.modal.excluindo=false;render()">Cancelar</button></div></div>`
+   :`<button type="button" class="btn ghost sm" style="margin-top:10px;width:100%" onclick="guardarForm();E.modal.excluindo=true;render()">🗑 Excluir (cadastro feito por engano)</button>`}
   </form></div></div>`;
 }
 
@@ -360,7 +379,7 @@ async function salvarSenha(){
     await DB.definirSenha(a);history.replaceState(null,"",location.pathname);
     const vinc=E.v||await DB.meuVinculo();if(vinc)DB.registrar(vinc.contratante_id,m=="link"?"criou nova senha pelo link":m=="primeiro"?"criou a senha pessoal":"trocou a senha",null);
     toast("Senha salva.");E.msg=null;
-    if(m=="trocar"){E.tela="app";render()}else await abrirApp(true);
+    if(m=="trocar"){E.tela="app";if(history.state&&history.state.atalaia){ignorarPop=true;history.back()}render()}else await abrirApp(true);
   }catch(e){resetCaptcha();E.msg=["err",e.message];render()}}
 async function ativar2(){E.tela="ativar2";E.insc=null;E.msg=null;render();try{E.insc=await DB.inscrever()}catch(e){E.msg=["err",e.message]}render()}
 async function confirmarAtivacao(){try{await DB.verificarCodigo(E.insc.id,$("#otp").value.trim());E.insc=null;E.fatores=await DB.fatores();DB.registrar(E.v.contratante_id,"ativou a verificação em duas etapas",null);toast("Verificação em duas etapas ativada.");
@@ -371,7 +390,7 @@ async function abrirApp(registrar){
   E.v=await DB.meuVinculo();
   if(!E.v){E.tela="semacesso";render();return}
   E.fatores=await DB.fatores();
-  const exige=tem2()&&E.v.contratantes.exige_2_etapas&&E.v.perfil=="administrador";
+  const exige=tem2()&&E.v.contratantes.exige_2_etapas&&["gestor","administrador"].includes(E.v.perfil);
   if(exige&&!E.fatores.some(f=>f.status=="verified")){E.obrig=true;await ativar2();return}
   E.obrig=exige;
   const c=E.v.contratante_id;
@@ -386,34 +405,154 @@ async function sair(){await DB.sair();E.v=null;E.tela="login";E.msg=null;E.modal
 async function sairTodos(){if(!confirm("Sair de todos os aparelhos? Você e qualquer outro aparelho conectado com a sua conta precisarão entrar de novo."))return;
   try{await DB.registrar(E.v.contratante_id,"saiu de todos os aparelhos",null);await DB.sair(true)}catch(e){}E.v=null;E.tela="login";E.msg=["ok","Pronto: a conta foi desconectada de todos os aparelhos."];render()}
 async function recarregar(){const c=E.v.contratante_id;[E.amb,E.bens]=await Promise.all([DB.ambientes(c),DB.bens(c)]);render()}
-async function abrirBem(id){const b=id?E.bens.find(x=>x.id==id):null;E.modal={bem:b?{...b}:null,foto:null,fotoUrl:b?.foto_path?(E.fotos[b.foto_path]||await DB.urlFoto(b.foto_path)):null};render()}
-function prevFoto(inp){const f=inp.files[0];if(!f)return;comprimir(f).then(bl=>{E.modal.foto=bl;const u=URL.createObjectURL(bl);const im=$("#fprev");im.src=u;im.style.display="block"}).catch(()=>toast("Não foi possível ler a foto."))}
+const temColFotos=()=>E.v?.contratantes?.planos?.fotos_por_bem!=null;
+const limFotos=()=>temColFotos()?E.v.contratantes.planos.fotos_por_bem:1;
+const fotosDoBem=b=>b?(Array.isArray(b.fotos)&&b.fotos.length?b.fotos:(b.foto_path?[b.foto_path]:[])):[];
+async function urlCache(p){let u=E.fotos[p];if(!u){u=await DB.urlFoto(p);if(u)E.fotos[p]=u}return u}
+async function abrirBem(id){const b=id?E.bens.find(x=>x.id==id):null;
+  const fs=await Promise.all(fotosDoBem(b).map(async p=>({path:p,url:await urlCache(p)})));
+  E.modal={bem:b?{...b}:null,fotos:fs,removidas:[]};abrirNivel();render()}
+function guardarForm(){if(!E.modal||!$("#fn"))return;const b=E.modal.bem||(E.modal.bem={});
+  Object.assign(b,{nome:$("#fn").value,categoria:$("#fc").value,estado:$("#fe").value,ambiente_id:$("#fa").value,marca:$("#fm").value,modelo:$("#fo").value,numero_serie:$("#fs").value,valor:$("#fv").value===""?null:$("#fv").value,data_aquisicao:$("#fd").value,observacao:$("#fb").value})}
+async function prevFoto(inp){const arq=[...inp.files];if(!arq.length)return;guardarForm();
+  for(const f of arq){if(E.modal.fotos.length>=limFotos()){toast(`O seu plano permite até ${limFotos()} foto(s) por bem.`);break}
+    try{const bl=await comprimir(f);E.modal.fotos.push({blob:bl,url:URL.createObjectURL(bl)})}catch(e){toast("Não foi possível ler a foto.")}}
+  render()}
+function removerFoto(i){guardarForm();const f=E.modal.fotos.splice(i,1)[0];if(f&&f.path)E.modal.removidas.push(f.path);render()}
 function comprimir(file){return new Promise((ok,er)=>{const img=new Image();img.onload=()=>{const M=1280,s=Math.min(1,M/Math.max(img.width,img.height));const cv=document.createElement("canvas");cv.width=Math.round(img.width*s);cv.height=Math.round(img.height*s);cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);cv.toBlob(b=>b?ok(b):er(),"image/jpeg",0.72)};img.onerror=er;img.src=URL.createObjectURL(file)})}
 async function salvarBem(){
   const btn=$("#fsalvar");btn.disabled=true;btn.textContent="Salvando…";
   const b=E.modal.bem||{},c=E.v.contratante_id;
   const d={nome:$("#fn").value.trim(),categoria:$("#fc").value,estado:$("#fe").value,ambiente_id:$("#fa").value||null,marca:$("#fm").value.trim()||null,modelo:$("#fo").value.trim()||null,numero_serie:$("#fs").value.trim()||null,valor:$("#fv").value===""?null:Number($("#fv").value),data_aquisicao:$("#fd").value||null,observacao:$("#fb").value.trim()||null};
   try{
-    if(E.modal.foto){d.foto_path=await DB.enviarFoto(c,E.modal.foto)}
+    const lista=[];for(const f of E.modal.fotos){lista.push(f.path||await DB.enviarFoto(c,f.blob))}
+    d.foto_path=lista[0]||null;if(temColFotos())d.fotos=lista;
     let r;
     if(b.id){r=await DB.updBem(b.id,d);toast("Alterações salvas.")}
     else{r=await DB.addBem({...d,contratante_id:c});toast(r.patrimonio?"Bem cadastrado com o patrimônio "+r.patrimonio+".":"Bem cadastrado.");DB.registrar(c,"cadastrou bem",rot(r))}
-    E.modal=null;await recarregar();
+    const rem=E.modal.removidas||[];fecharSemVoltar();DB.apagarFotos(rem);await recarregar();
   }catch(e){E.modal.erro=e.message;render()}
 }
 async function inativar(id){const b=E.bens.find(x=>x.id==id);if(!b)return;
   if(E.modal.confirmar!==id){E.modal.confirmar=id;E.modal.erro=`Toque de novo em “Dar baixa” para confirmar. O bem ${esc(rot(b))} sai da lista, mas o registro fica guardado${b.patrimonio?" e o número não é reaproveitado":""}.`;render();return}
-  try{await DB.updBem(id,{ativo:false,estado:"baixado"});DB.registrar(E.v.contratante_id,"deu baixa em bem",rot(b));toast("Baixa registrada: "+rot(b));E.modal=null;await recarregar()}catch(e){E.modal.erro=e.message;render()}}
+  try{await DB.updBem(id,{ativo:false,estado:"baixado"});DB.registrar(E.v.contratante_id,"deu baixa em bem",rot(b));toast("Baixa registrada: "+rot(b));fecharSemVoltar();await recarregar()}catch(e){E.modal.erro=e.message;render()}}
+async function confirmarExclusao(id){const b=E.bens.find(x=>x.id==id);const m=($("#xm").value||"").trim();
+  if(m.length<5){toast("Escreva o motivo da exclusão (pelo menos 5 letras).");return}
+  try{await DB.excluir("bens",id,m);E.desfazer={t:"bens",id,nome:rot(b),ate:Date.now()+115000};toast("Excluído. Você pode desfazer por 2 minutos.");fecharSemVoltar();await recarregar();setTimeout(render,116000)}catch(e){E.modal.erro=e.message;render()}}
+async function desfazer(){const d=E.desfazer;if(!d)return;try{await DB.desfazer(d.t,d.id);E.desfazer=null;toast("Exclusão desfeita.");await recarregar()}catch(e){E.desfazer=null;toast(e.message);render()}}
 async function novoAmb(){try{await DB.addAmbiente(E.v.contratante_id,$("#na").value.trim());toast("Ambiente criado.");await recarregar()}catch(e){toast(e.message)}}
 async function renomear(id){const a=E.amb.find(x=>x.id==id);const nome=window.prompt("Novo nome do ambiente",a.nome);if(!nome||!nome.trim())return;try{await DB.renAmbiente(id,nome.trim());await recarregar()}catch(e){toast(e.message)}}
 async function carregarFotosVisiveis(){for(const el of document.querySelectorAll("[data-foto]")){const p=el.dataset.foto;if(!p)continue;let u=E.fotos[p];if(!u){u=await DB.urlFoto(p);if(u)E.fotos[p]=u}if(u&&el.isConnected){const im=document.createElement("img");im.className="ft";im.src=u;im.alt="";el.replaceWith(im)}}}
-function exportar(){
-  const cols=[...(temPat()?[["patrimonio","Patrimônio"]]:[]),["nome","Bem"],["categoria","Categoria"],["ambiente","Ambiente"],["marca","Marca"],["modelo","Modelo"],["numero_serie","Nº de série"],["estado","Estado"],["valor","Valor (R$)"],["data_aquisicao","Data de compra"],["observacao","Observação"]];
-  const linhas=[cols.map(c=>c[1]).join(";")].concat(E.bens.map(b=>cols.map(([k])=>{let v=k=="ambiente"?nomeAmb(b.ambiente_id):k=="data_aquisicao"?dtBR(b[k]):k=="valor"&&b[k]!=null?String(b[k]).replace(".",","):(b[k]??"");v=String(v).replace(/"/g,'""');return /[;"\n]/.test(v)?`"${v}"`:v}).join(";")));
-  const blob=new Blob(["﻿"+linhas.join("\r\n")],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`bens_${E.v.contratantes.sigla}_${new Date().toISOString().slice(0,10)}.csv`;a.click();
-  DB.registrar(E.v.contratante_id,"exportou planilha",String(E.bens.length));toast("Planilha baixada.");
+/* ---------------- Voltar (botão na tela e botão voltar do celular) ---------------- */
+let ignorarPop=false;
+function abrirNivel(){try{if(!(history.state&&history.state.atalaia))history.pushState({atalaia:1},"")}catch(e){}}
+function fecharNivel(){
+  if(E.modal){E.modal=null;render();return true}
+  if(E.tela=="senha"&&E.modoSenha=="trocar"){E.tela="app";E.msg=null;render();return true}
+  if(E.tela=="app"&&E.aba!="bens"){E.aba="bens";render();scrollTo(0,0);return true}
+  return false}
+function voltar(){if(history.state&&history.state.atalaia)history.back();else fecharNivel()}
+function fecharSemVoltar(){E.modal=null;if(history.state&&history.state.atalaia){ignorarPop=true;history.back()}}
+addEventListener("popstate",()=>{if(ignorarPop){ignorarPop=false;return}fecharNivel()});
+function irAba(k){if(k==E.aba)return;if(k=="bens"){voltar();return}E.aba=k;abrirNivel();render();scrollTo(0,0)}
+
+/* ---------------- Aviso de nova versão ---------------- */
+let avisoVersao=false;
+async function checarVersao(){if(DEMO||avisoVersao||location.protocol=="file:")return;
+  try{const r=await fetch("versao.json?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const j=await r.json();
+    if(j.app&&j.app!==CONFIG.versao){avisoVersao=true;const d=document.createElement("div");d.className="nova-versao";d.setAttribute("role","status");
+      d.innerHTML=`<span><b>Nova versão disponível</b><br><small>${esc(j.novidade||"Melhorias no aplicativo.")}</small></span><button class="btn amb sm" onclick="location.reload()">Atualizar</button>`;document.body.appendChild(d)}}catch(e){}}
+setInterval(checarVersao,10*60*1000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checarVersao()});setTimeout(checarVersao,4000);
+
+/* ---------------- Baixar: Excel (.xlsx) e PDF com fotos ---------------- */
+function exportar(){E.modal={tipo:"baixar"};abrirNivel();render()}
+function baixarHTML(){return `<div class="modal" onclick="if(event.target==this)voltar()"><div class="sheet"><button type="button" class="voltar" onclick="voltar()">← Voltar</button><h2>Baixar a lista de bens</h2><p class="sub">${E.bens.length} bem(ns) de ${esc(E.v.contratantes.nome)}. O arquivo vai para a pasta Downloads do aparelho.</p>
+  <div class="opc-baixar"><button class="btn ghost" id="bx" onclick="baixarExcel()"><b>📊 Planilha Excel (.xlsx)</b><br><small class="muted">Para editar, filtrar e somar no Excel ou no Google Planilhas.</small></button>
+  <button class="btn ghost" id="bp" onclick="baixarPDF()"><b>📄 Relatório PDF com fotos</b><br><small class="muted">Para imprimir ou enviar. Mostra cada bem com as fotos.</small></button></div></div></div>`}
+function colunasBaixar(){return [...(temPat()?[["patrimonio","Patrimônio"]]:[]),["nome","Bem"],["categoria","Categoria"],["ambiente","Ambiente"],["marca","Marca"],["modelo","Modelo"],["numero_serie","Nº de série"],["estado","Estado"],["valor","Valor (R$)"],["data_aquisicao","Data de compra"],["observacao","Observação"],["qtd_fotos","Fotos"]]}
+function valorCampo(b,k){return k=="ambiente"?nomeAmb(b.ambiente_id):k=="data_aquisicao"?(b[k]?dtBR(b[k]):""):k=="qtd_fotos"?fotosDoBem(b).length:(b[k]??"")}
+function nomeArquivo(ext){return `bens_${E.v.contratantes.sigla}_${new Date().toISOString().slice(0,10)}.${ext}`}
+function baixarBlob(blob,nome){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
+function crc32(u){let t=crc32.t;if(!t){t=crc32.t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}}let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=t[(c^u[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0}
+function zipArquivos(arqs,tipo){const en=new TextEncoder(),partes=[],central=[];let off=0;
+  for(const a of arqs){const nm=en.encode(a.nome),d=en.encode(a.texto),crc=crc32(d);
+    const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(12,0x21,true);h.setUint32(14,crc,true);h.setUint32(18,d.length,true);h.setUint32(22,d.length,true);h.setUint16(26,nm.length,true);
+    partes.push(new Uint8Array(h.buffer),nm,d);
+    const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(14,0x21,true);c.setUint32(16,crc,true);c.setUint32(20,d.length,true);c.setUint32(24,d.length,true);c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+    central.push(new Uint8Array(c.buffer),nm);off+=30+nm.length+d.length}
+  const tam=central.reduce((s,x)=>s+x.length,0),e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,arqs.length,true);e.setUint16(10,arqs.length,true);e.setUint32(12,tam,true);e.setUint32(16,off,true);
+  return new Blob([...partes,...central,new Uint8Array(e.buffer)],{type:tipo})}
+const xe=v=>String(v).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+function colLetra(i){let s="";i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26)}return s}
+function baixarExcel(){
+  const cols=colunasBaixar(),L=E.bens;
+  const cel=(r,i,v,k,hdr)=>{const ref=colLetra(i)+r;if(hdr)return `<c r="${ref}" t="inlineStr" s="1"><is><t>${xe(v)}</t></is></c>`;
+    if((k=="valor"||k=="qtd_fotos")&&v!==""&&v!=null&&!isNaN(Number(v)))return `<c r="${ref}"${k=="valor"?' s="2"':""}><v>${Number(v)}</v></c>`;
+    return v===""||v==null?"":`<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xe(v)}</t></is></c>`};
+  const linhas=[`<row r="1">${cols.map((c,i)=>cel(1,i,c[1],c[0],true)).join("")}</row>`].concat(L.map((b,j)=>`<row r="${j+2}">${cols.map(([k],i)=>cel(j+2,i,valorCampo(b,k),k)).join("")}</row>`));
+  const larg={patrimonio:12,nome:34,categoria:14,ambiente:18,marca:16,modelo:16,numero_serie:18,estado:14,valor:14,data_aquisicao:15,observacao:40,qtd_fotos:8};
+  const ult=colLetra(cols.length-1)+(L.length+1);
+  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${cols.map(([k],i)=>`<col min="${i+1}" max="${i+1}" width="${larg[k]||14}" customWidth="1"/>`).join("")}</cols><sheetData>${linhas.join("")}</sheetData><autoFilter ref="A1:${ult}"/></worksheet>`;
+  const arqs=[
+   {nome:"[Content_Types].xml",texto:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`},
+   {nome:"_rels/.rels",texto:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+   {nome:"xl/workbook.xml",texto:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Bens" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm._FilterDatabase" localSheetId="0" hidden="1">Bens!$A$1:$${colLetra(cols.length-1)}$${L.length+1}</definedName></definedNames></workbook>`},
+   {nome:"xl/_rels/workbook.xml.rels",texto:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`},
+   {nome:"xl/styles.xml",texto:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="&quot;R$&quot;\ #,##0.00"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1D1F23"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`},
+   {nome:"xl/worksheets/sheet1.xml",texto:sheet}];
+  baixarBlob(zipArquivos(arqs,"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),nomeArquivo("xlsx"));
+  DB.registrar(E.v.contratante_id,"baixou planilha excel",String(L.length));toast("Planilha Excel baixada.");
+}
+function carregarScript(src,sri){return new Promise((ok,er)=>{const s=document.createElement("script");s.src=src;s.integrity=sri;s.crossOrigin="anonymous";s.onload=ok;s.onerror=()=>er(new Error("Não foi possível carregar o gerador de PDF. Confira a internet e tente de novo."));document.head.appendChild(s)})}
+async function fotoDados(p){try{const u=await urlCache(p);if(!u)return null;
+  const im=await new Promise((ok,er)=>{const i=new Image();i.crossOrigin="anonymous";i.onload=()=>ok(i);i.onerror=er;i.src=u});
+  const M=900,k=Math.min(1,M/Math.max(im.naturalWidth,im.naturalHeight)),cv=document.createElement("canvas");cv.width=Math.round(im.naturalWidth*k);cv.height=Math.round(im.naturalHeight*k);
+  cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);return {url:cv.toDataURL("image/jpeg",0.8),w:cv.width,h:cv.height}}catch(e){return null}}
+async function baixarPDF(){
+  const bt=$("#bp");if(bt){bt.disabled=true;bt.querySelector("b").textContent="⏳ Gerando o PDF… aguarde"}
+  try{
+    if(!window.jspdf)await carregarScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
+    const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,H=297,M=14,c=E.v.contratantes,hoje=new Date().toLocaleDateString("pt-BR");
+    const topo=()=>{doc.setFillColor(29,31,35);doc.rect(0,0,W,20,"F");doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.text("ATALAIA SYSTEM",M,9);
+      doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.text("Relatório de bens - "+c.nome,M,15);doc.text(hoje,W-M,15,{align:"right"});doc.setTextColor(29,31,35)};
+    const rodape=(n,t)=>{doc.setFontSize(8);doc.setTextColor(107,112,120);doc.text("Atalaia System - Sistema de Gestão de Patrimônio e Manutenção",M,H-8);doc.text(`Página ${n} de ${t}`,W-M,H-8,{align:"right"});doc.setTextColor(29,31,35)};
+    topo();let y=28;
+    doc.setFont("helvetica","bold");doc.setFontSize(11);doc.text(`${E.bens.length} bem(ns) cadastrados`,M,y);
+    const tot=E.bens.reduce((s,b)=>s+(Number(b.valor)||0),0);doc.setFont("helvetica","normal");doc.setFontSize(9.5);if(tot)doc.text("Valor total informado: "+brl(tot),W-M,y,{align:"right"});y+=6;
+    for(const b of E.bens){
+      const ps=fotosDoBem(b).slice(0,limFotos());const fotos=[];for(const p of ps.slice(0,4)){const d=await fotoDados(p);if(d)fotos.push(d)}
+      const campos=[...(b.patrimonio?[["Patrimônio",b.patrimonio]]:[]),["Categoria",b.categoria],["Ambiente",nomeAmb(b.ambiente_id)],["Estado",b.estado],["Marca",b.marca],["Modelo",b.modelo],["Nº de série",b.numero_serie],["Valor",b.valor!=null&&b.valor!==""?brl(Number(b.valor)):""],["Data de compra",b.data_aquisicao?dtBR(b.data_aquisicao):""]].filter(x=>x[1]);
+      const obs=b.observacao?doc.splitTextToSize("Observação: "+b.observacao,W-2*M-8):[];
+      const hFoto=fotos.length?42:0,hTxt=8+Math.ceil(campos.length/2)*5+obs.length*4.2;const alt=Math.max(hTxt,0)+hFoto+8;
+      if(y+alt>H-16){doc.addPage();topo();y=28}
+      doc.setDrawColor(227,224,218);doc.roundedRect(M,y,W-2*M,alt,2,2,"S");
+      let yy=y+7;doc.setFont("helvetica","bold");doc.setFontSize(11);doc.text(doc.splitTextToSize(b.nome,W-2*M-8)[0],M+4,yy);yy+=6;
+      doc.setFontSize(9);campos.forEach(([k,v],i)=>{const x=M+4+(i%2)*((W-2*M-8)/2),yl=yy+Math.floor(i/2)*5;doc.setFont("helvetica","bold");doc.text(k+": ",x,yl);const kw=doc.getTextWidth(k+": ");doc.setFont("helvetica","normal");doc.text(doc.splitTextToSize(String(v),(W-2*M-8)/2-kw-2)[0],x+kw,yl)});
+      yy+=Math.ceil(campos.length/2)*5;if(obs.length){doc.setFont("helvetica","normal");doc.text(obs,M+4,yy);yy+=obs.length*4.2}
+      if(fotos.length){let x=M+4;const hh=38;for(const f of fotos){let w=hh*f.w/f.h;if(w>44){w=44}const h=w*f.h/f.w;if(x+w>W-M-4)break;doc.addImage(f.url,"JPEG",x,yy+(hh-h)/2,w,h);x+=w+4}}
+      y+=alt+5}
+    const t=doc.getNumberOfPages();for(let i=1;i<=t;i++){doc.setPage(i);rodape(i,t)}
+    baixarBlob(doc.output("blob"),nomeArquivo("pdf"));DB.registrar(E.v.contratante_id,"baixou relatório pdf",String(E.bens.length));toast("Relatório PDF baixado.");
+  }catch(e){toast(e.message||"Não foi possível gerar o PDF.")}
+  if(bt){bt.disabled=false;bt.querySelector("b").textContent="📄 Relatório PDF com fotos"}
 }
 iniciar();
+
+// Mostrar / ocultar senha em todos os campos de senha
+(function(){
+  function olho(inp){
+    if(inp.dataset.olho)return; inp.dataset.olho="1";
+    var box=document.createElement("span"); box.className="senha-box";
+    inp.parentNode.insertBefore(box,inp); box.appendChild(inp);
+    var b=document.createElement("button"); b.type="button"; b.className="senha-olho";
+    b.textContent="\u{1F441} Mostrar"; b.setAttribute("aria-label","Mostrar senha");
+    b.onclick=function(){var mostrar=inp.type==="password"; inp.type=mostrar?"text":"password";
+      b.textContent=mostrar?"\u{1F648} Ocultar":"\u{1F441} Mostrar"; b.setAttribute("aria-label",mostrar?"Ocultar senha":"Mostrar senha"); inp.focus();};
+    box.appendChild(b);
+  }
+  function varrer(){document.querySelectorAll('input[type="password"]:not([data-olho])').forEach(olho);}
+  new MutationObserver(varrer).observe(document.body,{childList:true,subtree:true}); varrer();
+})();
 </script>
 </body>
 </html>

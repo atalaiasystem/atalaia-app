@@ -73,6 +73,8 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
 .demo{background:var(--amb);color:var(--ink);text-align:center;font-size:.8rem;font-weight:700;padding:4px}
 .lgpd{font-size:.8rem;color:var(--mut);text-align:center;margin:18px 0 30px}
 .hb{display:grid;grid-template-columns:90px 1fr 40px;gap:8px;align-items:center;margin:7px 0;font-size:.86rem}.hb .bar{height:12px;margin:0}
+.senha-box{position:relative;display:block}.senha-box input{padding-right:86px}.senha-olho{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;font-size:.82rem;font-weight:700;cursor:pointer;padding:6px 8px;border-radius:8px;opacity:.85}.senha-olho:hover,.senha-olho:focus{opacity:1;text-decoration:underline}
+.paleta{display:grid;gap:6px;margin:6px 0 4px}.pal-l{display:grid;grid-template-columns:110px 1fr;align-items:center;gap:8px}.pal-n{font-size:.78rem;font-weight:600;color:var(--mut)}.pal-c{display:flex;gap:6px;flex-wrap:wrap}.pal-c button{width:30px;height:30px;border-radius:8px;border:1px solid rgba(0,0,0,.12);cursor:pointer;padding:0}.pal-c button[aria-pressed=true]{outline:3px solid var(--ink);outline-offset:2px}.pal-outra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:.84rem;font-weight:600}@media(max-width:420px){.pal-l{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -84,7 +86,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.0"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.2"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -434,14 +436,16 @@ async function encerrarAd(id){if(!confirm("Encerrar este adicional? O limite da 
 
 /* ---------- design do painel ---------- */
 const FONTES={sistema:["Padrão do sistema",'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',""],sora:["Sora (marca Atalaia)",'"Sora",system-ui,sans-serif',"Sora:wght@400;600;700;800"],archivo:["Archivo",'"Archivo",system-ui,sans-serif',"Archivo:wght@400;600;700;800"],inter:["Inter",'"Inter",system-ui,sans-serif',"Inter:wght@400;600;700;800"],source:["Source Sans 3",'"Source Sans 3",system-ui,sans-serif',"Source+Sans+3:wght@400;600;700;800"]};
-const CORES=["#1d1f23","#3a3d43","#7a4e0c","#b7791f","#c0392b","#8e3b2e","#2f4f4f","#4a4a6a"];
+const PALETA=[["Cinza e preto",["#9ca3af","#6b7280","#4b5563","#374151","#1d1f23"]],["Azul",["#93c5fd","#60a5fa","#3b82f6","#2563eb","#1e3a8a"]],["Azul-céu",["#7dd3fc","#38bdf8","#0ea5e9","#0284c7","#075985"]],["Turquesa",["#67e8f9","#22d3ee","#06b6d4","#0891b2","#155e75"]],["Verde-água",["#5eead4","#2dd4bf","#14b8a6","#0d9488","#115e59"]],["Verde",["#86efac","#4ade80","#22c55e","#16a34a","#14532d"]],["Verde-limão",["#bef264","#a3e635","#84cc16","#65a30d","#3f6212"]],["Amarelo",["#fde047","#facc15","#eab308","#ca8a04","#854d0e"]],["Âmbar (Atalaia)",["#fcd34d","#f2a33a","#f59e0b","#d97706","#92400e"]],["Laranja",["#fdba74","#fb923c","#f97316","#ea580c","#9a3412"]],["Vermelho",["#fca5a5","#f87171","#ef4444","#dc2626","#7f1d1d"]],["Rosa",["#f9a8d4","#f472b6","#ec4899","#db2777","#831843"]],["Fúcsia",["#f0abfc","#e879f9","#d946ef","#c026d3","#701a75"]],["Roxo",["#c4b5fd","#a78bfa","#8b5cf6","#7c3aed","#4c1d95"]],["Marrom",["#d6b48c","#b08155","#8b5a2b","#6f4518","#3e2410"]]];
+function paletaHTML(atual,acao){atual=(atual||"").toLowerCase();return `<div class="paleta">${PALETA.map(([n,cs])=>`<div class="pal-l"><span class="pal-n">${n}</span><span class="pal-c">${cs.map(c=>`<button type="button" title="${n} ${c}" aria-label="${n} ${c}" aria-pressed="${c==atual}" style="background:${c}" onclick="${acao.replace(/COR/g,c)}"></button>`).join("")}</span></div>`).join("")}</div>`}
 function lum(h){const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2]}
 const contraste=(a,b)=>{const x=lum(a),y=lum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
 function lerDesign(){try{return JSON.parse(localStorage.getItem("atalaia_matriz_design")||"{}")}catch(e){return {}}}
 function aplicarDesign(d){d=d||{};const r=document.documentElement,cor=/^#[0-9a-f]{6}$/i.test(d.cor||"")?d.cor:"#1d1f23";r.style.setProperty("--brand",cor);r.style.setProperty("--brand-ink",contraste(cor,"#ffffff")>=4.5?"#ffffff":"#1d1f23");r.dataset.theme=d.tema||"claro";const f=FONTES[d.fonte]||FONTES.sistema;r.style.setProperty("--font",f[1]);const gf=$("#gf");if(gf)gf.href=f[2]?`https://fonts.googleapis.com/css2?family=${f[2]}&display=swap`:"data:text/css,"}
 function abaDesign(){const d=E.dz||(E.dz=lerDesign()),cor=d.cor||"#1d1f23",ct=Math.max(contraste(cor,"#ffffff"),contraste(cor,"#1d1f23"));
  return cab2("Design do painel","Cor, tema e fonte do Painel da Matriz neste computador.")+`<div class="g2"><div class="card">
-  <label>Cor principal<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><input type="color" value="${cor}" oninput="E.dz.cor=this.value;aplicarDesign(E.dz)" style="width:56px;height:40px;padding:2px"><span style="display:flex;gap:6px">${CORES.map(c=>`<button type="button" title="${c}" onclick="E.dz.cor='${c}';aplicarDesign(E.dz);render()" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:${c};cursor:pointer"></button>`).join("")}</span></div></label>
+  <div style="margin-bottom:12px"><b style="font-size:.86rem">Cor principal</b> <span class="muted" style="font-size:.8rem">· atual ${cor}</span>${paletaHTML(cor,"E.dz.cor='COR';aplicarDesign(E.dz);render()")}
+  <div class="pal-outra">Qualquer outra cor: <input type="color" value="${cor}" onchange="E.dz.cor=this.value;aplicarDesign(E.dz);render()" style="width:56px;height:40px;padding:2px"><input value="${cor}" maxlength="7" style="width:110px" aria-label="Código da cor" onchange="if(/^#[0-9a-f]{6}$/i.test(this.value)){E.dz.cor=this.value.toLowerCase();aplicarDesign(E.dz);render()}else toast('Use o formato #RRGGBB, por exemplo #2563eb.')"></div></div>
   <div class="msg ${ct>=4.5?"ok":"err"}">Contraste do texto sobre a cor: ${ct.toFixed(1)} : 1 ${ct>=4.5?"· bom para leitura":"· baixo, escolha outra cor"} (mínimo 4,5 : 1).</div>
   <label>Tema<select onchange="E.dz.tema=this.value;aplicarDesign(E.dz)">${[["claro","Claro"],["escuro","Escuro"],["auto","Automático"]].map(([k,t])=>`<option value="${k}" ${(d.tema||"claro")==k?"selected":""}>${t}</option>`).join("")}</select></label>
   <label>Fonte<select onchange="E.dz.fonte=this.value;aplicarDesign(E.dz)">${Object.entries(FONTES).map(([k,f])=>`<option value="${k}" ${(d.fonte||"sistema")==k?"selected":""}>${f[0]}</option>`).join("")}</select></label>
@@ -455,12 +459,12 @@ function abaCadastrar(){return `<h1>Cadastrar empresa</h1><p class="sub">Duas pa
   <div class="row"><label>Plano *<select id="cp">${PLANOS.map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select></label><label>Primeiro ambiente *<input id="ca" required maxlength="80" value="Ambiente principal"></label></div>
   <h2 style="margin-top:6px">2. Administrador da empresa</h2>
   <div class="msg info">Antes, crie o usuário no Supabase: <b>Authentication › Users › Add user › Create new user</b>, com senha provisória e <b>Auto Confirm User</b> marcado. No primeiro acesso, o sistema obriga a pessoa a criar a senha dela.</div>
-  <div class="row"><label>E-mail do administrador *<input id="ue" type="email" required></label><label>Nome do administrador *<input id="un" required maxlength="80"></label></div>
-  <button class="btn amb full">Cadastrar empresa e administrador</button></form>
+  <div class="row"><label>E-mail do gestor *<input id="ue" type="email" required></label><label>Nome do gestor *<input id="un" required maxlength="80"></label></div>
+  <button class="btn amb full">Cadastrar empresa e gestor</button></form>
  <form class="card" onsubmit="event.preventDefault();vincularExtra()"><h2>Adicionar usuário a uma empresa existente</h2><p class="sub">Para empresas pagas com mais usuários. O usuário também precisa ser criado antes no Supabase.</p>
   <label>Empresa<select id="vs">${E.cts.map(c=>`<option value="${esc(c.sigla)}">${esc(c.nome)} (${esc(c.sigla)}) · ${esc(c.usuarios)}/${esc(c.lim_usuarios)}</option>`).join("")}</select></label>
   <label>E-mail<input id="ve" type="email" required></label><label>Nome<input id="vn" required maxlength="80"></label>
-  <label>Perfil<select id="vp"><option value="administrador">Administrador</option><option value="gestor">Gestor</option><option value="manutencionista">Manutencionista</option><option value="responsavel">Responsável de ambiente</option></select></label>
+  <label>Perfil<select id="vp"><option value="gestor">Gestor (empresa toda)</option><option value="administrador">Administrador (uma filial)</option><option value="colaborador">Colaborador (manutenção)</option><option value="responsavel">Responsável por ambiente</option></select></label>
   <button class="btn full">Adicionar usuário</button></form></div>`}
 function abaAcessos(){return `<h1>Registro de acessos da Matriz</h1><p class="sub">Últimas 30 ações feitas pela equipe da Matriz.</p><div class="card tw" style="padding:6px 10px"><table><tr><th>Data e hora</th><th>Ação</th><th>Detalhe</th></tr>${E.acessos.map(a=>`<tr><td>${dh(a.criado_em)}</td><td>${esc(a.acao)}</td><td>${esc(a.detalhe||"")}</td></tr>`).join("")||`<tr><td colspan="3" class="muted">Nenhum registro ainda.</td></tr>`}</table></div>`}
 
@@ -487,7 +491,7 @@ async function trocarPlano(s,sel){const novo=sel.value,c=E.cts.find(x=>x.sigla==
   try{await DB.alterarPlano(s,novo);toast("Plano alterado.");await recarregar()}catch(e){sel.value=c.plano_id;E.msg=["err",e.message];render()}}
 async function trocarSituacao(s,sel){const c=E.cts.find(x=>x.sigla==s);if(!confirm(`Mudar a situação de ${c.nome} para "${SIT[sel.value]}"?`)){sel.value=c.situacao;return}
   try{await DB.alterarSituacao(s,sel.value);toast("Situação alterada.");await recarregar()}catch(e){sel.value=c.situacao;E.msg=["err",e.message];render()}}
-async function exigir2(s,cb){try{await DB.exigir2(s,cb.checked);toast(cb.checked?"Duas etapas exigidas dos administradores.":"Duas etapas opcionais.");await recarregar()}catch(e){cb.checked=!cb.checked;E.msg=["err",e.message];render()}}
+async function exigir2(s,cb){try{await DB.exigir2(s,cb.checked);toast(cb.checked?"Duas etapas exigidas do gestor e dos administradores.":"Duas etapas opcionais.");await recarregar()}catch(e){cb.checked=!cb.checked;E.msg=["err",e.message];render()}}
 function sugerirSigla(n){const el=$("#cs");if(el.dataset.mexeu)return;const p=n.normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/[^A-Z ]/g,"").split(/\s+/).filter(x=>x.length>2||/^[A-Z]{2}$/.test(x));el.value=(p.map(x=>x[0]).join("")||n.slice(0,2)).slice(0,4).toUpperCase()}
 document.addEventListener("input",e=>{if(e.target.id=="cs")e.target.dataset.mexeu="1"});
 async function cadastrar(){
@@ -495,7 +499,7 @@ async function cadastrar(){
   const email=$("#ue").value.trim(),nome=$("#un").value.trim();
   if(!/^[A-Z]{2,4}$/.test(d.sigla)){E.msg=["err","A sigla precisa ter de 2 a 4 letras, sem acentos."];render();return}
   try{await DB.criar(d)}catch(e){E.msg=["err",e.message];render();return}
-  try{await DB.vincular(email,d.sigla,nome,"administrador");DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["ok",`Empresa ${d.nome} (${d.sigla}) cadastrada no plano ${d.plano} e ${email} ligado como administrador. Envie a ela o link do aplicativo e a senha provisória (em mensagens separadas).`]}
+  try{await DB.vincular(email,d.sigla,nome,"gestor");DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["ok",`Empresa ${d.nome} (${d.sigla}) cadastrada no plano ${d.plano} e ${email} ligado como administrador. Envie a ela o link do aplicativo e a senha provisória (em mensagens separadas).`]}
   catch(e){DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["info",`A empresa ${d.sigla} foi criada, mas o usuário não foi ligado: ${e.message} Crie o usuário no Supabase e use “Adicionar usuário a uma empresa existente”.`]}
   await recarregar();}
 async function vincularExtra(){const s=$("#vs").value;try{const r=await DB.vincular($("#ve").value.trim(),s,$("#vn").value.trim(),$("#vp").value);DB.registrar("adicionou usuário",s);E.msg=["ok",r];await recarregar()}catch(e){E.msg=["err",e.message];render()}}
@@ -505,6 +509,22 @@ async function mudarEtapa(id,etapa){try{await DB.salvarInteressado({id,etapa});E
 function converter(id){const l=E.leads.find(x=>x.id==id);E.aba="cadastrar";render();$("#cn").value=l.empresa;sugerirSigla(l.empresa);$("#cg").value=l.segmento||"";$("#cp").value=l.plano||"atalaia";if(l.email)$("#ue").value=l.email;if(l.contato)$("#un").value=l.contato;scrollTo(0,0)}
 async function responder(id){const d={resposta:$("#tr").value.trim()||null,situacao:$("#ts").value,prioridade:$("#tp").value};try{await DB.responder(id,d);DB.registrar("respondeu chamado","Nº "+id);toast("Resposta salva. O cliente vê no aplicativo.");E.tks=await DB.chamados();render()}catch(e){E.msg=["err",e.message];render()}}
 iniciar();
+
+// Mostrar / ocultar senha em todos os campos de senha
+(function(){
+  function olho(inp){
+    if(inp.dataset.olho)return; inp.dataset.olho="1";
+    var box=document.createElement("span"); box.className="senha-box";
+    inp.parentNode.insertBefore(box,inp); box.appendChild(inp);
+    var b=document.createElement("button"); b.type="button"; b.className="senha-olho";
+    b.textContent="\u{1F441} Mostrar"; b.setAttribute("aria-label","Mostrar senha");
+    b.onclick=function(){var mostrar=inp.type==="password"; inp.type=mostrar?"text":"password";
+      b.textContent=mostrar?"\u{1F648} Ocultar":"\u{1F441} Mostrar"; b.setAttribute("aria-label",mostrar?"Ocultar senha":"Mostrar senha"); inp.focus();};
+    box.appendChild(b);
+  }
+  function varrer(){document.querySelectorAll('input[type="password"]:not([data-olho])').forEach(olho);}
+  new MutationObserver(varrer).observe(document.body,{childList:true,subtree:true}); varrer();
+})();
 </script>
 </body>
 </html>
