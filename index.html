@@ -66,6 +66,10 @@ nav.tabs svg{width:22px;height:22px}
 .btn-foto{display:inline-flex!important;align-items:center;gap:6px;cursor:pointer}
 .nova-versao{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:30;background:var(--ink);color:#fff;border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:560px;margin:0 auto}
 .opc-baixar{display:grid;gap:10px;margin:12px 0}.opc-baixar button{text-align:left;padding:14px}
+.avatar{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:var(--amb);color:var(--ink);font-weight:800;display:grid;place-items:center;overflow:hidden;cursor:pointer;flex-shrink:0;padding:0;font-size:.9rem}.avatar img{width:100%;height:100%;object-fit:cover}
+.logo-emp{width:40px;height:40px;object-fit:contain;background:#fff;border-radius:8px;padding:2px;flex-shrink:0}
+.menu-conta{position:absolute;right:12px;top:64px;width:min(320px,calc(100vw - 24px));background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:10px;z-index:20;display:grid;gap:2px}
+.mc-item{display:block;text-align:left;background:none;border:0;padding:10px 8px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.92rem;color:var(--ink);margin:0}.mc-item:hover{background:var(--soft)}
 </style>
 </head>
 <body>
@@ -81,7 +85,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.1.4",
+  versao:"0.1.5",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -133,7 +137,7 @@ function realDB(){
     async chamados(c){return chk(await sb.from("suporte_chamados").select("id,tipo,assunto,mensagem,situacao,resposta,criado_em,respondido_em").eq("contratante_id",c).order("criado_em",{ascending:false}).limit(20))},
     async abrirChamado(c,d){return chk(await sb.from("suporte_chamados").insert({contratante_id:c,autor:E.v.nome,tipo:d.tipo,assunto:d.assunto,mensagem:d.mensagem}).select().single())},
     async ultimosAcessos(){const u=await this.usuario();return chk(await sb.from("registro_acessos").select("criado_em,aparelho").eq("user_id",u.id).eq("acao","entrou").order("criado_em",{ascending:false}).limit(2))},
-    async meuVinculo(){const u=(await sb.auth.getUser()).data.user;const d=chk(await sb.from("membros").select("perfil,nome,contratante_id,contratantes(id,nome,sigla,situacao,plano_id,exige_2_etapas,planos(*))").eq("user_id",u.id).eq("ativo",true).limit(1));return d[0]?{...d[0],email:u.email}:null},
+    async meuVinculo(){const u=(await sb.auth.getUser()).data.user;const d=chk(await sb.from("membros").select("perfil,nome,foto_path,contratante_id,contratantes(id,nome,sigla,situacao,plano_id,exige_2_etapas,design,planos(*))").eq("user_id",u.id).eq("ativo",true).limit(1));return d[0]?{...d[0],email:u.email}:null},
     async ambientes(c){return chk(await sb.from("ambientes").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em"))},
     async addAmbiente(c,nome){return chk(await sb.from("ambientes").insert({contratante_id:c,nome}).select().single())},
     async renAmbiente(id,nome){return chk(await sb.from("ambientes").update({nome}).eq("id",id).select().single())},
@@ -144,6 +148,8 @@ function realDB(){
     async urlFoto(p){if(!p)return null;const r=await sb.storage.from("fotos-bens").createSignedUrl(p,3600);return r.data?.signedUrl||null},
     async excluir(t,id,motivo){return chk(await sb.rpc("excluir_item",{p_tabela:t,p_id:id,p_motivo:motivo}))},
     async desfazer(t,id){return chk(await sb.rpc("desfazer_exclusao",{p_tabela:t,p_id:id}))},
+    async enviarPerfil(c,blob){const u=(await sb.auth.getUser()).data.user;const p=`${c}/usuarios/${u.id}-${Date.now()}.jpg`;chk(await sb.storage.from("fotos-bens").upload(p,blob,{contentType:"image/jpeg"}));chk(await sb.rpc("salvar_minha_foto",{p_c:c,p_path:p}));return p},
+    async enviarLogo(c,blob,design){const p=`${c}/logo-${Date.now()}.png`;chk(await sb.storage.from("fotos-bens").upload(p,blob,{contentType:"image/png"}));return chk(await sb.rpc("salvar_design",{p_contratante:c,p_design:{...(design||{}),logo:p}}))},
     async apagarFotos(ps){if(ps.length)try{await sb.storage.from("fotos-bens").remove(ps)}catch(e){}},
     async registrar(c,acao,detalhe){try{await sb.from("registro_acessos").insert({contratante_id:c,acao,detalhe,aparelho:aparelho()})}catch(e){}}
   };
@@ -180,6 +186,7 @@ function mockDB(){
     async updBem(id,b){const x=bens.find(y=>y.id==id);Object.assign(x,b);return x},
     async enviarFoto(ci,blob){const p="demo/"+Date.now();fotos[p]=URL.createObjectURL(blob);return p},
     async urlFoto(p){return fotos[p]||null},async apagarFotos(){},async registrar(){},
+    async enviarPerfil(cid,blob){const p="demo/"+Date.now();fotos[p]=URL.createObjectURL(blob);return p},async enviarLogo(cid,blob,d){const p="demo/"+Date.now();fotos[p]=URL.createObjectURL(blob);c.design={...(d||{}),logo:p};return c.design},
     async excluir(t,id,m){const x=bens.find(y=>y.id==id);x.ativo=false;x.excluido_em=new Date().toISOString();x.excluido_motivo=m},
     async desfazer(t,id){const x=bens.find(y=>y.id==id);x.ativo=true;x.excluido_em=null}
   };
@@ -203,7 +210,17 @@ function render(){
   if(E.tela=="app")carregarFotosVisiveis();
   montarCaptcha();
 }
-const cab=(sub)=>`<header><div class="wrap">${LOGO}<div><b>ATALAIA SYSTEM${E.v?`<span class="pill">${esc(E.v.contratantes.planos.nome.replace("Atalaia ",""))}</span>`:""}</b><small>${sub||"Sistema de Gestão de Patrimônio e Manutenção"}</small></div></div></header>`;
+const cab=(sub)=>E.v&&E.tela=="app"?`<header><div class="wrap">${E.logoUrl?`<img src="${esc(E.logoUrl)}" alt="" class="logo-emp">`:LOGO}<div style="flex:1;min-width:0"><b style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(E.v.contratantes.nome)}<span class="pill">${esc(E.v.contratantes.planos.nome.replace("Atalaia ",""))}</span></b><small>Atalaia System · Sistema de Gestão de Patrimônio e Manutenção</small></div>
+  <button class="avatar" onclick="E.menuConta=!E.menuConta;render()" aria-label="Sua conta">${E.fotoUrl?`<img src="${esc(E.fotoUrl)}" alt="">`:esc(iniciais(E.v.nome))}</button></div>
+  ${E.menuConta?`<div class="menu-conta" role="menu"><div style="display:flex;gap:10px;align-items:center;padding:4px 4px 10px;border-bottom:1px solid var(--line)"><span class="avatar" style="pointer-events:none">${E.fotoUrl?`<img src="${esc(E.fotoUrl)}" alt="">`:esc(iniciais(E.v.nome))}</span><div><b>${esc(E.v.nome)}</b><div class="muted" style="font-size:.8rem">${esc(E.v.email||"")} · ${esc({gestor:"Gestor",administrador:"Administrador",colaborador:"Colaborador",responsavel:"Responsável"}[E.v.perfil]||E.v.perfil)}</div></div></div>
+   <label class="mc-item">📷 Trocar minha foto<input type="file" accept="image/*" style="display:none" onchange="trocarMinhaFoto(this)"></label>
+   ${E.v.perfil=="gestor"?`<label class="mc-item">🏢 Trocar a logo da empresa<input type="file" accept="image/png,image/jpeg" style="display:none" onchange="trocarLogoEmpresa(this)"></label>`:""}
+   <button class="mc-item" onclick="E.menuConta=false;E.aba='plano';abrirNivel();render();setTimeout(()=>document.getElementById('conta')?.scrollIntoView({behavior:'smooth'}),50)">🔒 Conta e segurança</button>
+   <button class="mc-item" onclick="E.menuConta=false;E.modoSenha='trocar';E.tela='senha';E.msg=null;abrirNivel();render()">🔑 Trocar senha</button>
+   <button class="mc-item" onclick="E.menuConta=false;E.aba='plano';abrirNivel();render();setTimeout(()=>document.getElementById('suporte')?.scrollIntoView({behavior:'smooth'}),50)">💬 Suporte Atalaia System</button>
+   <button class="mc-item" style="color:var(--bad)" onclick="E.menuConta=false;sair()">⎋ Sair</button></div>`:""}</header>`
+ :`<header><div class="wrap">${LOGO}<div><b>ATALAIA SYSTEM</b><small>${sub||"Sistema de Gestão de Patrimônio e Manutenção"}</small></div></div></header>`;
+const iniciais=n=>String(n||"?").trim().split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase();
 function telaLogin(){return cab()+`<div class="wrap center"><div class="card"><h1 style="margin-top:0">Entrar</h1><p class="sub">Use o e-mail e a senha cadastrados. No primeiro acesso, entre com a senha provisória: o sistema vai pedir que você crie a sua.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
  <form onsubmit="event.preventDefault();entrar()"><label>E-mail<input id="em" type="email" autocomplete="username" required></label><label>Senha<input id="se" type="password" autocomplete="current-password" required></label>${captchaHTML()}<button class="btn full">Entrar</button></form>
  <p style="text-align:center;margin:14px 0 0"><button class="btn ghost sm" onclick="esqueci()">Esqueci minha senha</button></p></div><p class="muted" style="text-align:center">Versão ${CONFIG.versao}</p></div>`}
@@ -277,7 +294,7 @@ function abaPlano(p){
 }
 const TIPOS={duvida:"Dúvida",problema:"Problema",melhoria:"Sugestão de melhoria",financeiro:"Financeiro"},SITC={aberto:"Aberto",em_atendimento:"Em atendimento",resolvido:"Resolvido"};
 function suporteHTML(){
-  return `<div class="card"><h2>Suporte Atalaia System</h2><p class="sub" style="margin-bottom:10px">Dúvidas, problemas ou ideias? Escreva para a nossa equipe. A resposta aparece aqui.</p>
+  return `<div class="card" id="suporte"><h2>Suporte Atalaia System</h2><p class="sub" style="margin-bottom:10px">Dúvidas, problemas ou ideias? Escreva para a nossa equipe. A resposta aparece aqui.</p>
   ${E.suporte?`<form onsubmit="event.preventDefault();enviarChamado()"><label>Tipo<select id="st">${Object.entries(TIPOS).map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select></label>
   <label>Assunto<input id="sa" required minlength="3" maxlength="120"></label><label>Mensagem<textarea id="sm" rows="4" required minlength="3" maxlength="2000"></textarea></label>
   <p class="muted" style="margin-top:-6px">Não escreva senhas nem dados pessoais de clientes na mensagem.</p>
@@ -291,7 +308,7 @@ async function enviarChamado(){try{await DB.abrirChamado(E.v.contratante_id,{tip
 function contaHTML(){
   const ativo=E.fatores.some(f=>f.status=="verified"),ant=E.acessos[1];
   const dh=d=>new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
-  return `<div class="card"><h2>Sua conta e segurança</h2><p style="margin:0 0 6px" class="muted">${esc(E.v.nome)} · ${esc(E.v.email||"")} · ${esc(E.v.perfil)}</p>
+  return `<div class="card" id="conta"><h2>Sua conta e segurança</h2><p style="margin:0 0 6px" class="muted">${esc(E.v.nome)} · ${esc(E.v.email||"")} · ${esc(E.v.perfil)}</p>
   <p style="margin:0 0 12px" class="muted">${ant?`Acesso anterior: ${dh(ant.criado_em)} · ${esc(ant.aparelho||"")}. Não reconhece? Troque a senha e use “Sair de todos os aparelhos”.`:"Este é o seu primeiro acesso registrado."}</p>
   ${tem2()||ativo?`<p style="margin:0 0 8px"><b>Verificação em duas etapas:</b> ${ativo?`<span style="color:var(--ok)">ativada ✓</span>`:`<span style="color:var(--warn)">desativada</span> <span class="muted">(recomendada)</span>`}</p>`:""}
   <div style="display:flex;gap:8px;flex-wrap:wrap">${ativo?(E.obrig?"":`<button class="btn ghost sm" onclick="desativar2()">Desativar duas etapas</button>`):tem2()?`<button class="btn amb sm" onclick="ativar2()">Ativar duas etapas</button>`:""}
@@ -398,6 +415,7 @@ async function abrirApp(registrar){
   else{/* conta o uso do app (no máximo 1 registro a cada 6 horas por aparelho), para a Matriz saber quantos usam */
     let ult=0;try{ult=+localStorage.getItem("atalaia_abriu")||0}catch(e){}
     if(Date.now()-ult>216e5){DB.registrar(c,"abriu o app",null);try{localStorage.setItem("atalaia_abriu",String(Date.now()))}catch(e){}}}
+  try{E.fotoUrl=E.v.foto_path?await DB.urlFoto(E.v.foto_path):null;E.logoUrl=E.v.contratantes.design?.logo?await DB.urlFoto(E.v.contratantes.design.logo):null}catch(e){}
   [E.amb,E.bens,E.acessos,E.chamados]=await Promise.all([DB.ambientes(c),DB.bens(c),DB.ultimosAcessos().catch(()=>[]),DB.chamados(c).catch(()=>[])]);
   E.tela="app";render();
 }
@@ -538,6 +556,13 @@ async function baixarPDF(){
 }
 iniciar();
 
+
+/* ---------------- Foto do usuário e logo da empresa ---------------- */
+async function trocarMinhaFoto(inp){const f=inp.files[0];if(!f)return;try{const bl=await comprimirQuadrado(f,320);const p=await DB.enviarPerfil(E.v.contratante_id,bl);E.v.foto_path=p;E.fotoUrl=await DB.urlFoto(p);E.menuConta=false;toast("Foto atualizada.");render()}catch(e){toast(e.message)}}
+async function trocarLogoEmpresa(inp){const f=inp.files[0];if(!f)return;if(f.size>2097152){toast("A logo precisa ter até 2 MB.");return}
+  try{const bl=await comprimir(f).then(b=>b);const d=await DB.enviarLogo(E.v.contratante_id,bl,E.v.contratantes.design);E.v.contratantes.design=d;E.logoUrl=await DB.urlFoto(d.logo);E.menuConta=false;toast("Logo da empresa atualizada.");render()}catch(e){toast(e.message)}}
+function comprimirQuadrado(file,M){return new Promise((ok,er)=>{const img=new Image();img.onload=()=>{const l=Math.min(img.width,img.height),cv=document.createElement("canvas");cv.width=cv.height=M;cv.getContext("2d").drawImage(img,(img.width-l)/2,(img.height-l)/2,l,l,0,0,M,M);cv.toBlob(b=>b?ok(b):er(new Error("Não foi possível ler a foto.")),"image/jpeg",.85)};img.onerror=()=>er(new Error("Não foi possível ler a foto."));img.src=URL.createObjectURL(file)})}
+document.addEventListener("click",e=>{if(E.menuConta&&!e.target.closest(".menu-conta")&&!e.target.closest(".avatar")){E.menuConta=false;render()}});
 // Mostrar / ocultar senha em todos os campos de senha
 (function(){
   function olho(inp){
