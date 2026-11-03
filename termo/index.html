@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atalaia System · Termo de responsabilidade</title>
+<meta name="theme-color" content="#1d1f23">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://ipwleoawvxmzvofcccjn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d1f23%27/%3E%3Cpath d=%27M50 18 L24 82 M50 18 L76 82%27 stroke=%27white%27 stroke-width=%2710%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3Cpath d=%27M35 58 L46 67 L67 44%27 stroke=%27%23f2a33a%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 fill=%27none%27/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
+<style>
+:root{--ink:#1d1f23;--amb:#f2a33a;--mut:#6b7078;--line:#e3e0da;--bg:#f5f3ef;--card:#fff;--ok:#1f9a55;--bad:#c8372d;--marca:#1d1f23;--marca-ink:#fff}
+*{box-sizing:border-box}html,body{margin:0}body{font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+button,input{font:inherit;color:inherit}header{background:var(--marca);color:var(--marca-ink);padding:16px}header b{display:block;font-size:1.05rem}header small{opacity:.85;font-size:.82rem}
+.wrap{max-width:720px;margin:0 auto;padding:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+h1{font-size:1.25rem;margin:0 0 6px}h2{font-size:1rem;margin:0 0 8px}.muted{color:var(--mut);font-size:.86rem}
+.tw{overflow-x:auto;margin:0 -4px}table{width:100%;border-collapse:collapse;font-size:.82rem}th,td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:.72rem;text-transform:uppercase;color:var(--mut)}
+label{display:grid;gap:5px;font-weight:600;font-size:.9rem;margin-bottom:12px}input{border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;width:100%}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-weight:700;cursor:pointer;background:var(--ink);color:#fff;width:100%;min-height:48px}.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+canvas{width:100%;height:180px;border:2px dashed var(--line);border-radius:12px;background:#fff;touch-action:none}
+.msg{padding:11px 12px;border-radius:10px;font-size:.92rem;margin-bottom:12px}.msg.err{background:#fbe9e7;color:var(--bad)}.msg.ok{background:#e6f4ec;color:var(--ok)}
+footer{text-align:center;color:var(--mut);font-size:.78rem;padding:8px 16px 24px}
+@media print{header,.nao-imprimir,footer{display:none}body{background:#fff}.card{border:0}}
+</style></head><body><div id="app"><div class="wrap"><p class="muted">Carregando…</p></div></div>
+<script>
+if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u"};
+const P=new URLSearchParams(location.search),DEMO=P.has("demo"),$=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dh=d=>d?new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"",brl=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+let sb=null;const T={assinado:false};
+const DB=DEMO?{async ver(){return {numero:7,empresa:"Clínica Exemplo",unidade:"Filial Norte",ambiente:"Sala de exames",responsavel:"Enf. Paula Souza",funcao:"Coordenadora de enfermagem",qtd:3,valor:15100,gerado_em:new Date().toISOString(),situacao:T.assinado?"assinado":"aguardando",assinado_em:T.assinado?new Date().toISOString():null,assinado_nome:T.nome,bens:[{patrimonio:"CE-0005",nome:"Monitor multiparâmetro",serie:"MX-778",estado:"bom",posicao:"Leito 1",valor:8900},{patrimonio:"CE-0010",nome:"Ar-condicionado",estado:"regular",valor:2400},{patrimonio:"CE-0015",nome:"Autoclave",serie:"AC-22",estado:"bom",valor:3800}]}},async assinar(c,n){T.assinado=true;T.nome=n;return "Termo assinado. Obrigado!"}}
+:{cli(){return sb||(sb=supabase.createClient(CONFIG.url,CONFIG.anonKey,{auth:{persistSession:false}}))},async rpc(n,a){const {data,error}=await this.cli().rpc(n,a);if(error)throw new Error(error.message);return data},
+  ver(c){return this.rpc("termo_para_assinar",{p_codigo:c})},assinar(c,n,img){return this.rpc("assinar_termo",{p_codigo:c,p_nome:n,p_assinatura:img})}};
+const cab=t=>`<header><b>ATALAIA SYSTEM</b><small>${t?esc(t.empresa)+" · "+esc(t.unidade):"Sistema de Gestão de Patrimônio e Manutenção"}</small></header>`;
+const rod=`<footer>Atalaia System · Sistema de Gestão de Patrimônio e Manutenção</footer>`;
+async function iniciar(erro){const c=P.get("c");if(!c){$("#app").innerHTML=cab()+`<div class="wrap"><div class="msg err">Link do termo incompleto.</div></div>`+rod;return}
+ try{const t=await DB.ver(c);const cor=t.design&&/^#[0-9a-f]{6}$/i.test(t.design.cor||"")?t.design.cor:null;if(cor)document.documentElement.style.setProperty("--marca",cor);
+  $("#app").innerHTML=cab(t)+`<div class="wrap"><div class="card"><h1>Termo de responsabilidade nº ${t.numero}</h1><p class="muted">${esc(t.ambiente)} · gerado em ${dh(t.gerado_em)}</p>
+  <p>Eu, <b>${esc(t.responsavel)}</b>${t.funcao?`, ${esc(t.funcao)}`:""}, declaro que recebi e assumo a responsabilidade pela guarda, conservação e bom uso dos bens patrimoniais relacionados abaixo, localizados em <b>${esc(t.ambiente)}</b> (${esc(t.unidade)}), de propriedade ou sob a posse de <b>${esc(t.empresa)}</b>. Comprometo-me a comunicar imediatamente qualquer dano, defeito, perda, extravio ou transferência, e a não retirar os bens do ambiente sem autorização registrada no sistema.</p>
+  <div class="tw"><table><tr><th>Patrimônio</th><th>Bem</th><th>Série</th><th>Posição</th><th>Estado</th></tr>${(t.bens||[]).map(b=>`<tr><td>${esc(b.patrimonio||"—")}</td><td>${esc(b.nome)}${b.marca?`<div class="muted">${esc([b.marca,b.modelo].filter(Boolean).join(" "))}</div>`:""}</td><td>${esc(b.serie||"")}</td><td>${esc(b.posicao||"")}</td><td>${esc(b.estado||"")}</td></tr>`).join("")||`<tr><td colspan="5" class="muted">Ambiente sem bens cadastrados.</td></tr>`}</table></div>
+  <p class="muted">${t.qtd} bem(ns)${t.valor?` · valor total informado ${brl(t.valor)}`:""}</p></div>
+  ${t.situacao=="assinado"?`<div class="msg ok"><b>Assinado</b> por ${esc(t.assinado_nome||"")} em ${dh(t.assinado_em)} (hora do servidor).</div><button class="btn ghost nao-imprimir" onclick="print()">Imprimir ou salvar em PDF</button>`
+  :t.situacao=="substituido"?`<div class="msg err">Este termo foi substituído por um termo mais novo. Peça o link atualizado.</div>`
+  :`<div class="card nao-imprimir"><h2>Assinar</h2>${erro?`<div class="msg err">${esc(erro)}</div>`:""}<label>Seu nome completo<input id="nm" value="${esc(t.responsavel)}" maxlength="120"></label>
+   <p style="font-weight:600;font-size:.9rem;margin:0 0 6px">Assine com o dedo (ou o mouse) no quadro:</p><canvas id="cv"></canvas>
+   <div style="display:flex;gap:8px;margin:10px 0"><button class="btn ghost" onclick="limpar()">Limpar</button><button class="btn" id="ass" onclick="assinar()">Assinar o termo</button></div>
+   <p class="muted">A data e a hora da assinatura são registradas pelo servidor. Depois de assinado, o termo não pode ser alterado.</p></div>`}</div>`+rod;
+  if($("#cv"))prepararCanvas()}catch(e){$("#app").innerHTML=cab()+`<div class="wrap"><div class="msg err">${esc(e.message)}</div></div>`+rod}}
+let riscou=false;
+function prepararCanvas(){const cv=$("#cv"),r=window.devicePixelRatio||1;cv.width=cv.clientWidth*r;cv.height=cv.clientHeight*r;const g=cv.getContext("2d");g.scale(r,r);g.lineWidth=2.4;g.lineCap="round";g.strokeStyle="#1d1f23";let d=false;
+ const pos=e=>{const b=cv.getBoundingClientRect();return [e.clientX-b.left,e.clientY-b.top]};
+ cv.onpointerdown=e=>{d=true;cv.setPointerCapture(e.pointerId);const [x,y]=pos(e);g.beginPath();g.moveTo(x,y)};
+ cv.onpointermove=e=>{if(!d)return;const [x,y]=pos(e);g.lineTo(x,y);g.stroke();riscou=true};cv.onpointerup=()=>d=false}
+function limpar(){const cv=$("#cv");cv.getContext("2d").clearRect(0,0,cv.width,cv.height);riscou=false}
+async function assinar(){const n=$("#nm").value.trim();if(n.length<3)return iniciar("Escreva seu nome completo.");if(!riscou)return iniciar("Faça a sua assinatura no quadro.");
+ const b=$("#ass");b.disabled=true;b.textContent="Assinando…";try{await DB.assinar(P.get("c"),n,$("#cv").toDataURL("image/png"));riscou=false;iniciar()}catch(e){iniciar(e.message)}}
+iniciar();
+</script></body></html>
