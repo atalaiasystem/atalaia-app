@@ -86,7 +86,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.2"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.3"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -201,7 +201,7 @@ function telaPainel(){
   const it=MENU.find(m=>m[0]==E.aba),corpo=T[E.aba]?T[E.aba]():emBreve(it);
   return `<div class="shell"><aside class="side"><div class="sbrand"><div class="lg">${LOGO}</div><div><b>Painel da Matriz</b><small>Atalaia System</small></div></div>
   <nav class="smenu">${MENU.map(m=>m[0]=="grp"?`<div class="grp">${m[1]}</div>`:`<button aria-current="${E.aba==m[0]||(E.aba=="ficha"&&m[0]=="empresas")}" onclick="irAba('${m[0]}')">${m[1]}${m[0]=="atend"&&ab?`<span class="bdg">${ab}</span>`:""}${m[2]?`<span class="soon">parte ${m[2]}</span>`:""}</button>`).join("")}</nav>
-  <div style="border-top:1px solid var(--line);margin-top:10px;padding:10px 8px 0" class="muted">${esc(E.email)}<br><button class="btn ghost sm" style="margin-top:6px" onclick="sair()">Sair</button></div></aside>
+  <div style="border-top:1px solid var(--line);margin-top:10px;padding:10px 8px 0" class="muted">${esc(E.email)}<br><button class="btn ghost sm" style="margin-top:6px" onclick="sair()">Sair</button> <button class="btn ghost sm" style="margin-top:6px;color:var(--bad)" onclick="sairTodos()" title="Encerra o acesso em todos os computadores e celulares">Sair de todos os aparelhos</button></div></aside>
   <main class="mn"><div class="wrap">${E.hist.length?`<button class="btn ghost sm" style="margin-bottom:10px" onclick="voltar()">← Voltar</button>`:""}${msgH()}${corpo}
   <p class="lgpd">A Matriz vê apenas quantidades de uso. Os dados cadastrados pelos clientes (bens, fotos, valores e pessoas) pertencem a eles e não aparecem neste painel (LGPD: cliente controlador, Atalaia System operadora).</p></div></main></div>${E.det?detalheHTML():""}`;
 }
@@ -525,6 +525,9 @@ iniciar();
   function varrer(){document.querySelectorAll('input[type="password"]:not([data-olho])').forEach(olho);}
   new MutationObserver(varrer).observe(document.body,{childList:true,subtree:true}); varrer();
 })();
+
+async function sairTodos(){if(!confirm("Sair de todos os aparelhos? Você e qualquer outro computador ou celular conectado com a conta da Matriz precisarão entrar de novo (senha e código de duas etapas)."))return;
+  try{await sb.rpc("matriz_registrar",{p_acao:"saiu de todos os aparelhos",p_detalhe:null})}catch(e){}try{await sb.auth.signOut({scope:"global"})}catch(e){}location.reload()}
 </script>
 </body>
 </html>

@@ -89,7 +89,7 @@ label.f{display:grid;gap:5px;font-weight:600;font-size:.85rem;margin-bottom:10px
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.7.2"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.7.3"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -129,7 +129,7 @@ function realDB(){
   return {
     async sessao(){return chk(await sb.auth.getSession()).session},
     async entrar(e,s){return chk(await sb.auth.signInWithPassword({email:e,password:s}))},
-    async sair(){await sb.auth.signOut()},
+    async sair(){await sb.auth.signOut()},async sairTodos(){await sb.auth.signOut({scope:"global"})},
     async usuario(){return (await sb.auth.getUser()).data.user},
     async nivel(){return chk(await sb.auth.mfa.getAuthenticatorAssuranceLevel())},
     async fatores(){const d=chk(await sb.auth.mfa.listFactors());return (d.all||[]).filter(f=>f.factor_type=="totp")},
@@ -285,7 +285,7 @@ function mockDB(){
   DOCS.push({id:"d2",empresa_id:"m1",tipo:"certificado",nome:"Acreditação RBC.pdf",path:"",validade:"2027-03-31",enviado_em:"2026-04-01T12:00:00Z",quem:"Ana Gestora"},{id:"d3",empresa_id:"m3",tipo:"contrato",nome:"Alvará de funcionamento.pdf",path:"",validade:new Date(Date.now()-15*864e5).toISOString().slice(0,10),enviado_em:"2026-01-10T12:00:00Z",quem:"Ana Gestora"});
   CH.forEach((c,i)=>{if(i%3!=2){const L=B.filter(x=>x.ambiente_id==c.ambiente_id);if(L.length)c.bem_id=L[i%L.length].id}});
   const ind=(u)=>{const L=CH.filter(x=>!u||x.estabelecimento_id==u);const ab=L.filter(x=>["aberto","aceito","em_atendimento"].includes(x.situacao));return {abertos_periodo:L.length,em_aberto:ab.length,concluidos:L.length-ab.length,atendidos_no_prazo:L.filter(x=>x.aceito_em&&x.aceito_em<=x.prazo_atender).length,resolvidos_no_prazo:L.filter(x=>x.concluido_em&&x.concluido_em<=x.prazo_resolver).length,atrasados:ab.filter(x=>Date.now()>Date.parse(x.prazo_resolver)).length,tempo_medio_horas:4.6,avaliacao_media:4.7,excluidos:comoAdm?null:1,custo_total:L.reduce((s,x)=>s+(x.custo||0),0)}};
-  return {async sessao(){return log?{}:null},async entrar(){await w(150);log=true},async sair(){log=false},async usuario(){return {id:meu.user_id,email:"demo@exemplo",user_metadata:{senha_definida:true}}},
+  return {async sessao(){return log?{}:null},async entrar(){await w(150);log=true},async sair(){log=false},async sairTodos(){log=false},async usuario(){return {id:meu.user_id,email:"demo@exemplo",user_metadata:{senha_definida:true}}},
     async nivel(){return {currentLevel:"aal1",nextLevel:"aal1"}},async fatores(){return []},async verificar(){},
     async vinculo(){return {perfil:meu.perfil,nome:meu.nome,contratante_id:"c1",estabelecimento_id:meu.estabelecimento_id,contratantes:c,email:"demo@exemplo"}},
     async estab(){return ES.filter(e=>!comoAdm||e.id==ADMU)},async addEstab(cid,n){if(ES.filter(e=>e.tipo=="filial").length>=3)throw new Error("Limite do plano atingido: 3 filial(is).");const e={id:"e"+Date.now(),contratante_id:"c1",tipo:"filial",nome:n,criado_em:new Date().toISOString()};ES.push(e);return e},async renEstab(id,n){ES.find(x=>x.id==id).nome=n},
@@ -387,7 +387,7 @@ function render(){
     <button class="mc-item" onclick="E.menuConta=false;E.cfgTab='conta';ir('cfg')">🔒 Conta e segurança</button>
     <button class="mc-item" onclick="E.menuConta=false;ir('avisos')">🔔 Avisos</button>
     <a class="mc-item" href="../" style="text-decoration:none">📱 Abrir o aplicativo</a>
-    <button class="mc-item" style="color:var(--bad)" onclick="E.menuConta=false;sair()">⎋ Sair</button></div>`:""}</div>
+    <button class="mc-item" style="color:var(--bad)" onclick="E.menuConta=false;sair()">⎋ Sair</button><button class="mc-item" style="color:var(--bad)" onclick="E.menuConta=false;sairTodos()">⎋ Sair de todos os aparelhos</button></div>`:""}</div>
    <div class="wrap">${E.visao?`<div class="msg info" style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><span>👁 Você está vendo o painel de <b>${esc(nomeUniFull(E.visao))}</b>, como o Administrador ${esc(admsDe(E.visao)||"")} vê. Você continua com acesso de Gestor.</span><button class="btn sm" onclick="mudarVisao('')">Voltar para a empresa toda</button></div>`:""}${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}${pagina(item)}<p class="note" style="text-align:center;margin-top:12px">Atalaia System · ${GESTOR()?"Painel do Gestor":"Painel do Administrador"} ${CONFIG.versao}</p></div></main></div>${E.modal?(E.modal.tipo=="chamado"?modalChamado():E.modal.tipo=="novoch"?modalNovoChamado():E.modal.tipo=="qr"?modalQR():E.modal.tipo=="prog"?modalProg():E.modal.tipo=="serv"?modalServ():E.modal.tipo=="empresa"?modalEmpresa():E.modal.tipo=="vist"?modalVistoria():E.modal.tipo=="med"?modalMedicoes():E.modal.tipo=="rdet"?modalRondaDet():E.modal.tipo=="termo"?modalTermo():E.modal.tipo=="amb"?modalAmb():E.modal.tipo=="peca"?modalPeca():E.modal.tipo=="emov"?modalEMov():E.modal.tipo=="mvb"?modalMvb():E.modal.tipo=="tv"?modalTv():E.modal.tipo=="avforn"?modalAvForn():E.modal.tipo=="col"?modalCol():E.modal.tipo=="imp"?modalImportar():E.modal.tipo=="novotermo"?modalNovoTermo():modalBem()):""}`;
   carregarFotos();
 }
@@ -542,7 +542,7 @@ function cfgDesign(){
    <p class="note">A prévia já mostra o painel com as escolhas. Clique em “Salvar design” para valer para todos.</p></div></div>`;
 }
 function previa(){aplicarDesign(E.rascunho);const c=E.rascunho.cor||"#1d1f23",r=Math.max(contraste(c,"#ffffff"),contraste(c,"#1d1f23")),el=$("#ctr");if(el){el.className="msg "+(r>=4.5?"ok":"err");el.textContent=`Contraste do texto sobre a cor: ${r.toFixed(1)} : 1 ${r>=4.5?"· bom para leitura":"· baixo: escolha uma cor mais escura ou mais clara"} (mínimo 4,5 : 1).`}}
-function cfgConta(){return `<div class="card"><h2>Sua conta</h2><p>${esc(E.v.nome)} · ${esc(E.v.email)} · ${esc(E.v.perfil)}</p><p class="note">Troca de senha, verificação em duas etapas e “sair de todos os aparelhos” ficam no aplicativo, na aba Plano › Sua conta e segurança.</p><div><a class="btn" href="../" style="text-decoration:none">Abrir o aplicativo</a></div></div>`}
+function cfgConta(){return `<div class="card"><h2>Sua conta</h2><p>${esc(E.v.nome)} · ${esc(E.v.email)} · ${esc(E.v.perfil)}</p><p class="note">Emprestou o acesso ou esqueceu a conta aberta em outro computador? Use “Sair de todos os aparelhos”: todos precisarão entrar de novo. Depois, troque a senha.</p><div style="margin:8px 0"><button class="btn" style="background:var(--bad);color:#fff" onclick="sairTodos()">Sair de todos os aparelhos</button></div><p class="note">Troca de senha e verificação em duas etapas ficam no aplicativo, na aba Plano › Sua conta e segurança.</p><div><a class="btn" href="../" style="text-decoration:none">Abrir o aplicativo</a></div></div>`}
 function cfgAcessos(){const nm=id=>id?(id==E.uid?"Você":((E.mem.find(m=>m.user_id==id)||{}).nome||"Usuário da empresa")):"Equipe Atalaia System",f=E.acF||{},acs=[...new Set(E.aces.map(a=>a.acao))].sort(),L=E.aces.filter(a=>(!f.a||a.acao==f.a)&&(!f.u||String(a.user_id||"")==f.u));
  return `<div class="card"><h2>Registro de acessos</h2><p class="note">Entradas e ações importantes dos usuários da empresa (últimos 200 registros). Não pode ser apagado.</p>
  <div class="filters"><label>Ação<select onchange="E.acF={...(E.acF||{}),a:this.value};render()"><option value="">Todas</option>${acs.map(a=>`<option ${f.a==a?"selected":""}>${esc(a)}</option>`).join("")}</select></label><label>Usuário<select onchange="E.acF={...(E.acF||{}),u:this.value};render()"><option value="">Todos</option>${[...new Set(E.aces.map(a=>String(a.user_id||"")))].map(u=>`<option value="${u}" ${f.u==u?"selected":""}>${esc(nm(u))}</option>`).join("")}</select></label><button class="btn ghost sm" onclick="baixarArq(planilhaXlsx([{nome:'Registro de acessos',cab:true,linhas:[['Data e hora','Usuário','Ação','Detalhe','Aparelho'],...E.aces.filter(a=>(!(E.acF||{}).a||a.acao==E.acF.a)&&(!(E.acF||{}).u||String(a.user_id||'')==E.acF.u)).map(a=>[dh(a.criado_em),${"nmAc"}(a.user_id),a.acao,a.detalhe||'',a.aparelho||''])]}]),'registro_acessos.xlsx')">Exportar</button></div>
@@ -1669,6 +1669,9 @@ function mudarVisao(u){E.visao=u||"";E.iu="";E.uni=u||"";E.chF={...E.chF,uni:""}
   new MutationObserver(varrer).observe(document.body,{childList:true,subtree:true}); varrer();
 })();
 iniciar();
+
+async function sairTodos(){if(!confirm("Sair de todos os aparelhos? Você e qualquer outro computador, tablet ou celular conectado com a sua conta precisarão entrar de novo."))return;
+  try{await DB.registrar(E.v.contratante_id,"saiu de todos os aparelhos",null)}catch(e){}try{await DB.sairTodos()}catch(e){}Object.assign(E,{tela:"login",v:null,msg:["ok","Você saiu de todos os aparelhos. Em até 1 hora, nenhum outro aparelho continua com acesso."],pag:"inicio",rascunho:null});aplicarDesign({});render()}
 </script>
 </body>
 </html>
