@@ -85,7 +85,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.1.5",
+  versao:"0.1.6",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -211,8 +211,9 @@ function render(){
   montarCaptcha();
 }
 const cab=(sub)=>E.v&&E.tela=="app"?`<header><div class="wrap">${E.logoUrl?`<img src="${esc(E.logoUrl)}" alt="" class="logo-emp">`:LOGO}<div style="flex:1;min-width:0"><b style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(E.v.contratantes.nome)}<span class="pill">${esc(E.v.contratantes.planos.nome.replace("Atalaia ",""))}</span></b><small>Atalaia System · Sistema de Gestão de Patrimônio e Manutenção</small></div>
-  <button class="avatar" onclick="E.menuConta=!E.menuConta;render()" aria-label="Sua conta">${E.fotoUrl?`<img src="${esc(E.fotoUrl)}" alt="">`:esc(iniciais(E.v.nome))}</button></div>
+  ${["gestor","administrador"].includes(E.v.perfil)?`<a class="btn ghost sm" href="gestor/" style="text-decoration:none;white-space:nowrap;margin-right:6px;color:inherit;border-color:rgba(255,255,255,.4)" title="Abrir o painel completo no computador">🖥 Painel</a>`:""}<button class="avatar" onclick="E.menuConta=!E.menuConta;render()" aria-label="Sua conta">${E.fotoUrl?`<img src="${esc(E.fotoUrl)}" alt="">`:esc(iniciais(E.v.nome))}</button></div>
   ${E.menuConta?`<div class="menu-conta" role="menu"><div style="display:flex;gap:10px;align-items:center;padding:4px 4px 10px;border-bottom:1px solid var(--line)"><span class="avatar" style="pointer-events:none">${E.fotoUrl?`<img src="${esc(E.fotoUrl)}" alt="">`:esc(iniciais(E.v.nome))}</span><div><b>${esc(E.v.nome)}</b><div class="muted" style="font-size:.8rem">${esc(E.v.email||"")} · ${esc({gestor:"Gestor",administrador:"Administrador",colaborador:"Colaborador",responsavel:"Responsável"}[E.v.perfil]||E.v.perfil)}</div></div></div>
+   ${["gestor","administrador"].includes(E.v.perfil)?`<a class="mc-item" href="gestor/" style="text-decoration:none">🖥 Abrir o Painel do ${E.v.perfil=="gestor"?"Gestor":"Administrador"} (computador)</a>`:""}
    <label class="mc-item">📷 Trocar minha foto<input type="file" accept="image/*" style="display:none" onchange="trocarMinhaFoto(this)"></label>
    ${E.v.perfil=="gestor"?`<label class="mc-item">🏢 Trocar a logo da empresa<input type="file" accept="image/png,image/jpeg" style="display:none" onchange="trocarLogoEmpresa(this)"></label>`:""}
    <button class="mc-item" onclick="E.menuConta=false;E.aba='plano';abrirNivel();render();setTimeout(()=>document.getElementById('conta')?.scrollIntoView({behavior:'smooth'}),50)">🔒 Conta e segurança</button>
