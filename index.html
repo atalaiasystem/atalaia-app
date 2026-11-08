@@ -38,7 +38,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--amb);border-colo
 .bem .ft{width:64px;height:64px;border-radius:10px;background:var(--soft);object-fit:cover;display:grid;place-items:center;color:var(--mut);font-size:.7rem;text-align:center}
 .bem b{display:block}.pat{font-family:ui-monospace,Menlo,monospace;font-size:.82rem;color:var(--mut)}
 .tag{font-size:.75rem;border:1px solid var(--line);border-radius:99px;padding:2px 8px;white-space:nowrap}
-nav.tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding-bottom:env(safe-area-inset-bottom);z-index:5}
 nav.tabs button{background:none;border:0;padding:10px 4px;font-size:.78rem;color:var(--mut);display:grid;justify-items:center;gap:3px;cursor:pointer}
 nav.tabs button[aria-current=true]{color:var(--ink);font-weight:700}
 nav.tabs svg{width:22px;height:22px}
@@ -70,6 +70,16 @@ nav.tabs svg{width:22px;height:22px}
 .logo-emp{width:40px;height:40px;object-fit:contain;background:#fff;border-radius:8px;padding:2px;flex-shrink:0}
 .menu-conta{position:absolute;right:12px;top:64px;width:min(320px,calc(100vw - 24px));background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:10px;z-index:20;display:grid;gap:2px}
 .mc-item{display:block;text-align:left;background:none;border:0;padding:10px 8px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.92rem;color:var(--ink);margin:0}.mc-item:hover{background:var(--soft)}
+
+.bigs{display:grid;gap:10px;margin:6px 0 14px}.big{display:flex;align-items:center;gap:12px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;width:100%;position:relative}.big:disabled{opacity:.55;cursor:default}
+.big .ico{width:44px;height:44px;border-radius:12px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex:none}.big .tx{display:grid;gap:2px;min-width:0}.big .tx span{color:var(--mut);font-size:.85rem}.big .tagp{position:absolute;top:8px;right:10px;font-size:.68rem;background:var(--soft);border-radius:99px;padding:2px 8px;color:var(--mut)}
+.rowch{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:10px 0;cursor:pointer}.rowch:first-of-type{border-top:0}.rowch .dot{width:10px;height:10px;border-radius:50%;background:var(--pc);margin-top:6px;flex:none}.rowch .tx{display:grid;gap:2px;min-width:0}.rowch .tx>span{color:var(--mut);font-size:.84rem}
+.tg{display:inline-block;font-size:.72rem;font-weight:700;color:var(--tc);border:1.5px solid var(--tc);border-radius:99px;padding:1px 8px;margin-top:3px}
+.chps{display:flex;gap:6px;flex-wrap:wrap}.chp{border:1.5px solid var(--line);background:var(--card);border-radius:99px;padding:6px 12px;font-size:.84rem;cursor:pointer}.chp[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.faixa{background:var(--tc);color:#fff;font-weight:700;border-radius:12px;padding:10px 14px;margin:0 0 12px}
+.dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:.9rem}.dl dt{color:var(--mut)}.dl dd{margin:0;min-width:0}
+.fotos-ch{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:8px}.fotos-ch figure{margin:0}.fotos-ch img,.fotos-ch .ph{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;background:var(--soft);display:block}.fotos-ch figcaption{font-size:.78rem;color:var(--mut);margin-top:3px}
+.fpick{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border:1.5px dashed var(--line);border-radius:12px;padding:10px 12px}.fpick.ok{border-style:solid;border-color:#1f9a55}
 </style>
 </head>
 <body>
@@ -85,7 +95,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.2.1",
+  versao:"0.3.2",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -93,7 +103,7 @@ const CONFIG={
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Atalaia: abertura dentro de outra página bloqueada.")}
 const DEMO=new URLSearchParams(location.search).has("demo")||!CONFIG.anonKey||CONFIG.anonKey.startsWith("COLE_");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
-const IC={bens:"M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10",amb:"M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6",plano:"M12 2l3 6 6 .9-4.5 4.3 1 6.3L12 16.6 6.5 19.5l1-6.3L3 8.9 9 8z"};
+const IC={bens:"M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10",amb:"M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6",plano:"M12 2l3 6 6 .9-4.5 4.3 1 6.3L12 16.6 6.5 19.5l1-6.3L3 8.9 9 8z",man:"M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z",ron:"M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"};
 const ic=(k)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${IC[k]}"/></svg>`;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $=s=>document.querySelector(s);
@@ -137,7 +147,7 @@ function realDB(){
     async chamados(c){return chk(await sb.from("suporte_chamados").select("id,tipo,assunto,mensagem,situacao,resposta,criado_em,respondido_em").eq("contratante_id",c).order("criado_em",{ascending:false}).limit(20))},
     async abrirChamado(c,d){return chk(await sb.from("suporte_chamados").insert({contratante_id:c,autor:E.v.nome,tipo:d.tipo,assunto:d.assunto,mensagem:d.mensagem}).select().single())},
     async ultimosAcessos(){const u=await this.usuario();return chk(await sb.from("registro_acessos").select("criado_em,aparelho").eq("user_id",u.id).eq("acao","entrou").order("criado_em",{ascending:false}).limit(2))},
-    async meuVinculo(){const u=(await sb.auth.getUser()).data.user;const d=chk(await sb.from("membros").select("perfil,nome,foto_path,contratante_id,contratantes(id,nome,sigla,situacao,plano_id,exige_2_etapas,design,planos(*))").eq("user_id",u.id).eq("ativo",true).limit(1));return d[0]?{...d[0],email:u.email}:null},
+    async meuVinculo(){const u=(await sb.auth.getUser()).data.user;const d=chk(await sb.from("membros").select("perfil,nome,foto_path,contratante_id,user_id,estabelecimento_id,contratantes(id,nome,sigla,situacao,plano_id,exige_2_etapas,design,planos(*))").eq("user_id",u.id).eq("ativo",true).limit(1));return d[0]?{...d[0],email:u.email}:null},
     async ambientes(c){return chk(await sb.from("ambientes").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em"))},
     async addAmbiente(c,nome,extra){return chk(await sb.from("ambientes").insert({contratante_id:c,nome,...(extra||{})}).select().single())},
     async unidades(c){try{return chk(await sb.from("estabelecimentos").select("id,nome,tipo").eq("contratante_id",c).order("criado_em"))}catch(e){return []}},
@@ -264,8 +274,8 @@ function telaAtivar(){
 function telaSemAcesso(){return cab()+`<div class="wrap center"><div class="card"><h2>Acesso ainda não liberado</h2><p class="sub">Seu e-mail entrou, mas ainda não está ligado a uma empresa. Peça à equipe do Atalaia System para concluir o cadastro.</p><button class="btn ghost" onclick="sair()">Sair</button></div></div>`}
 function telaApp(){
   const c=E.v.contratantes,p=c.planos;
-  const corpo=E.aba=="bens"?abaBens(p):E.aba=="amb"?abaAmb(p):abaPlano(p);
-  return cab(esc(c.nome))+`<div class="wrap">${corpo}</div><nav class="tabs">${[["bens","Bens"],["amb",p.ambientes>1?"Ambientes":"Ambiente"],["plano","Plano"]].map(([k,t])=>`<button aria-current="${E.aba==k}" onclick="irAba('${k}')">${ic(k=="amb"?"amb":k)}${t}</button>`).join("")}</nav>`;
+  const corpo=E.aba=="man"?abaMan():E.aba=="ron"&&typeof abaRon=="function"?abaRon():E.aba=="bens"?abaBens(p):E.aba=="amb"?abaAmb(p):abaPlano(p);
+  return cab(esc(c.nome))+`<div class="wrap">${corpo}</div><nav class="tabs">${[...(temMan()?[["man","Manutenção"]]:[]),...(temF("rondas")&&typeof abaRon=="function"?[["ron","Rondas"]]:[]),["bens","Bens"],["amb",p.ambientes>1?"Ambientes":"Ambiente"],["plano","Plano"]].map(([k,t])=>`<button aria-current="${E.aba==k}" onclick="irAba('${k}')">${ic(k=="amb"?"amb":k)}${t}</button>`).join("")}</nav>`;
 }
 function uso(n,lim,neutro){const p=Math.min(100,n/lim*100);return `<div class="bar"><i style="width:${p}%;background:${neutro?"var(--ink)":p>=100?"var(--bad)":p>=75?"var(--warn)":"var(--ink)"}"></i></div>`}
 function abaBens(p){
@@ -345,6 +355,7 @@ const sitOpts=k=>`<optgroup label="Bens próprios">${SITB.filter(x=>x[2]=="p").m
 const CAT=["Equipamento","Mobiliário","Eletrônico","Utensílio","Ferramenta","Outro"],EST=["novo","bom","regular","ruim","em manutenção"];
 function modalHTML(){
   if(E.modal.tipo=="baixar")return baixarHTML();
+  if(E.modal.tipo=="assin")return assinHTML();
   const b=E.modal.bem||{},novo=!b.id,lim=limFotos(),fs=E.modal.fotos||[];
   return `<div class="modal" onclick="if(event.target==this)voltar()"><div class="sheet"><button type="button" class="voltar" onclick="voltar()">← Voltar</button><h2>${novo?"Cadastrar bem":esc(rot(b))}</h2>${novo?(temPat()?`<p class="sub">O número de patrimônio é gerado automaticamente ao salvar.</p>`:`<p class="sub">Preencha os dados do bem. Número de patrimônio e etiquetas estão disponíveis nos planos pagos.</p>`):`<p class="sub">Cadastrado em ${b.criado_em?new Date(b.criado_em).toLocaleDateString("pt-BR"):"—"}${b.patrimonio?" · o número de patrimônio não muda.":""}</p>`}
   ${E.modal.erro?`<div class="msg err">${esc(E.modal.erro)}</div>`:""}
@@ -449,6 +460,7 @@ async function abrirApp(registrar){
     if(Date.now()-ult>216e5){DB.registrar(c,"abriu o app",null);try{localStorage.setItem("atalaia_abriu",String(Date.now()))}catch(e){}}}
   try{E.fotoUrl=E.v.foto_path?await DB.urlFoto(E.v.foto_path):null;E.logoUrl=E.v.contratantes.design?.logo?await DB.urlFoto(E.v.contratantes.design.logo):null}catch(e){}
   [E.amb,E.bens,E.acessos,E.chamados,E.unis,E.emps]=await Promise.all([DB.ambientes(c),DB.bens(c),DB.ultimosAcessos().catch(()=>[]),DB.chamados(c).catch(()=>[]),DB.unidades(c),DB.empresas(c)]);
+  await carregarMan().catch(()=>{});if(!E.abaIni){E.abaIni=1;E.aba=abaRaiz();E.mt="home"}
   E.tela="app";render();
 }
 function telaLinkErro(){return `<div class="center wrap"><div class="card" style="max-width:460px"><h1 style="font-size:1.3rem">Este link não vale mais</h1><p class="muted">O link do e-mail (convite ou nova senha) venceu ou já foi usado. Por segurança, ele vale por pouco tempo e uma única vez.</p>
@@ -458,7 +470,7 @@ function telaLinkErro(){return `<div class="center wrap"><div class="card" style
 async function sair(){await DB.sair();E.v=null;E.tela="login";E.msg=null;E.modal=null;render()}
 async function sairTodos(){if(!confirm("Sair de todos os aparelhos? Você e qualquer outro aparelho conectado com a sua conta precisarão entrar de novo."))return;
   try{await DB.registrar(E.v.contratante_id,"saiu de todos os aparelhos",null);await DB.sair(true)}catch(e){}E.v=null;E.tela="login";E.msg=["ok","Pronto: a conta foi desconectada de todos os aparelhos."];render()}
-async function recarregar(){const c=E.v.contratante_id;[E.amb,E.bens,E.unis,E.emps]=await Promise.all([DB.ambientes(c),DB.bens(c),DB.unidades(c),DB.empresas(c)]);render()}
+async function recarregar(){const c=E.v.contratante_id;[E.amb,E.bens,E.unis,E.emps]=await Promise.all([DB.ambientes(c),DB.bens(c),DB.unidades(c),DB.empresas(c)]);await carregarMan().catch(()=>{});render()}
 const temManut=()=>!!(E.v&&E.v.contratantes.planos.funcoes.includes("calibracoes"));
 const nomeUni=id=>((E.unis||[]).find(u=>u.id==id)||{}).nome||"";
 const variasUnis=()=>(E.unis||[]).length>1;
@@ -512,12 +524,14 @@ function abrirNivel(){try{if(!(history.state&&history.state.atalaia))history.pus
 function fecharNivel(){
   if(E.modal){E.modal=null;render();return true}
   if(E.tela=="senha"&&E.modoSenha=="trocar"){E.tela="app";E.msg=null;render();return true}
-  if(E.tela=="app"&&E.aba!="bens"){E.aba="bens";render();scrollTo(0,0);return true}
+  if(E.tela=="app"&&E.aba=="man"&&E.mt&&E.mt!="home"){if(typeof pararCam=="function")pararCam();E.mt=["lista","amb","bem"].includes(E.mtPrev)&&E.mtPrev!=E.mt?E.mtPrev:"home";E.mtPrev="home";render();scrollTo(0,0);return true}
+  if(E.tela=="app"&&E.aba=="ron"&&E.rt&&E.rt!="home"){E.rt="home";render();scrollTo(0,0);return true}
+  if(E.tela=="app"&&E.aba!=abaRaiz()){E.aba=abaRaiz();render();scrollTo(0,0);return true}
   return false}
 function voltar(){if(history.state&&history.state.atalaia)history.back();else fecharNivel()}
 function fecharSemVoltar(){E.modal=null;if(history.state&&history.state.atalaia){ignorarPop=true;history.back()}}
 addEventListener("popstate",()=>{if(ignorarPop){ignorarPop=false;return}fecharNivel()});
-function irAba(k){if(k==E.aba)return;if(k=="bens"){voltar();return}E.aba=k;abrirNivel();render();scrollTo(0,0)}
+function irAba(k){if(k==E.aba){if(k=="man"&&E.mt!="home"){E.mt="home";render()}return}if(k==abaRaiz()){voltar();return}if(k=="man")E.mt="home";if(k=="ron")E.rt="home";E.aba=k;abrirNivel();render();scrollTo(0,0)}
 
 /* ---------------- Aviso de nova versão ---------------- */
 let avisoVersao=false;
@@ -599,6 +613,320 @@ async function baixarPDF(){
   }catch(e){toast(e.message||"Não foi possível gerar o PDF.")}
   if(bt){bt.disabled=false;bt.querySelector("b").textContent="📄 Relatório PDF com fotos"}
 }
+/* ======================= APP DO COLABORADOR · ETAPA 1 =======================
+   Área do colaborador, notificações, painel de manutenções (assumir, iniciar,
+   concluir com fotos carimbadas de antes/durante/depois), ajudantes,
+   manutenção feita na hora e assinatura da OS no celular. */
+const DEMO_COL=new URLSearchParams(location.search).get("demo")=="colab";
+const temF=f=>!!(E.v&&E.v.contratantes.planos.funcoes.includes(f));
+const temMan=()=>temF("chamados");
+const souAdm=()=>E.v&&["gestor","administrador"].includes(E.v.perfil);
+const abaRaiz=()=>E.v&&E.v.perfil=="colaborador"&&temMan()?"man":"bens";
+const SITM={aberto:["Aberto · aguardando alguém assumir","#b7791f"],aceito:["Aceito","#2f6fb5"],em_atendimento:["Em atendimento","#2f6fb5"],concluido:["Concluído · aguardando confirmação","#b7791f"],confirmado:["Confirmado","#1f9a55"]};
+const PRIC={urgente:["Urgente","#c8372d"],alta:["Alta","#c8372d"],media:["Média","#b7791f"],baixa:["Baixa","#1f9a55"]};
+const ETAPAS_F={antes:"Antes",durante:"Durante",depois:"Depois",abertura:"Abertura"};
+const nomeAmbC=id=>((E.amb||[]).find(a=>a.id==id)||{}).nome||"";
+const nomeMem=id=>((E.mems||[]).find(m=>m.user_id==id)||{}).nome||"";
+const meuId=()=>E.v&&E.v.user_id;
+const hm=d=>d?new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"—";
+function ha(d){if(!d)return "";const m=Math.round((Date.now()-Date.parse(d))/6e4);return m<1?"agora":m<60?`há ${m} min`:m<1440?`há ${Math.round(m/60)} h`:`há ${Math.round(m/1440)} dia(s)`}
+const atrasado=c=>!["concluido","confirmado"].includes(c.situacao)&&c.prazo_resolver&&Date.parse(c.prazo_resolver)<Date.now();
+const emAberto=c=>["aberto","aceito","em_atendimento"].includes(c.situacao);
+const souRespCh=c=>c.responsavel_id&&c.responsavel_id==meuId();
+
+/* ---- dados ---- */
+function realMan(){const chk=({data,error})=>{if(error)throw new Error(traduz(error.message));return data};return {
+  async chs(c){return chk(await sb.from("chamados").select("*").eq("contratante_id",c).is("excluido_em",null).order("aberto_em",{ascending:false}).limit(400))},
+  async mems(c){try{return chk(await sb.from("membros").select("user_id,nome,perfil,estabelecimento_id,ativo").eq("contratante_id",c).eq("ativo",true))}catch(e){return []}},
+  async eventosCh(id){return chk(await sb.from("chamado_eventos").select("*").eq("chamado_id",id).order("id"))},
+  async fotosCh(id){return chk(await sb.from("chamado_fotos").select("*").eq("chamado_id",id).order("id"))},
+  async ajudantes(id){try{return chk(await sb.from("chamado_ajudantes").select("*").eq("chamado_id",id))}catch(e){return []}},
+  async assinaturas(id){try{return chk(await sb.from("os_assinaturas").select("papel,nome,assinado_em").eq("chamado_id",id))}catch(e){return []}},
+  async acaoCh(id,a,o){o=o||{};return chk(await sb.rpc("chamado_acao",{p_id:id,p_acao:a,p_nota:o.nota||null,p_responsavel:o.resp||null,p_solucao:o.solucao||null,p_custo:o.custo??null}))},
+  async ajudar(id){return chk(await sb.rpc("entrar_ajudante",{p_chamado:id}))},
+  async carimbo(id){return chk(await sb.rpc("carimbo_chamado",{p_id:id}))},
+  async subirFotoCh(c,id,blob,etapa){const p=`${c}/chamados/${id}/${etapa}_${crypto.randomUUID()}.jpg`;chk(await sb.storage.from("fotos-bens").upload(p,blob,{contentType:"image/jpeg"}));return p},
+  async regFoto(id,p,etapa,tirada,g,carimbo){return chk(await sb.rpc("registrar_foto_chamado",{p_id:id,p_path:p,p_etapa:etapa,p_tirada_em:tirada,p_lat:g?g.lat:null,p_lng:g?g.lng:null,p_precisao:g?g.acc:null,p_carimbo:carimbo}))},
+  async abrirChM(amb,desc,pri,bem,origem){return chk(await sb.rpc("abrir_chamado",{p_ambiente:amb,p_descricao:desc,p_prioridade:pri,p_bem:bem||null,p_origem:origem||"app"}))},
+  async assinarOS(ch,p,n,img){return chk(await sb.rpc("assinar_os",{p_chamado:ch,p_papel:p,p_nome:n,p_img:img}))}
+}}
+function mockMan(){const w=ms=>new Promise(r=>setTimeout(r,ms)),agora=()=>new Date().toISOString(),h=x=>new Date(Date.now()-x*36e5).toISOString();
+  const CH=[{id:"k1",numero:41,ambiente_id:"a2",estabelecimento_id:"e1",descricao:"Monitor do leito 3 apitando sem parar",prioridade:"urgente",situacao:"aberto",origem:"qr",aberto_em:h(.3),solicitante_nome:"Enf. Paula",prazo_resolver:h(-3)},
+   {id:"k2",numero:40,ambiente_id:"a2",estabelecimento_id:"e1",descricao:"Tomada solta atrás da cama 5",prioridade:"media",situacao:"aceito",origem:"app",aberto_em:h(5),aceito_em:h(4),responsavel_id:"u-demo",prazo_resolver:h(-20)},
+   {id:"k3",numero:39,ambiente_id:"a1",estabelecimento_id:"e1",descricao:"Lâmpada queimada na recepção",prioridade:"baixa",situacao:"em_atendimento",origem:"qr",aberto_em:h(30),aceito_em:h(28),iniciado_em:h(1),responsavel_id:"u2",prazo_resolver:h(-40)},
+   {id:"k4",numero:38,ambiente_id:"a1",estabelecimento_id:"e1",descricao:"Porta do banheiro não fecha",prioridade:"media",situacao:"concluido",origem:"painel",aberto_em:h(50),aceito_em:h(49),iniciado_em:h(48),concluido_em:h(46),responsavel_id:"u-demo",solucao:"Ajuste da dobradiça e troca do trinco.",prazo_resolver:h(2)}];
+  const EV={},FO={},AJ={},AS={};let n=42;
+  return {async chs(){return CH},async mems(){return [{user_id:"u-demo",nome:"Carlos Manutenção",perfil:"colaborador",estabelecimento_id:"e1"},{user_id:"u2",nome:"Diego Manutenção",perfil:"colaborador",estabelecimento_id:"e1"},{user_id:"u3",nome:"Bruno Administrador",perfil:"administrador",estabelecimento_id:"e1"}]},
+   async eventosCh(id){return EV[id]||[]},async fotosCh(id){return FO[id]||[]},async ajudantes(id){return AJ[id]||[]},async assinaturas(id){return AS[id]||[]},
+   async acaoCh(id,a,o){await w(200);o=o||{};const c=CH.find(x=>x.id==id);const ev=t=>(EV[id]=EV[id]||[]).push({etapa:t,em:agora(),quem:E.v.nome,nota:o.nota||null});
+     if(a=="aceitar"){if(c.situacao!="aberto")throw new Error("Este chamado já foi aceito.");Object.assign(c,{situacao:"aceito",aceito_em:agora(),responsavel_id:meuId()});ev("aceito")}
+     else if(a=="atribuir"){Object.assign(c,{situacao:"aceito",aceito_em:c.aceito_em||agora(),responsavel_id:o.resp});ev("encaminhado")}
+     else if(a=="iniciar"){Object.assign(c,{situacao:"em_atendimento",iniciado_em:agora()});ev("em_atendimento")}
+     else if(a=="concluir"){if((o.solucao||"").length<5)throw new Error("Descreva o que foi feito (pelo menos 5 letras).");Object.assign(c,{situacao:"concluido",iniciado_em:c.iniciado_em||agora(),concluido_em:agora(),solucao:o.solucao,custo:o.custo});ev("concluido")}
+     else if(a=="confirmar"){Object.assign(c,{situacao:"confirmado",confirmado_em:agora()});ev("confirmado")}
+     else if(a=="reabrir"){Object.assign(c,{situacao:"em_atendimento",concluido_em:null});ev("reaberto")}return c},
+   async ajudar(id){(AJ[id]=AJ[id]||[]).push({user_id:meuId(),nome:E.v.nome,em:agora()});return "ok"},
+   async carimbo(id){const c=CH.find(x=>x.id==id);return {numero:c.numero,unidade:"Hospital A",ambiente:nomeAmbC(c.ambiente_id),empresa:E.v.contratantes.nome,agora:new Date().toLocaleString("pt-BR")}},
+   async subirFotoCh(ci,id,blob,etapa){const p="demo/ch/"+Date.now()+Math.random();E.fotos[p]=URL.createObjectURL(blob);return p},
+   async regFoto(id,p,etapa,tirada,g,carimbo){(FO[id]=FO[id]||[]).push({path:p,etapa,tirada_em:tirada,na_hora:Date.now()-Date.parse(tirada)<6e5,carimbo});return {na_hora:true}},
+   async abrirChM(amb,desc,pri,bem,origem){await w(200);const c={id:"k"+n,numero:n++,ambiente_id:amb,estabelecimento_id:"e1",descricao:desc,prioridade:pri,situacao:"aberto",origem,aberto_em:agora(),bem_id:bem,prazo_resolver:h(-24)};CH.unshift(c);return c},
+   async assinarOS(ch,p,nm,img){(AS[ch]=AS[ch]||[]).push({papel:p,nome:nm,assinado_em:agora()});return "ok"}}}
+Object.assign(DB,DEMO?mockMan():realMan());
+if(DEMO&&DEMO_COL){const mv=DB.meuVinculo,ma=DB.ambientes,mu=DB.unidades;
+  DB.meuVinculo=async()=>{const v=await mv();v.perfil="colaborador";v.nome="Carlos Manutenção";v.user_id="u-demo";v.estabelecimento_id="e1";v.contratantes={...v.contratantes,nome:"Hospital Exemplo (demonstração)",planos:{...v.contratantes.planos,id:"atalaia",nome:"Atalaia",ambientes:50,bens:1000,usuarios:10,funcoes:["bens","chamados","etiquetas","auditoria","calibracoes","rondas","relatorios","termos","avalie"]}};return v};
+  DB.ambientes=async()=>[{id:"a1",nome:"Recepção",estabelecimento_id:"e1",ativo:true},{id:"a2",nome:"UTI adulto",estabelecimento_id:"e1",ativo:true,tipo_ronda:"ambiente",qr_token:"demotk2"},{id:"a3",nome:"Central de gases",estabelecimento_id:"e1",ativo:true,tipo_ronda:"gases"}];
+  DB.unidades=async()=>[{id:"e1",nome:"Hospital A",tipo:"empresa"}]}
+async function carregarMan(){if(!temMan())return;const c=E.v.contratante_id;[E.chs,E.mems]=await Promise.all([DB.chs(c).catch(()=>[]),DB.mems(c).catch(()=>[])])}
+const meusChs=()=>(E.chs||[]).filter(c=>souAdm()||!E.v.estabelecimento_id||c.estabelecimento_id==E.v.estabelecimento_id);
+
+/* ---- navegação interna ---- */
+function irMan(t,id){E.mtPrev=E.mt;E.mt=t;if(id!==undefined)E.chSel=id;E.mf=E.mf||{};abrirNivel();render();scrollTo(0,0);if(t=="item")carregarItem()}
+function bigBtn(ic,t,s,act,tag){return `<button class="big" ${act?`onclick="${act}"`:"disabled"}><span class="ico">${ic}</span><span class="tx"><b>${t}</b><span>${s}</span></span>${tag?`<span class="tagp">${tag}</span>`:""}</button>`}
+function abaMan(){if(!temMan())return `<h1>Manutenção</h1><div class="msg info">Chamados e manutenção estão nos planos pagos.</div>`;
+  const t=E.mt||"home";return t=="lista"?manLista():t=="item"?manItem():t=="nahora"?manNaHora():t=="ajuda"?manAjuda():t=="qr"?manQR():t=="amb"?manAmb():t=="bem"?manBem():t=="novoch"?manNovoCh():manHome()}
+function manHome(){const L=meusChs(),novos=L.filter(c=>c.situacao=="aberto"),comigo=L.filter(c=>emAberto(c)&&souRespCh(c)),ag=L.filter(c=>c.situacao=="concluido");
+  const pri={urgente:0,alta:1,media:2,baixa:3};novos.sort((a,b)=>pri[a.prioridade]-pri[b.prioridade]);
+  return `<h1>${souAdm()?"Área do administrador":"Área de "+esc((E.v.nome||"").split(" ")[0])}</h1><p class="sub">${esc(E.v.contratantes.nome)}${E.v.estabelecimento_id&&nomeUni(E.v.estabelecimento_id)?" · "+esc(nomeUni(E.v.estabelecimento_id)):""}</p>
+  ${novos.length?`<div class="card" style="border-color:#c8372d"><b>🔔 Novos chamados (${novos.length})</b>${novos.slice(0,6).map(c=>linhaCh(c)).join("")}${novos.length>6?`<button class="btn ghost sm" onclick="E.mf={s:'aberto'};irMan('lista')">Ver todos</button>`:""}</div>`:""}
+  <div class="bigs">
+   ${bigBtn(`<b>${L.filter(emAberto).length}</b>`,"Painel de manutenções",`Chamados e manutenções feitas na hora${comigo.length?` · ${comigo.length} com você`:""}${ag.length?` · ${ag.length} aguardando confirmação`:""}`,"E.mf={};irMan('lista')")}
+   ${bigBtn("⚒","Realizar manutenção","Serviço identificado e feito na hora, com foto","irMan('nahora')")}
+   ${bigBtn("R","Rondas","Ambientes, central de gases, geradores, caixa d'água e usina",typeof abaRon=="function"&&temF("rondas")?"irAba('ron')":"",typeof abaRon=="function"?"":"próxima etapa")}
+   ${bigBtn("M","Manutenções programadas","Preventivas e calibrações agendadas","","próxima etapa")}
+   ${bigBtn("▣","Ler QR Code","Abre o ambiente ou o bem pela etiqueta","E.camErro=null;irMan('qr')")}
+   ${bigBtn("A","Auditoria do ambiente","Conferir os bens com a câmera","","próxima etapa")}
+   ${souAdm()?bigBtn("⇄","Trocas de equipamento","Números informados diferentes do cadastro","","próxima etapa"):""}
+   ${bigBtn("?","Como usar","Passo a passo de cada função","irMan('ajuda')")}
+  </div>
+  ${E.v.perfil=="colaborador"?`<p class="muted" style="font-size:.85rem">Cadastros, relatórios, etiquetas e configurações ficam com o Gestor e o Administrador.</p>`:`<p class="muted" style="font-size:.85rem">No computador (ou no botão 🖥 Painel), o administrador tem o painel completo.</p>`}`}
+function linhaCh(c){const s=SITM[c.situacao]||[c.situacao,"#6b7078"],p=PRIC[c.prioridade]||["",""];
+  return `<button class="rowch" onclick="irMan('item','${c.id}')" style="--pc:${p[1]}"><span class="dot"></span><span class="tx"><b>Nº ${c.numero} · ${esc(c.descricao)}</b><span>${c.origem=="na_hora"?"Feita na hora":"Chamado"} · ${esc(nomeAmbC(c.ambiente_id))}${variasUnis()?" · "+esc(nomeUni(c.estabelecimento_id)):""} · ${ha(c.aberto_em)}</span><span>${c.responsavel_id?`com <b>${esc(nomeMem(c.responsavel_id)||"técnico")}</b>`:"<b>sem responsável</b>"}${atrasado(c)?` · <span style="color:#c8372d;font-weight:700">atrasado</span>`:""}</span><span><span class="tg" style="--tc:${s[1]}">${esc(s[0])}</span> <span class="tg" style="--tc:${p[1]}">${p[0]}</span></span></span></button>`}
+function chip(k,v,t){const on=(E.mf[k]||"")==v;return `<button class="chp" aria-pressed="${on}" onclick="E.mf.${k}='${v}';render()">${t}</button>`}
+function manLista(){const f=E.mf||{},pri={urgente:0,alta:1,media:2,baixa:3},so={aberto:0,aceito:1,em_atendimento:2,concluido:3,confirmado:4};
+  const L=meusChs().filter(c=>(!f.s||(f.s=="aberto"?emAberto(c):c.situacao==f.s))&&(!f.q||(f.q=="eu"?souRespCh(c)||(c._ajud||[]).includes(meuId()):!c.responsavel_id))&&(!f.o||(f.o=="na_hora"?c.origem=="na_hora":c.origem!="na_hora")))
+    .sort((a,b)=>so[a.situacao]-so[b.situacao]||pri[a.prioridade]-pri[b.prioridade]||Date.parse(b.aberto_em)-Date.parse(a.aberto_em));
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Painel de manutenções</h1><p class="sub">Chamados (do QR, do computador ou do sistema) e manutenções feitas na hora, numa lista só.</p>
+  <div class="card" style="display:grid;gap:8px"><div class="chps">${chip("s","","Todos")}${chip("s","aberto","Em aberto")}${chip("s","concluido","Aguardando confirmação")}${chip("s","confirmado","Confirmados")}</div>
+  <div class="chps">${chip("q","","Todos")}${chip("q","eu","Comigo")}${chip("q","sem","Sem responsável")}</div><div class="chps">${chip("o","","Todos")}${chip("o","ch","Chamados")}${chip("o","na_hora","Feitas na hora")}</div></div>
+  <div class="card"><b>${L.length} ite${L.length==1?"m":"ns"}</b>${L.map(linhaCh).join("")||`<p class="muted">Nada com esses filtros.</p>`}</div>
+  <button class="btn ghost full" onclick="atualizarMan()">↻ Atualizar lista</button>`}
+async function atualizarMan(){try{await carregarMan();toast("Lista atualizada.");render()}catch(e){toast(e.message)}}
+
+/* ---- item ---- */
+async function carregarItem(){const id=E.chSel;E.it={ev:[],fo:[],aj:[],as:[],carregando:true};render();
+  try{const [ev,fo,aj,as]=await Promise.all([DB.eventosCh(id),DB.fotosCh(id),DB.ajudantes(id),DB.assinaturas(id)]);E.it={ev,fo,aj,as};
+    for(const f of fo){if(!E.fotos[f.path]){const u=await DB.urlFoto(f.path);if(u)E.fotos[f.path]=u}}const c=(E.chs||[]).find(x=>x.id==id);if(c)c._ajud=aj.map(a=>a.user_id)}catch(e){E.it={ev:[],fo:[],aj:[],as:[],erro:e.message}}render()}
+function manItem(){const c=(E.chs||[]).find(x=>x.id==E.chSel);if(!c)return `<button class="voltar" onclick="voltar()">← Voltar</button><p class="muted">Chamado não encontrado.</p>`;
+  const it=E.it||{ev:[],fo:[],aj:[],as:[]},s=SITM[c.situacao]||[c.situacao,"#6b7078"],p=PRIC[c.prioridade]||["",""],meu=souRespCh(c),ajudo=(it.aj||[]).some(a=>a.user_id==meuId()),adm=souAdm();
+  const tem=e=>(it.fo||[]).some(f=>f.etapa==e),bem=c.bem_id?(E.bens||[]).find(b=>b.id==c.bem_id):null;
+  let h=`<button class="voltar" onclick="voltar()">← Voltar</button><h1>Chamado nº ${c.numero}</h1>
+  <div class="faixa" style="--tc:${s[1]}">${esc(s[0])}${c.responsavel_id&&emAberto(c)?" · com "+esc(nomeMem(c.responsavel_id)||"técnico"):""}${(it.aj||[]).length?" · ajudante: "+it.aj.map(a=>esc(a.nome||"")).join(", "):""}</div>
+  ${E.it&&E.it.erro?`<div class="msg err">${esc(E.it.erro)}</div>`:""}
+  <div class="card"><p style="margin:0 0 8px"><b>${esc(c.descricao)}</b></p><dl class="dl">
+   <dt>Onde</dt><dd>${esc(nomeAmbC(c.ambiente_id))}${nomeUni(c.estabelecimento_id)?" · "+esc(nomeUni(c.estabelecimento_id)):""}</dd>
+   ${bem?`<dt>Bem</dt><dd>${esc(bem.patrimonio?bem.patrimonio+" · ":"")}${esc(bem.nome)}</dd>`:""}
+   <dt>Origem</dt><dd>${{qr:"QR Code do ambiente",app:"Aplicativo",painel:"Painel",ronda:"Ronda",auditoria:"Auditoria",na_hora:"Manutenção feita na hora"}[c.origem]||esc(c.origem)}${c.solicitante_nome?" · "+esc(c.solicitante_nome):""}</dd>
+   <dt>Prioridade</dt><dd><span style="color:${p[1]};font-weight:700">${p[0]}</span>${c.prazo_resolver?` · resolver até ${hm(c.prazo_resolver)}${atrasado(c)?` <b style="color:#c8372d">(atrasado)</b>`:""}`:""}</dd>
+   <dt>Aberto</dt><dd>${hm(c.aberto_em)}</dd>${c.aceito_em?`<dt>Aceito</dt><dd>${hm(c.aceito_em)}</dd>`:""}${c.iniciado_em?`<dt>Início</dt><dd>${hm(c.iniciado_em)}</dd>`:""}${c.concluido_em?`<dt>Concluído</dt><dd>${hm(c.concluido_em)}</dd>`:""}
+   ${c.solucao?`<dt>O que foi feito</dt><dd>${esc(c.solucao)}</dd>`:""}${c.custo!=null&&c.custo!==""?`<dt>Custo</dt><dd>${brl(c.custo)}</dd>`:""}</dl>
+   <p class="muted" style="font-size:.78rem;margin:8px 0 0">Os horários são gravados pelo servidor e ninguém altera.</p></div>`;
+  if((it.fo||[]).length)h+=`<div class="card"><b>Fotos</b><div class="fotos-ch">${it.fo.map(f=>`<figure>${E.fotos[f.path]?`<img src="${E.fotos[f.path]}" alt="Foto ${esc(ETAPAS_F[f.etapa]||f.etapa)}">`:`<div class="ph">…</div>`}<figcaption>${esc(ETAPAS_F[f.etapa]||f.etapa)}${f.na_hora===false?` · <span style="color:#c8372d">não tirada na hora</span>`:""}</figcaption></figure>`).join("")}</div></div>`;
+  if(c.situacao=="aberto"&&!adm)h+=`<button class="btn amb full" onclick="acaoMan('aceitar')">Assumir este chamado</button><p class="muted" style="font-size:.85rem">Ao assumir, o chamado passa para o seu nome e os outros veem “com você”.</p>`;
+  if(c.situacao=="aberto"&&adm)h+=`<button class="btn amb full" onclick="acaoMan('aceitar')">Assumir eu mesmo</button>`;
+  if(["aberto","aceito"].includes(c.situacao)&&adm)h+=`<div class="card"><b>Passar o chamado</b><label style="margin-top:8px">Para<select id="mpass">${(E.mems||[]).filter(m=>m.perfil=="gestor"||m.estabelecimento_id==c.estabelecimento_id).map(m=>`<option value="${m.user_id}" ${c.responsavel_id==m.user_id?"selected":""}>${esc(m.nome)}</option>`).join("")}</select></label><button class="btn ghost sm" onclick="acaoMan('atribuir',{resp:$('#mpass').value})">Passar</button></div>`;
+  if(c.situacao=="aceito"&&(meu||adm))h+=`<button class="btn full" onclick="acaoMan('iniciar')">▶ Iniciar atendimento</button><p class="muted" style="font-size:.85rem">Marca a hora em que você começou o serviço.</p>`;
+  if(["aceito","em_atendimento"].includes(c.situacao)&&(meu||adm))h+=formConcluir(c,tem);
+  if(["aceito","em_atendimento"].includes(c.situacao)&&!meu&&!adm)h+=ajudo?`<p class="muted">Você está como ajudante. Quem conclui é ${esc(nomeMem(c.responsavel_id)||"o responsável")}.</p>${formFotos(c,tem)}`:`<button class="btn ghost full" onclick="ajudarMan()">Entrar como ajudante</button><p class="muted" style="font-size:.85rem">Este chamado está com ${esc(nomeMem(c.responsavel_id)||"outro técnico")}. Como ajudante, o serviço conta também para você.</p>`;
+  if(["concluido","confirmado"].includes(c.situacao)){const asT=(it.as||[]).find(a=>a.papel=="tecnico"),asS=(it.as||[]).find(a=>a.papel=="solicitante");
+    h+=`<div class="card"><b>Ordem de serviço · assinaturas</b><p class="muted" style="font-size:.85rem">${asT?`✔ Técnico: ${esc(asT.nome)}`:"Técnico: falta assinar"}<br>${asS?`✔ Solicitante: ${esc(asS.nome)}`:"Solicitante: falta assinar"}</p><div style="display:flex;gap:8px;flex-wrap:wrap">${!asT&&(meu||ajudo||adm)?`<button class="btn sm" onclick="abrirAssinatura('tecnico')">✍ Assinar como técnico</button>`:""}${!asS?`<button class="btn ghost sm" onclick="abrirAssinatura('solicitante')">✍ Assinatura do solicitante</button>`:""}</div></div>`;
+    if(c.situacao=="concluido")h+=`<div class="msg info">Aguardando a confirmação de quem abriu o chamado (ou do Administrador).</div>`;
+    if(adm&&c.situacao=="concluido")h+=`<button class="btn full" style="background:#1f9a55" onclick="acaoMan('confirmar')">✔ Confirmar o serviço</button>`;
+    if(adm)h+=`<details class="card"><summary><b>Reabrir chamado</b></summary><label style="margin-top:8px">Por que está reabrindo? *<input id="mreab" maxlength="300"></label><button class="btn ghost sm" onclick="acaoMan('reabrir',{nota:$('#mreab').value})">Reabrir</button></details>`}
+  if((it.ev||[]).length)h+=`<div class="card"><b>Histórico</b>${it.ev.map(e=>`<p class="muted" style="margin:4px 0;font-size:.85rem">${hm(e.em)} · <b>${esc({aberto:"aberto",aceito:"aceito",encaminhado:"encaminhado",em_atendimento:"em atendimento",concluido:"concluído",confirmado:"confirmado",reaberto:"reaberto",assinatura:"assinatura"}[e.etapa]||e.etapa)}</b>${e.quem?" · "+esc(e.quem):""}${e.nota?" · "+esc(e.nota):""}</p>`).join("")}</div>`;
+  return h}
+function campoFoto(etapa,titulo,ok,obrig){return `<div class="fpick ${ok?"ok":""}"><b>${titulo}${obrig?' <span style="color:#c8372d">*</span>':' <span class="muted" style="font-weight:400">(opcional)</span>'}</b>${ok?`<span class="muted">✔ foto enviada</span>`:""}<label class="btn ${ok?"ghost":"amb"} sm" style="margin:0">📷 ${ok?"Tirar outra":"Tirar foto"}<input type="file" accept="image/*" capture="environment" hidden onchange="fotoCh(this,'${etapa}')"></label></div>`}
+function formFotos(c,tem){return `<div class="card" style="display:grid;gap:10px"><b>Fotos do serviço</b>${campoFoto("antes","Foto antes",tem("antes"),true)}${campoFoto("durante","Foto durante",tem("durante"),false)}${campoFoto("depois","Foto depois",tem("depois"),true)}<p class="muted" style="font-size:.8rem;margin:0">Cada foto recebe um carimbo com o nº do chamado, a unidade, o ambiente, a data e a hora do servidor e a localização (se você permitir).</p></div>`}
+function formConcluir(c,tem){const ok=tem("antes")&&tem("depois"),d=E.mcd||{};
+  return formFotos(c,tem)+`<div class="card"><b>Concluir</b>
+  <label style="margin-top:8px">O que foi feito *<textarea id="msol" rows="3" maxlength="1000" oninput="E.mcd={...E.mcd,sol:this.value}" placeholder="Ex.: troca do reator e da lâmpada">${esc(d.sol||"")}</textarea></label>
+  <label>Material usado (opcional)<input id="mmat" maxlength="200" oninput="E.mcd={...E.mcd,mat:this.value}" value="${esc(d.mat||"")}" placeholder="Ex.: 1 lâmpada LED 18W"></label>
+  <label>Custo em R$ (opcional)<input id="mcus" type="number" min="0" step="0.01" oninput="E.mcd={...E.mcd,cus:this.value}" value="${esc(d.cus||"")}"></label>
+  <button class="btn full" style="background:#1f9a55" ${ok?"":"disabled"} onclick="concluirMan()">✔ Concluir chamado</button>
+  <p class="muted" style="font-size:.85rem">${ok?"Depois vai para a confirmação de quem abriu o chamado.":"Só conclui com a foto de antes e a de depois."}</p></div>`}
+async function acaoMan(a,o){try{const r=await DB.acaoCh(E.chSel,a,o);const i=(E.chs||[]).findIndex(x=>x.id==E.chSel);if(i>=0)E.chs[i]={...E.chs[i],...r};toast({aceitar:"Chamado assumido.",atribuir:"Chamado passado.",iniciar:"Atendimento iniciado.",confirmar:"Serviço confirmado.",reabrir:"Chamado reaberto."}[a]||"Feito.");carregarItem()}catch(e){toast(e.message)}}
+async function ajudarMan(){try{await DB.ajudar(E.chSel);toast("Você entrou como ajudante.");carregarItem()}catch(e){toast(e.message)}}
+async function concluirMan(){const sol=($("#msol").value||"").trim(),mat=($("#mmat").value||"").trim(),cus=$("#mcus").value;if(sol.length<5){toast("Descreva o que foi feito (pelo menos 5 letras).");return}
+  const aj=(E.it.aj||[]).map(a=>a.nome).filter(Boolean),txt=sol+(mat?` · Material: ${mat}`:"")+(aj.length?` · Ajudante(s): ${aj.join(", ")}`:"");
+  try{const r=await DB.acaoCh(E.chSel,"concluir",{solucao:txt,custo:cus===""?null:Number(cus)});const i=(E.chs||[]).findIndex(x=>x.id==E.chSel);if(i>=0)E.chs[i]={...E.chs[i],...r};E.mcd={};toast("Chamado concluído. Aguardando a confirmação.");carregarItem()}catch(e){toast(e.message)}}
+
+/* ---- foto com carimbo ---- */
+function pegarGPS(){return new Promise(ok=>{if(!navigator.geolocation)return ok(null);navigator.geolocation.getCurrentPosition(p=>ok({lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6),acc:Math.round(p.coords.accuracy)}),()=>ok(null),{enableHighAccuracy:true,timeout:7000,maximumAge:60000})})}
+async function fotoCh(inp,etapa){const f=inp.files&&inp.files[0];if(!f)return;const c=(E.chs||[]).find(x=>x.id==E.chSel);toast("Preparando a foto com carimbo…");
+  try{const [cb,g]=await Promise.all([DB.carimbo(c.id),pegarGPS()]);
+    const L=[`Chamado nº ${cb.numero} · ${ETAPAS_F[etapa]||etapa}`,[cb.unidade,cb.ambiente].filter(Boolean).join(" · "),`${cb.agora} (horário do servidor)`,g?`GPS ${g.lat}, ${g.lng} (±${g.acc} m)`:"Localização não autorizada",`Atalaia System · ${E.v.nome||""}`];
+    const blob=await carimbar(f,L);const p=await DB.subirFotoCh(E.v.contratante_id,c.id,blob,etapa);
+    const r=await DB.regFoto(c.id,p,etapa,new Date(f.lastModified||Date.now()).toISOString(),g,L.join(" | "));
+    toast(r&&r.na_hora===false?"Foto enviada, mas marcada como “não tirada na hora”.":`Foto ${ETAPAS_F[etapa].toLowerCase()} enviada.`);carregarItem()}catch(e){toast(e.message||"Não foi possível enviar a foto.")}inp.value=""}
+async function carimbar(file,linhas){const im=await new Promise((ok,er)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=er;i.src=URL.createObjectURL(file)});
+  const s=Math.min(1,1600/Math.max(im.width,im.height)),w=Math.round(im.width*s),h=Math.round(im.height*s),fs=Math.max(14,Math.round(w/42)),lh=Math.round(fs*1.35),band=lh*linhas.length+fs;
+  const cv=document.createElement("canvas");cv.width=w;cv.height=h;const x=cv.getContext("2d");x.drawImage(im,0,0,w,h);
+  x.fillStyle="rgba(0,0,0,.62)";x.fillRect(0,h-band,w,band);x.fillStyle="#fff";x.textBaseline="top";
+  linhas.forEach((t,i)=>{x.font=`${i==0?"700 ":""}${i==linhas.length-1?Math.round(fs*.8):fs}px system-ui,Arial,sans-serif`;x.fillStyle=i==0?"#f2a33a":"#fff";x.fillText(t,Math.round(fs*.6),h-band+Math.round(fs/2)+i*lh,w-fs)});
+  return await new Promise(ok=>cv.toBlob(ok,"image/jpeg",.82))}
+
+/* ---- assinatura da OS ---- */
+function abrirAssinatura(papel){E.modal={tipo:"assin",papel};render();setTimeout(prepAssin,30)}
+function assinHTML(){const m=E.modal;return `<div class="modal" onclick="if(event.target==this){E.modal=null;render()}"><div class="sheet"><button type="button" class="voltar" onclick="E.modal=null;render()">← Voltar</button><h2>${m.papel=="tecnico"?"Assinatura do técnico":"Assinatura do solicitante"}</h2>
+  <label>Nome de quem assina *<input id="anome" maxlength="120" value="${m.papel=="tecnico"?esc(E.v.nome||""):""}"></label>
+  <p class="muted" style="font-size:.85rem;margin:0 0 6px">Assine com o dedo no quadro abaixo.</p><canvas id="acv" width="600" height="220" style="width:100%;height:180px;border:1.5px dashed var(--line);border-radius:10px;background:#fff;touch-action:none"></canvas>
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="btn ghost" onclick="prepAssin(true)">Limpar</button><button class="btn" style="flex:1" onclick="salvarAssin()">Salvar assinatura</button></div></div></div>`}
+function prepAssin(limpar){const cv=$("#acv");if(!cv)return;const x=cv.getContext("2d");x.lineWidth=3;x.lineCap="round";x.strokeStyle="#1d1f23";if(limpar){x.clearRect(0,0,cv.width,cv.height);E.modal.risco=false;return}
+  let on=false;const pt=e=>{const r=cv.getBoundingClientRect();return [(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]};
+  cv.onpointerdown=e=>{on=true;cv.setPointerCapture(e.pointerId);const [a,b]=pt(e);x.beginPath();x.moveTo(a,b)};cv.onpointermove=e=>{if(!on)return;const [a,b]=pt(e);x.lineTo(a,b);x.stroke();E.modal.risco=true};cv.onpointerup=()=>on=false}
+async function salvarAssin(){const n=($("#anome").value||"").trim();if(n.length<3){toast("Escreva o nome de quem assina.");return}if(!E.modal.risco){toast("Faça a assinatura no quadro.");return}
+  try{await DB.assinarOS(E.chSel,E.modal.papel,n,$("#acv").toDataURL("image/png"));E.modal=null;toast("Assinatura registrada.");carregarItem()}catch(e){toast(e.message)}}
+
+/* ---- manutenção feita na hora ---- */
+function manNaHora(){const d=E.mnh||{},amb=d.amb||((E.amb||[])[0]||{}).id,bens=(E.bens||[]).filter(b=>b.ambiente_id==amb);
+  const tipos=["Elétrica","Hidráulica","Predial","Refrigeração","Mobiliário","Equipamento médico","Outro"];
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Realizar manutenção</h1><p class="sub">Para o serviço que você identificou e resolveu na hora, sem chamado aberto. Fica registrado em seu nome, com fotos e horário do servidor.</p>
+  <div class="card"><label>Ambiente *<select id="nha" onchange="E.mnh={...E.mnh,amb:this.value,bem:''};render()">${optsAmb(amb)}</select></label>
+  <label>Bem (opcional)<select id="nhb" onchange="E.mnh={...E.mnh,bem:this.value}"><option value="">Nenhum bem específico</option>${bens.map(b=>`<option value="${b.id}" ${d.bem==b.id?"selected":""}>${esc((b.patrimonio?b.patrimonio+" · ":"")+b.nome)}</option>`).join("")}</select></label>
+  <label>Tipo de serviço<select id="nht" onchange="E.mnh={...E.mnh,tipo:this.value}">${tipos.map(t=>`<option ${d.tipo==t?"selected":""}>${t}</option>`).join("")}</select></label>
+  <label>O que você identificou *<textarea id="nhd" rows="3" maxlength="500" oninput="E.mnh={...E.mnh,desc:this.value}" placeholder="Ex.: parafuso do assento solto">${esc(d.desc||"")}</textarea></label>
+  <button class="btn amb full" onclick="comecarNaHora()">Começar e registrar fotos</button><p class="muted" style="font-size:.85rem">O sistema cria o registro já em seu nome. Na tela seguinte você tira a foto de antes, faz o serviço, tira a de depois e conclui.</p></div>`}
+async function comecarNaHora(){const amb=$("#nha").value,bem=$("#nhb").value||null,tipo=$("#nht").value,desc=($("#nhd").value||"").trim();if(desc.length<5){toast("Descreva o que você identificou (pelo menos 5 letras).");return}
+  try{const c=await DB.abrirChM(amb,`[${tipo}] ${desc}`,"baixa",bem,"na_hora");let r=await DB.acaoCh(c.id,"aceitar");r=await DB.acaoCh(c.id,"iniciar");E.chs=[{...c,...r},...(E.chs||[]).filter(x=>x.id!=c.id)];E.mnh={};E.mt="item";E.chSel=c.id;toast("Registro criado. Tire a foto de antes.");carregarItem()}catch(e){toast(e.message)}}
+
+/* ---- como usar ---- */
+function manAjuda(){const P=[["Assumir um chamado",["Toque em Painel de manutenções (ou na notificação de novo chamado).","Abra o chamado e toque em Assumir este chamado.","O chamado passa para o seu nome."]],
+  ["Atender e concluir",["Toque em Iniciar atendimento quando começar.","Tire a foto de antes (obrigatória).","Faça o serviço; se quiser, tire a foto durante.","Tire a foto de depois (obrigatória).","Escreva o que foi feito e toque em Concluir chamado."]],
+  ["Ajudar um colega",["Abra o chamado que está com outro técnico.","Toque em Entrar como ajudante. O serviço conta também para você."]],
+  ["Manutenção feita na hora",["Toque em Realizar manutenção.","Escolha o ambiente, o bem (se houver) e descreva o problema.","Toque em Começar, tire as fotos e conclua."]],
+  ["Assinar a ordem de serviço",["Depois de concluir, abra o chamado.","Toque em Assinar como técnico e assine com o dedo.","Peça ao solicitante para assinar em Assinatura do solicitante."]]];
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Como usar</h1>${P.map(([t,L])=>`<div class="card"><b>${t}</b><ol style="margin:8px 0 0;padding-left:20px">${L.map(x=>`<li style="margin:4px 0">${x}</li>`).join("")}</ol></div>`).join("")}`}
+
+/* ======================= APP DO COLABORADOR · ETAPA 2 · RONDAS ======================= */
+const ITENS_RC={gases:["Pureza do oxigênio (foto do mostrador)","Pressão do O₂ na rede (foto)","Pressão do ar medicinal na rede (foto)","Temperatura do ambiente (foto)","Sem queda de rede","Cilindros conferidos"],geradores:["Combustível e horímetro de cada gerador","Partida automática testada (foto ou vídeo)","Sem vazamento","Tanque de combustível conferido"],qgbt:["Painéis fechados e sinalizados","Sem aquecimento ou cheiro de queimado","Área desobstruída","Extintor no prazo"],ambiente:["Iluminação","Tomadas e interruptores","Climatização","Piso, paredes e forro","Portas e fechaduras","Água e esgoto sem vazamento","Equipamentos funcionando e com etiqueta de calibração"]};
+const TRC={ambiente:"Ambiente",gases:"Central de gases",geradores:"Geradores e tanque",caixa_agua:"Caixa d'água",usina:"Usina de oxigênio",qgbt:"QGBT / transformador"};
+const MEDT=["gases","geradores","caixa_agua","usina"];
+const itensDeC=a=>(a.itens_ronda&&a.itens_ronda.length?a.itens_ronda:ITENS_RC[a.tipo_ronda||"ambiente"]||ITENS_RC.ambiente);
+function realRon(){const chk=({data,error})=>{if(error)throw new Error(traduz(error.message));return data};return {
+  async rcfgC(c){try{return chk(await sb.from("ronda_config").select("*").eq("contratante_id",c))}catch(e){return []}},
+  async rondasDia(c,u){const d=new Date();d.setHours(0,0,0,0);return chk(await sb.from("rondas").select("*").eq("contratante_id",c).eq("estabelecimento_id",u).gte("iniciada_em",d.toISOString()).order("iniciada_em"))},
+  async regsRonda(id){return chk(await sb.from("ronda_registros").select("ambiente_id,item,resultado").eq("ronda_id",id))},
+  async medsRonda(id){return chk(await sb.from("ronda_medicoes").select("chave,texto").eq("ronda_id",id).eq("chave","ambiente"))},
+  async iniRonda(u,t){return chk(await sb.rpc("iniciar_ronda",{p_unidade:u,p_tipo:t}))},
+  async regAmb(r,a,itens){return chk(await sb.rpc("registrar_ambiente_ronda",{p_ronda:r,p_ambiente:a,p_itens:itens}))},
+  async regMed(r,m,q){return chk(await sb.rpc("registrar_medicoes_ronda",{p_ronda:r,p_medicoes:m,p_queda:q||null}))},
+  async fimRonda(r){return chk(await sb.rpc("concluir_ronda",{p_ronda:r,p_resumo:null}))},
+  async subirFotoRonda(c,blob){const p=`${c}/rondas/${crypto.randomUUID()}.jpg`;chk(await sb.storage.from("fotos-bens").upload(p,blob,{contentType:"image/jpeg"}));return p}
+}}
+function mockRon(){const R=[],RG=[],MD=[];let n=1;return {
+  async rcfgC(){return [{estabelecimento_id:"e1",geradores:["Gerador 1"],usa_usina:true,cilindros_m3:[10,7,3,1],usina_pureza_min:90,caixa_nivel_min:30,caixa_limpeza_meses:6}]},
+  async rondasDia(c,u){return R.filter(r=>r.estabelecimento_id==u)},async regsRonda(id){return RG.filter(x=>x.ronda_id==id)},async medsRonda(id){return MD.filter(x=>x.ronda_id==id&&x.chave=="ambiente")},
+  async iniRonda(u,t){let r=R.find(x=>x.tipo==t&&!x.concluida_em);if(!r){r={id:"r"+n++,estabelecimento_id:u,tipo:t,iniciada_em:new Date().toISOString()};R.push(r)}return r.id},
+  async regAmb(r,a,itens){itens.forEach(i=>RG.push({ronda_id:r,ambiente_id:a,...i}));return {ocorrencias:itens.filter(i=>i.resultado=="ocorrencia").length}},
+  async regMed(r,m){m.forEach(x=>MD.push({ronda_id:r,...x}));return {chamados:m.filter(x=>(x.chave=="pureza"&&+x.valor<90)||(x.chave=="nivel"&&+x.valor<30)||x.texto=="falhou"||x.texto=="falha"||x.texto=="sim"||x.texto=="aberta").map((_,i)=>"nº "+(50+i))}},
+  async fimRonda(r){const x=R.find(y=>y.id==r);if(x)x.concluida_em=new Date().toISOString()},
+  async subirFotoRonda(c,blob){const p="demo/r/"+Date.now()+Math.random();E.fotos[p]=URL.createObjectURL(blob);return p}}}
+Object.assign(DB,DEMO?mockRon():realRon());
+const minhaUniC=()=>E.v.estabelecimento_id||E.rUniC||((E.unis||[])[0]||{}).id;
+async function carregarRon(){const c=E.v.contratante_id,u=minhaUniC();E.ron={carregando:true,feitos:new Set(),rondas:[]};render();
+  try{const [cfg,rs]=await Promise.all([DB.rcfgC(c),DB.rondasDia(c,u)]);const f=new Set();
+    for(const r of rs){(await DB.regsRonda(r.id)).forEach(x=>f.add(x.ambiente_id));(await DB.medsRonda(r.id)).forEach(x=>f.add(x.texto))}
+    E.ron={cfg:(cfg||[]).find(x=>x.estabelecimento_id==u)||{geradores:["Gerador 1"],usa_usina:true,cilindros_m3:[10,7,3,1]},rondas:rs,feitos:f,aberta:(rs.find(r=>r.tipo=="ambientes"&&!r.concluida_em)||{}).id}}catch(e){E.ron={erro:e.message,feitos:new Set(),rondas:[]}}render()}
+function abaRon(){if(!E.ron){setTimeout(carregarRon,0);return `<h1>Rondas</h1><p class="muted">Carregando…</p>`}
+  const t=E.rt||"home";return t=="vist"?ronVistoria():t=="med"?ronMedicoes():ronHome()}
+function ronHome(){const u=minhaUniC(),L=(E.amb||[]).filter(a=>a.estabelecimento_id==u&&(a.tipo_ronda||"ambiente")!="fora"),f=E.ron.feitos||new Set(),n=L.filter(a=>f.has(a.id)).length;
+  return `<h1>Rondas</h1><p class="sub">Roteiro de hoje com todos os ambientes${nomeUni(u)?" de "+esc(nomeUni(u)):""}. Toque no ambiente, vistorie item por item e feche. Ocorrência abre chamado sozinha.</p>
+  ${E.ron.erro?`<div class="msg err">${esc(E.ron.erro)}</div>`:""}
+  ${souAdm()&&variasUnis()&&!E.v.estabelecimento_id?`<label>Unidade<select onchange="E.rUniC=this.value;carregarRon()">${E.unis.map(x=>`<option value="${x.id}" ${u==x.id?"selected":""}>${esc(x.nome)}</option>`).join("")}</select></label>`:""}
+  <div class="card"><b>Ronda de hoje · ${n} de ${L.length} ambientes</b><div class="bar" style="margin-top:8px"><i style="width:${L.length?n/L.length*100:0}%;background:#1f9a55"></i></div></div>
+  <div class="card">${L.map(a=>{const ok=f.has(a.id),tp=a.tipo_ronda||"ambiente";return `<button class="rowch" onclick="${MEDT.includes(tp)?`abrirMedC('${a.id}')`:`abrirVistC('${a.id}')`}" style="--pc:${ok?"#1f9a55":"#b7791f"}"><span class="dot"></span><span class="tx"><b>${esc(a.nome)}</b><span>${esc(TRC[tp]||"Ambiente")}${MEDT.includes(tp)?" · medições":` · ${itensDeC(a).length} itens`}</span><span>${ok?`<span class="tg" style="--tc:#1f9a55">✔ vistoriado hoje</span>`:`<span class="tg" style="--tc:#b7791f">pendente</span>`}</span></span></button>`}).join("")||`<p class="muted">Nenhum ambiente na ronda desta unidade.</p>`}</div>
+  ${E.ron.aberta?`<button class="btn amb full" onclick="fimRondaC()">Concluir a ronda de hoje</button>`:""}<button class="btn ghost full" style="margin-top:8px" onclick="carregarRon()">↻ Atualizar</button>`}
+function abrirVistC(id){E.rv={a:id,res:{},desc:{},foto:{}};E.rt="vist";abrirNivel();render();scrollTo(0,0)}
+function guardaDescC(){const I=itensDeC((E.amb||[]).find(x=>x.id==E.rv.a));I.forEach((_,i)=>{const el=document.getElementById("rvd"+i);if(el)E.rv.desc[i]=el.value})}
+function ronVistoria(){const a=(E.amb||[]).find(x=>x.id==E.rv.a),I=itensDeC(a),m=E.rv,n=Object.keys(m.res).length;
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>${esc(a.nome)}</h1><p class="sub">Marque cada item. Ocorrência precisa de descrição, pode ter foto e abre um chamado.</p>${m.erro?`<div class="msg err">${esc(m.erro)}</div>`:""}
+  <div class="card">${I.map((t,i)=>`<div style="display:grid;gap:6px;padding:10px 0;border-top:${i?"1px solid var(--line)":"0"}"><b style="font-weight:600">${esc(t)}</b><div style="display:flex;gap:6px"><button class="btn sm ${m.res[i]=="normal"?"":"ghost"}" style="flex:1;${m.res[i]=="normal"?"background:#1f9a55;color:#fff":""}" onclick="guardaDescC();E.rv.res[${i}]='normal';render()">Normal</button><button class="btn sm ${m.res[i]=="ocorrencia"?"":"ghost"}" style="flex:1;${m.res[i]=="ocorrencia"?"background:#c8372d;color:#fff":""}" onclick="guardaDescC();E.rv.res[${i}]='ocorrencia';render()">Ocorrência</button></div>
+   ${m.res[i]=="ocorrencia"?`<input id="rvd${i}" placeholder="O que encontrou?" value="${esc(m.desc[i]||"")}" maxlength="300"><div class="fpick ${m.foto[i]?"ok":""}"><span>${m.foto[i]?"✔ foto anexada":"Foto da ocorrência (opcional)"}</span><label class="btn ghost sm" style="margin:0">📷 ${m.foto[i]?"Trocar":"Tirar foto"}<input type="file" accept="image/*" capture="environment" hidden onchange="fotoRonda(this,${i})"></label></div>`:""}</div>`).join("")}</div>
+  <button class="btn full" ${n<I.length?"disabled":""} onclick="fecharAmbC()">Fechar ambiente (${n}/${I.length})</button>`}
+async function fotoRonda(inp,i){const f=inp.files&&inp.files[0];if(!f)return;guardaDescC();const a=(E.amb||[]).find(x=>x.id==E.rv.a),I=itensDeC(a);toast("Preparando a foto…");
+  try{const g=await pegarGPS();const L=[`Ronda · ${a.nome}`,`${nomeUni(a.estabelecimento_id)||""}${nomeUni(a.estabelecimento_id)?" · ":""}${I[i]}`,`${new Date().toLocaleString("pt-BR")} (horário do aparelho)`,g?`GPS ${g.lat}, ${g.lng} (±${g.acc} m)`:"Localização não autorizada",`Atalaia System · ${E.v.nome||""}`];
+    const blob=await carimbar(f,L);E.rv.foto[i]=await DB.subirFotoRonda(E.v.contratante_id,blob);toast("Foto anexada.");render()}catch(e){toast(e.message||"Não foi possível enviar a foto.")}inp.value=""}
+async function rondaParaC(t){const u=minhaUniC();if(t=="ambientes"&&E.ron.aberta)return E.ron.aberta;const id=await DB.iniRonda(u,t);if(t=="ambientes")E.ron.aberta=id;return id}
+async function fecharAmbC(){guardaDescC();const m=E.rv,a=(E.amb||[]).find(x=>x.id==m.a),I=itensDeC(a);const itens=I.map((t,i)=>({item:t,resultado:m.res[i],descricao:m.res[i]=="ocorrencia"?(m.desc[i]||"").trim():null,foto:m.res[i]=="ocorrencia"?(m.foto[i]||null):null}));
+  if(itens.some(x=>x.resultado=="ocorrencia"&&(!x.descricao||x.descricao.length<3))){m.erro="Descreva cada ocorrência.";render();return}
+  try{const r=await rondaParaC("ambientes");const res=await DB.regAmb(r,a.id,itens);toast(res&&res.ocorrencias?`Ambiente fechado. ${res.ocorrencias} chamado(s) aberto(s).`:"Ambiente fechado: tudo normal.");E.rt="home";E.rv=null;await carregarRon();carregarMan().then(render).catch(()=>{})}catch(e){m.erro=e.message;render()}}
+async function fimRondaC(){try{await DB.fimRonda(E.ron.aberta);toast("Ronda concluída.");await carregarRon()}catch(e){toast(e.message)}}
+
+/* ---- medições: central de gases, geradores, caixa d'água, usina ---- */
+function abrirMedC(id){E.rm={a:id,queda:false};E.rt="med";abrirNivel();render();scrollTo(0,0)}
+function limpVencC(d,m){if(!d)return false;const x=new Date(d+"T12:00");x.setMonth(x.getMonth()+(m||6));return x<new Date()}
+function ronMedicoes(){const a=(E.amb||[]).find(x=>x.id==E.rm.a),t=a.tipo_ronda,c=E.ron.cfg||{},m=E.rm;const sel=(id,L)=>`<select id="${id}">${L.map(([v,x])=>`<option value="${v}">${x}</option>`).join("")}</select>`;const num=(id,l,o="")=>`<label>${l}<input id="${id}" type="number" inputmode="decimal" ${o}></label>`;
+  let corpo="";
+  if(t=="gases")corpo=`${c.usa_usina!==false?num("m_pureza_o2","Pureza do oxigênio (%) *",'step="0.1" required'):""}${num("m_pressao_o2","Pressão do O₂ na rede (kgf/cm²) *",'step="0.1" required')}${num("m_pressao_ar","Pressão do ar medicinal (kgf/cm²) *",'step="0.1" required')}${num("m_temperatura","Temperatura do ambiente (°C) *",'step="0.1" required')}
+   <b>Cilindros</b><div class="tbl" style="margin:6px 0 12px"><table><tr><th>Tamanho</th><th>Cheios</th><th>Vazios</th></tr>${(c.cilindros_m3||[10,7,3,1]).map(v=>`<tr><td>${v} m³</td><td><input id="cc${v}" type="number" min="0" value="0" style="max-width:80px"></td><td><input id="cv${v}" type="number" min="0" value="0" style="max-width:80px"></td></tr>`).join("")}</table></div>
+   <label>Houve queda na rede desde a última ronda? *<select id="mq" onchange="E.rm.queda=this.value=='1';render()"><option value="0" ${m.queda?"":"selected"}>Não</option><option value="1" ${m.queda?"selected":""}>Sim</option></select></label>
+   ${m.queda?`<div class="card" style="border-color:#c8372d"><label>Qual rede?<select id="qr"><option>Oxigênio</option><option>Ar medicinal</option><option>Vácuo</option></select></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><label>Início<input id="qi" type="time"></label><label>Fim<input id="qf" type="time"></label></div><label>A reserva entrou?<select id="qe"><option value="1">Sim</option><option value="0">Não</option></select></label><label>Paciente afetado?<select id="qp"><option value="0">Não</option><option value="1">Sim</option></select></label><label>Causa<input id="qc" maxlength="200"></label><p class="muted" style="font-size:.85rem;margin:0">Abre um chamado URGENTE automaticamente.</p></div>`:""}`;
+  else if(t=="geradores")corpo=`${(c.geradores||["Gerador 1"]).map((g,i)=>`<div class="card"><b>${esc(g)}</b>${num("gc"+i,"Combustível (%) *",'min="0" max="100" required')}${num("gh"+i,"Horímetro (h) *",'min="0" required')}${num("gt"+i,"Tensão de saída (V)",'min="0"')}<label>Partida automática testada? *${sel("gp"+i,[["funcionou","Sim, funcionou"],["falhou","Não funcionou"]])}</label></div>`).join("")}${num("gtq","Nível do tanque de combustível (%) *",'min="0" max="100" required')}<p class="muted" style="font-size:.85rem">Se a partida automática falhar, abre um chamado URGENTE.</p>`;
+  else if(t=="caixa_agua")corpo=`${num("ca_nivel","Nível da caixa (%) *",'min="0" max="100" required')}<label>Boia funcionando? *${sel("ca_boia",[["ok","Sim"],["falha","Não, com falha"]])}</label><label>Tampa fechada e travada? *${sel("ca_tampa",[["fechada","Sim"],["aberta","Não"]])}</label>
+   <label>Data da última limpeza *<input id="ca_limp" type="date" required max="${new Date().toISOString().slice(0,10)}" oninput="const w=document.getElementById('ca_lw');if(w)w.hidden=!limpVencC(this.value,${c.caixa_limpeza_meses||6})"><span id="ca_lw" hidden style="color:#c8372d;font-weight:700">Limpeza vencida: passou de ${c.caixa_limpeza_meses||6} meses. Programe a limpeza.</span></label>${num("ca_cloro","Cloro residual (mg/L) · opcional",'min="0" max="10" step="0.1"')}<p class="muted" style="font-size:.85rem">Nível abaixo de ${c.caixa_nivel_min??30}%, boia com falha ou tampa aberta abrem chamado.</p>`;
+  else corpo=`${num("us_pureza","Pureza do oxigênio (%) *",'min="0" max="100" step="0.1" required')}${num("us_pressao","Pressão de saída (kgf/cm²) *",'min="0" step="0.1" required')}${num("us_hor","Horímetro (h) *",'min="0" required')}<label>Compressor funcionando? *${sel("us_comp",[["ok","Sim"],["falha","Não, com falha"]])}</label><label>Secador funcionando? *${sel("us_sec",[["ok","Sim"],["falha","Não, com falha"]])}</label><label>Algum alarme ativo? *${sel("us_alarme",[["nao","Não"],["sim","Sim"]])}</label><p class="muted" style="font-size:.85rem">Pureza abaixo de ${c.usina_pureza_min??90}% ou alarme ativo abrem chamado URGENTE.</p>`;
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>${esc(a.nome)}</h1><p class="sub">${esc(TRC[t])} · registre os valores dos mostradores. Os horários são gravados pelo servidor.</p>${m.erro?`<div class="msg err">${esc(m.erro)}</div>`:""}
+  <form class="card" onsubmit="event.preventDefault();salvarMedC()">${corpo}<button class="btn full">Registrar</button></form>`}
+async function salvarMedC(){const m=E.rm,a=(E.amb||[]).find(x=>x.id==m.a),t=a.tipo_ronda,c=E.ron.cfg||{},L=[];let q=null;const v=id=>{const e=$("#"+id);return e?e.value:""};const P=(g,ch,o)=>L.push({grupo:g,amb:a.id,chave:ch,...o});
+  if(t=="gases"){["pureza_o2","pressao_o2","pressao_ar","temperatura"].forEach(k=>{if($("#m_"+k))L.push({grupo:"gases",chave:k,valor:v("m_"+k)})});(c.cilindros_m3||[10,7,3,1]).forEach(x=>L.push({grupo:"cilindros",chave:"cheios_"+x,valor:v("cc"+x)||0},{grupo:"cilindros",chave:"vazios_"+x,valor:v("cv"+x)||0}));
+    if(m.queda)q={houve:true,redes:v("qr"),inicio:v("qi")||null,fim:v("qf")||null,reserva_entrou:v("qe")=="1",paciente_afetado:v("qp")=="1",causa:v("qc").trim()||null}}
+  else if(t=="geradores"){(c.geradores||["Gerador 1"]).forEach((g,i)=>L.push({grupo:g,chave:"combustivel",valor:v("gc"+i)},{grupo:g,chave:"horimetro",valor:v("gh"+i)},{grupo:g,chave:"tensao",valor:v("gt"+i)||null},{grupo:g,chave:"partida_automatica",texto:v("gp"+i)}));L.push({grupo:"tanque",chave:"nivel",valor:v("gtq")})}
+  else if(t=="caixa_agua"){P(a.nome,"nivel",{valor:v("ca_nivel")});P(a.nome,"boia",{texto:v("ca_boia")});P(a.nome,"tampa",{texto:v("ca_tampa")});P(a.nome,"ultima_limpeza",{texto:v("ca_limp")});if(v("ca_cloro")!=="")P(a.nome,"cloro",{valor:v("ca_cloro")})}
+  else{P(a.nome,"pureza",{valor:v("us_pureza")});P(a.nome,"pressao_saida",{valor:v("us_pressao")});P(a.nome,"horimetro",{valor:v("us_hor")});P(a.nome,"compressor",{texto:v("us_comp")});P(a.nome,"secador",{texto:v("us_sec")});P(a.nome,"alarme",{texto:v("us_alarme")})}
+  L.push({grupo:a.nome,amb:a.id,chave:"ambiente",texto:a.id});
+  const tipoR=t=="gases"?"gases":t=="geradores"?"geradores":t;
+  try{const r=await DB.iniRonda(minhaUniC(),tipoR);const res=await DB.regMed(r,L,q);await DB.fimRonda(r);toast(res&&res.chamados&&res.chamados.length?`Registrado. Chamado(s) aberto(s): ${res.chamados.join(", ")}.`:"Medições registradas.");E.rt="home";E.rm=null;await carregarRon();carregarMan().then(render).catch(()=>{})}catch(e){m.erro=e.message;render()}}
+
+/* ======================= APP DO COLABORADOR · ETAPA 3 · LEITOR DE QR CODE ======================= */
+const JSQR={src:"https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js",sri:"sha384-b5Ya4Bq3qCyz39m2ISh+4DxjAIljdeFwK/BsXLuj9gugaNwAcj/ia15fxNZL9Nlx"};
+let camStream=null,camLoop=null;
+function carregarJsQR(){if(window.jsQR)return Promise.resolve();return new Promise((ok,er)=>{const s=document.createElement("script");s.src=JSQR.src;s.integrity=JSQR.sri;s.crossOrigin="anonymous";s.onload=ok;s.onerror=()=>er(new Error("Não foi possível carregar o leitor."));document.head.appendChild(s)})}
+function manQR(){return `<button class="voltar" onclick="pararCam();voltar()">← Voltar</button><h1>Ler QR Code</h1><p class="sub">Aponte para o QR do ambiente (abre tudo dele) ou para a etiqueta de patrimônio do bem (abre a ficha).</p>
+  <div class="card" style="display:grid;gap:10px">${E.camOn?`<video id="camv" playsinline muted style="width:100%;border-radius:12px;background:#000;aspect-ratio:3/4;object-fit:cover"></video><button class="btn ghost" onclick="pararCam();render()">Fechar câmera</button>`:`<button class="btn amb full" onclick="abrirCam()">📷 Abrir a câmera</button>`}
+  ${E.camErro?`<div class="msg err">${esc(E.camErro)}</div>`:""}
+  <label style="margin:0">Ou digite o patrimônio / nº de série (ou use o leitor Bluetooth)<input id="qrman" autocomplete="off" placeholder="Ex.: HTA-0001" onkeydown="if(event.key=='Enter')lerCodigo(this.value)"></label><button class="btn ghost" onclick="lerCodigo($('#qrman').value)">Buscar</button></div>`}
+async function abrirCam(){E.camErro=null;try{if(!("BarcodeDetector" in window))await carregarJsQR();camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});E.camOn=true;render();
+  const v=$("#camv");v.srcObject=camStream;await v.play();const det="BarcodeDetector" in window?new BarcodeDetector({formats:["qr_code","code_128","ean_13","code_39"]}):null;const cv=document.createElement("canvas"),x=cv.getContext("2d",{willReadFrequently:true});
+  const passo=async()=>{if(!camStream)return;try{let txt=null;if(det){const r=await det.detect(v);if(r.length)txt=r[0].rawValue}else if(v.videoWidth){cv.width=v.videoWidth;cv.height=v.videoHeight;x.drawImage(v,0,0);const d=x.getImageData(0,0,cv.width,cv.height),q=window.jsQR(d.data,d.width,d.height);if(q)txt=q.data}
+    if(txt){if(navigator.vibrate)navigator.vibrate(80);pararCam();lerCodigo(txt);return}}catch(e){}camLoop=setTimeout(passo,250)};passo()}
+  catch(e){pararCam();E.camErro=/Permission|NotAllowed/i.test(e.name+e.message)?"A câmera foi bloqueada. Libere a câmera para este site nas configurações do navegador.":"Não foi possível abrir a câmera neste aparelho. Digite o número abaixo.";render()}}
+function pararCam(){clearTimeout(camLoop);if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}E.camOn=false}
+function lerCodigo(txt){txt=String(txt||"").trim();if(!txt)return;const m=txt.match(/[?&]t=([A-Za-z0-9_-]+)/);
+  if(m){const a=(E.amb||[]).find(x=>x.qr_token==m[1]);if(a){E.ambSel=a.id;E.mtPrev="home";E.mt="amb";render();scrollTo(0,0);return}E.camErro="Este QR é de um ambiente que não pertence à sua unidade.";render();return}
+  const t=txt.toUpperCase(),b=(E.bens||[]).find(x=>(x.patrimonio||"").toUpperCase()==t||(x.numero_serie||"").toUpperCase()==t);
+  if(b){E.bemSel=b.id;E.mtPrev="home";E.mt="bem";render();scrollTo(0,0);return}E.camErro=`Nada encontrado para “${txt}”. Confira o número ou se o bem é da sua unidade.`;render()}
+function manAmb(){const a=(E.amb||[]).find(x=>x.id==E.ambSel);if(!a)return `<button class="voltar" onclick="voltar()">← Voltar</button><p class="muted">Ambiente não encontrado.</p>`;
+  const B=(E.bens||[]).filter(b=>b.ambiente_id==a.id),C=(E.chs||[]).filter(c=>c.ambiente_id==a.id&&emAberto(c)),tp=a.tipo_ronda||"ambiente";
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>${esc(a.nome)}</h1><p class="sub">${esc(nomeUni(a.estabelecimento_id)||"")}${a.grupo?" · "+esc(a.grupo):""} · ${esc((typeof TRC!="undefined"&&TRC[tp])||"Ambiente")}</p>
+  <div class="bigs">${bigBtn("+","Abrir chamado aqui","Registrar um problema neste ambiente",`E.ncA='${a.id}';E.ncB='';irMan('novoch')`)}
+  ${typeof abaRon=="function"&&tp!="fora"?bigBtn("R","Vistoriar este ambiente",MEDT.includes(tp)?"Medições do ambiente":"Ronda item por item",`vistDoAmb('${a.id}')`):""}</div>
+  <div class="card"><b>Chamados em aberto (${C.length})</b>${C.map(linhaCh).join("")||`<p class="muted">Nenhum chamado em aberto aqui.</p>`}</div>
+  <div class="card"><b>Bens do ambiente (${B.length})</b>${B.map(b=>`<button class="rowch" onclick="E.bemSel='${b.id}';irMan('bem')" style="--pc:${b.estado=="em reparo"||b.estado=="ruim"?"#c8372d":"#1f9a55"}"><span class="dot"></span><span class="tx"><b>${esc(b.nome)}</b><span>${esc(b.patrimonio||"sem patrimônio")}${b.numero_serie?" · série "+esc(b.numero_serie):""}${b.posicao?" · "+esc(b.posicao):""}</span></span></button>`).join("")||`<p class="muted">Nenhum bem cadastrado neste ambiente.</p>`}</div>`}
+function manBem(){const b=(E.bens||[]).find(x=>x.id==E.bemSel);if(!b)return `<button class="voltar" onclick="voltar()">← Voltar</button><p class="muted">Bem não encontrado.</p>`;
+  const C=(E.chs||[]).filter(c=>c.bem_id==b.id).slice(0,20);
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>${esc(b.nome)}</h1><p class="sub">${esc(b.patrimonio||"sem patrimônio")} · ${esc(nomeAmbC(b.ambiente_id))}${nomeUni(b.estabelecimento_id||"")?" · "+esc(nomeUni(b.estabelecimento_id)):""}</p>
+  <div class="card"><dl class="dl"><dt>Categoria</dt><dd>${esc(b.categoria||"—")}</dd><dt>Marca / modelo</dt><dd>${esc([b.marca,b.modelo].filter(Boolean).join(" · ")||"—")}</dd><dt>Nº de série</dt><dd>${esc(b.numero_serie||"—")}</dd><dt>Estado</dt><dd>${esc(b.estado||"—")}</dd>${typeof sitN=="function"?`<dt>Situação</dt><dd>${esc(sitN(sitK(b)))}${empDoBem(b)?" · "+esc(empDoBem(b)):""}</dd>`:""}${b.posicao?`<dt>Posição</dt><dd>${esc(b.posicao)}</dd>`:""}</dl></div>
+  <div class="bigs">${bigBtn("+","Abrir chamado deste bem","Registrar defeito ou problema",`E.ncA='${b.ambiente_id}';E.ncB='${b.id}';irMan('novoch')`)}${bigBtn("▦","Ver o cadastro completo","Fotos e todos os dados",`abrirBem('${b.id}')`)}</div>
+  <div class="card"><b>Histórico de chamados (${C.length})</b>${C.map(linhaCh).join("")||`<p class="muted">Nenhum chamado deste bem.</p>`}</div>`}
+function manNovoCh(){const a=(E.amb||[]).find(x=>x.id==E.ncA),B=(E.bens||[]).filter(b=>b.ambiente_id==E.ncA);
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Abrir chamado</h1><p class="sub">${esc(a?a.nome:"")}</p><div class="card">
+  <label>Qual bem? (opcional)<select id="ncb"><option value="">Não sei / é do ambiente</option>${B.map(b=>`<option value="${b.id}" ${E.ncB==b.id?"selected":""}>${esc((b.patrimonio?b.patrimonio+" · ":"")+b.nome)}</option>`).join("")}</select></label>
+  <label>O que está acontecendo? *<textarea id="ncd" rows="3" maxlength="500" placeholder="Ex.: monitor apitando sem parar"></textarea></label>
+  <label>Prioridade<select id="ncp"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></label>
+  <button class="btn amb full" onclick="salvarNovoCh()">Abrir chamado</button></div>`}
+async function salvarNovoCh(){const d=($("#ncd").value||"").trim();if(d.length<5){toast("Descreva o problema (pelo menos 5 letras).");return}
+  try{const c=await DB.abrirChM(E.ncA,d,$("#ncp").value,$("#ncb").value||null,"app");E.chs=[c,...(E.chs||[])];toast(`Chamado nº ${c.numero} aberto.`);E.mt="item";E.chSel=c.id;carregarItem()}catch(e){toast(e.message)}}
+async function vistDoAmb(id){const a=(E.amb||[]).find(x=>x.id==id);E.aba="ron";if(!E.ron||E.ron.carregando)await carregarRon();if(MEDT.includes(a.tipo_ronda))abrirMedC(id);else abrirVistC(id)}
+
 iniciar();
 
 
