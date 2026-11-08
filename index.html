@@ -85,7 +85,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.2.0",
+  versao:"0.2.1",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -209,7 +209,7 @@ function aparelho(){const u=navigator.userAgent;return (/Mobi|Android|iPhone/.te
 /* ---------------- Estado e telas ---------------- */
 const E={tela:"carregando",aba:"bens",v:null,amb:[],bens:[],busca:"",fotos:{},msg:null,modal:null,modoSenha:"link",depois:null,fatores:[],insc:null,obrig:false,acessos:[],chamados:[],suporte:false};
 function render(){
-  const h=E.tela=="login"?telaLogin():E.tela=="senha"?telaSenha():E.tela=="mfa"?telaMfa():E.tela=="ativar2"?telaAtivar():E.tela=="semacesso"?telaSemAcesso():E.tela=="app"?telaApp():`<div class="center wrap"><p class="muted" style="text-align:center">Carregando…</p></div>`;
+  const h=E.tela=="login"?telaLogin():E.tela=="senha"?telaSenha():E.tela=="mfa"?telaMfa():E.tela=="ativar2"?telaAtivar():E.tela=="semacesso"?telaSemAcesso():E.tela=="linkerro"?telaLinkErro():E.tela=="app"?telaApp():`<div class="center wrap"><p class="muted" style="text-align:center">Carregando…</p></div>`;
   $("#app").innerHTML=(DEMO?`<div class="demo">MODO DEMONSTRAÇÃO · os dados não são salvos</div>`:"")+h+(E.modal?modalHTML():"");
   if(E.tela=="app")carregarFotosVisiveis();
   montarCaptcha();
@@ -394,6 +394,7 @@ async function iniciar(){
   try{
     const s=await DB.sessao();
     if(s&&convite){E.modoSenha="link";E.tela="senha";render();return}
+    if(s&&erroLink){history.replaceState(null,"",location.pathname);let em="";try{em=(await DB.usuario())?.email||""}catch(x){}E.linkErroEmail=em;E.tela="linkerro";render();return}
     if(s){await posLogin(false);return}
   }catch(e){E.msg=["err",e.message]}
   if(erroLink){E.msg=["err","O link venceu ou já foi usado. Peça um novo em “Esqueci minha senha”."];history.replaceState(null,"",location.pathname)}
@@ -450,6 +451,10 @@ async function abrirApp(registrar){
   [E.amb,E.bens,E.acessos,E.chamados,E.unis,E.emps]=await Promise.all([DB.ambientes(c),DB.bens(c),DB.ultimosAcessos().catch(()=>[]),DB.chamados(c).catch(()=>[]),DB.unidades(c),DB.empresas(c)]);
   E.tela="app";render();
 }
+function telaLinkErro(){return `<div class="center wrap"><div class="card" style="max-width:460px"><h1 style="font-size:1.3rem">Este link não vale mais</h1><p class="muted">O link do e-mail (convite ou nova senha) venceu ou já foi usado. Por segurança, ele vale por pouco tempo e uma única vez.</p>
+ <p>Neste navegador você continua conectado como <b>${esc(E.linkErroEmail||"outra conta")}</b>.</p>
+ <p class="muted">Para aceitar um convite: peça a quem convidou para <b>reenviar o convite</b> e abra o link novo logo que chegar, de preferência numa janela anônima.</p>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn" onclick="E.tela='';posLogin(false)">Continuar como ${esc((E.linkErroEmail||"").split("@")[0]||"esta conta")}</button><button class="btn ghost" onclick="sair()">Sair desta conta</button></div></div></div>`}
 async function sair(){await DB.sair();E.v=null;E.tela="login";E.msg=null;E.modal=null;render()}
 async function sairTodos(){if(!confirm("Sair de todos os aparelhos? Você e qualquer outro aparelho conectado com a sua conta precisarão entrar de novo."))return;
   try{await DB.registrar(E.v.contratante_id,"saiu de todos os aparelhos",null);await DB.sair(true)}catch(e){}E.v=null;E.tela="login";E.msg=["ok","Pronto: a conta foi desconectada de todos os aparelhos."];render()}
