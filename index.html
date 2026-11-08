@@ -85,7 +85,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.1.6",
+  versao:"0.1.8",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -139,7 +139,10 @@ function realDB(){
     async ultimosAcessos(){const u=await this.usuario();return chk(await sb.from("registro_acessos").select("criado_em,aparelho").eq("user_id",u.id).eq("acao","entrou").order("criado_em",{ascending:false}).limit(2))},
     async meuVinculo(){const u=(await sb.auth.getUser()).data.user;const d=chk(await sb.from("membros").select("perfil,nome,foto_path,contratante_id,contratantes(id,nome,sigla,situacao,plano_id,exige_2_etapas,design,planos(*))").eq("user_id",u.id).eq("ativo",true).limit(1));return d[0]?{...d[0],email:u.email}:null},
     async ambientes(c){return chk(await sb.from("ambientes").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em"))},
-    async addAmbiente(c,nome){return chk(await sb.from("ambientes").insert({contratante_id:c,nome}).select().single())},
+    async addAmbiente(c,nome,extra){return chk(await sb.from("ambientes").insert({contratante_id:c,nome,...(extra||{})}).select().single())},
+    async unidades(c){try{return chk(await sb.from("estabelecimentos").select("id,nome,tipo").eq("contratante_id",c).order("criado_em"))}catch(e){return []}},
+    async addEmpresa(d){return chk(await sb.from("empresas").insert(d).select("id,nome,tipo").single())},
+    async empresas(c){try{return chk(await sb.from("empresas").select("id,nome,tipo").eq("contratante_id",c).is("excluido_em",null).order("nome"))}catch(e){return []}},
     async renAmbiente(id,nome){return chk(await sb.from("ambientes").update({nome}).eq("id",id).select().single())},
     async bens(c){return chk(await sb.from("bens").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em",{ascending:false}))},
     async addBem(b){return chk(await sb.from("bens").insert(b).select().single())},
@@ -179,7 +182,8 @@ function mockDB(){
     async ultimosAcessos(){return [{criado_em:new Date().toISOString(),aparelho:aparelho()},{criado_em:new Date(Date.now()-864e5).toISOString(),aparelho:"Celular · Chrome"}]},
     async meuVinculo(){return {perfil:"gestor",nome:"Demonstração",contratante_id:c.id,contratantes:{...c,exige_2_etapas:false},email:"demo@atalaia"}},
     async ambientes(){return amb.filter(a=>a.ativo)},
-    async addAmbiente(ci,nome){if(amb.filter(a=>a.ativo).length>=plano.ambientes)throw new Error(`Limite do plano atingido: ${plano.ambientes} ambiente(s).`);const a={id:"a"+Date.now(),contratante_id:ci,nome,ativo:true};amb.push(a);return a},
+    async addAmbiente(ci,nome,extra){if(amb.filter(a=>a.ativo).length>=plano.ambientes)throw new Error(`Limite do plano atingido: ${plano.ambientes} ambiente(s).`);const a={id:"a"+Date.now(),contratante_id:ci,nome,ativo:true,...(extra||{})};amb.push(a);return a},
+    async unidades(){return [{id:"e1",nome:"Sede",tipo:"empresa"}]},async empresas(){return [{id:"m1",nome:"Locadora Exemplo",tipo:"locadora"},{id:"m2",nome:"Assistência Técnica Exemplo",tipo:"assistencia"}]},async addEmpresa(d){return {id:"m"+Date.now(),nome:d.nome,tipo:d.tipo}},
     async renAmbiente(id,nome){const a=amb.find(x=>x.id==id);a.nome=nome;return a},
     async bens(){return bens.filter(b=>b.ativo).sort((a,b)=>String(b.criado_em).localeCompare(String(a.criado_em)))},
     async addBem(b){await w(250);if(bens.filter(x=>x.ativo).length>=plano.bens)throw new Error(`Limite do plano atingido: ${plano.bens} bens. Para cadastrar mais, conheça os planos pagos.`);if(b.numero_serie&&bens.some(x=>x.numero_serie==b.numero_serie))throw new Error("Já existe um bem com este número de série.");const n={...b,id:"b"+Date.now(),patrimonio:null,criado_em:new Date().toISOString(),ativo:true};bens.push(n);return n},
@@ -265,20 +269,26 @@ function telaApp(){
 }
 function uso(n,lim,neutro){const p=Math.min(100,n/lim*100);return `<div class="bar"><i style="width:${p}%;background:${neutro?"var(--ink)":p>=100?"var(--bad)":p>=75?"var(--warn)":"var(--ink)"}"></i></div>`}
 function abaBens(p){
-  const q=E.busca.toLowerCase();const L=E.bens.filter(b=>!q||(b.nome+" "+(b.patrimonio||"")+" "+(b.numero_serie||"")+" "+(b.marca||"")).toLowerCase().includes(q));
+  const q=E.busca.toLowerCase();const L=E.bens.filter(b=>sitOk(b,E.fSit)&&(!q||(b.nome+" "+(b.patrimonio||"")+" "+(b.numero_serie||"")+" "+(b.marca||"")+" "+empDoBem(b)).toLowerCase().includes(q)));
   const cheio=E.bens.length>=p.bens;
   return `<h1>Bens</h1><p class="sub">${E.bens.length} de ${p.bens} bens cadastrados</p>${uso(E.bens.length,p.bens)}
   <div style="display:flex;gap:8px;margin:14px 0"><button class="btn amb" style="flex:1" ${cheio?"disabled":""} onclick="abrirBem()">+ Cadastrar bem</button><button class="btn ghost" onclick="exportar()" title="Baixar em Excel ou PDF">⬇ Baixar</button></div>
   ${E.desfazer&&Date.now()<E.desfazer.ate?`<div class="msg ok" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span>Excluído: <b>${esc(E.desfazer.nome)}</b></span><button class="btn ghost sm" onclick="desfazer()">↶ Desfazer</button></div>`:""}
   ${cheio?`<div class="msg info">Limite do plano ${esc(p.nome)} atingido. Para cadastrar mais bens, conheça os planos pagos na aba Plano.</div>`:""}
-  <input placeholder="Buscar por nome${temPat()?", patrimônio":""}, série ou marca" value="${esc(E.busca)}" oninput="E.busca=this.value;render();const i=document.querySelector('input[placeholder^=Buscar]');i.focus();i.setSelectionRange(i.value.length,i.value.length)" style="margin-bottom:12px">
-  <div class="card" style="padding:4px 16px">${L.map(b=>`<div class="bem" onclick="abrirBem('${b.id}')"><div class="ft" data-foto="${esc(b.foto_path||"")}">${b.foto_path?"…":"sem foto"}</div><div><b>${esc(b.nome)}</b>${b.patrimonio?`<span class="pat">${esc(b.patrimonio)}</span>`:""} <span class="muted">· ${esc(nomeAmb(b.ambiente_id))}</span></div><span class="tag">${esc(b.estado)}</span></div>`).join("")||`<p class="muted" style="padding:14px 0">${E.bens.length?"Nenhum bem encontrado na busca.":"Nenhum bem cadastrado ainda. Toque em “Cadastrar bem” para começar."}</p>`}</div>`;
+  <input placeholder="Buscar por nome${temPat()?", patrimônio":""}, série ou marca" value="${esc(E.busca)}" oninput="E.busca=this.value;render();const i=document.querySelector('input[placeholder^=Buscar]');i.focus();i.setSelectionRange(i.value.length,i.value.length)" style="margin-bottom:8px">
+  <select onchange="E.fSit=this.value;render()" style="margin-bottom:12px" aria-label="Situação"><option value="">Todas as situações</option><option value="p" ${E.fSit=="p"?"selected":""}>Só bens próprios</option><option value="t" ${E.fSit=="t"?"selected":""}>Só bens de terceiros</option>${sitOpts(E.fSit)}</select>
+  <div class="card" style="padding:4px 16px">${L.map(b=>`<div class="bem" onclick="abrirBem('${b.id}')"><div class="ft" data-foto="${esc(b.foto_path||"")}">${b.foto_path?"…":"sem foto"}</div><div><b>${esc(b.nome)}</b>${b.patrimonio?`<span class="pat">${esc(b.patrimonio)}</span>`:""} <span class="muted">· ${esc(nomeAmb(b.ambiente_id))}</span>${terc(sitK(b))||sitK(b)!="proprio"?`<div class="muted" style="font-size:.8rem">${esc(sitN(sitK(b)))}${empDoBem(b)?" · "+esc(empDoBem(b)):""}${b.posse_ate?" · até "+esc(b.posse_ate.split("-").reverse().join("/")):""}</div>`:""}</div><span class="tag">${esc(b.estado)}</span></div>`).join("")||`<p class="muted" style="padding:14px 0">${E.bens.length?"Nenhum bem encontrado na busca.":"Nenhum bem cadastrado ainda. Toque em “Cadastrar bem” para começar."}</p>`}</div>`;
 }
 function abaAmb(p){
   const pode=["gestor","administrador"].includes(E.v.perfil);
   return `<button type="button" class="voltar" onclick="voltar()">← Voltar</button><h1>${p.ambientes>1?"Ambientes":"Ambiente"}</h1><p class="sub">${E.amb.length} de ${p.ambientes} · os bens ficam ligados a um ambiente</p>
-  <div class="card">${E.amb.map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)"><div><b>${esc(a.nome)}</b><div class="muted">${E.bens.filter(b=>b.ambiente_id==a.id).length} bem(ns)</div></div>${pode?`<button class="btn ghost sm" onclick="renomear('${a.id}')">Renomear</button>`:""}</div>`).join("")}</div>
-  ${pode&&E.amb.length<p.ambientes?`<form class="card" onsubmit="event.preventDefault();novoAmb()"><label>Novo ambiente<input id="na" required placeholder="Ex.: Recepção"></label><button class="btn">Criar ambiente</button></form>`:`<p class="muted">${E.amb.length>=p.ambientes?`O plano ${esc(p.nome)} permite ${p.ambientes} ambiente(s).`:""}</p>`}`;
+  <div class="card">${E.amb.map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)"><div><b>${esc(a.nome)}</b><div class="muted">${[variasUnis()?nomeUni(a.estabelecimento_id):"",a.grupo,a.posicoes?a.posicoes+" leito(s)/box(es)":""].filter(Boolean).map(esc).join(" · ")}${variasUnis()||a.grupo||a.posicoes?" · ":""}${E.bens.filter(b=>b.ambiente_id==a.id).length} bem(ns)</div></div>${pode?`<button class="btn ghost sm" onclick="renomear('${a.id}')">Renomear</button>`:""}</div>`).join("")}</div>
+  ${pode&&E.amb.length<p.ambientes?`<form class="card" onsubmit="event.preventDefault();novoAmb()"><h2>Novo ambiente</h2><label>Nome do ambiente *<input id="na" required maxlength="80" placeholder="Como a equipe chama. Ex.: Enfermaria Adulto 01" autocomplete="off"></label>
+  ${variasUnis()?`<label>Unidade<select id="nu">${E.unis.map(u=>`<option value="${u.id}">${esc(u.nome)}</option>`).join("")}</select></label>`:""}
+  <label>Setor (opcional)<input id="ng" maxlength="80" list="ngl" placeholder="Ex.: Clínica Médica" autocomplete="off"><datalist id="ngl">${[...new Set(E.amb.map(a=>a.grupo).filter(Boolean))].map(g=>`<option value="${esc(g)}">`).join("")}</datalist></label>
+  <div class="row"><label>Leitos, boxes ou salas<input id="np" type="number" min="0" max="9999" value="0" inputmode="numeric"></label>${temManut()?`<label>Tipo na ronda<select id="nt"><option value="">Ambiente comum</option><option value="gases">Central de gases</option><option value="geradores">Casa de geradores</option><option value="qgbt">QGBT / subestação</option><option value="fora">Fora da ronda</option></select></label>`:""}</div>
+  <label>Responsável pelo ambiente (opcional)<input id="nr" maxlength="120"></label>
+  <p class="muted" style="margin:0 0 10px">Ex.: enfermaria com 10 leitos = 10. Recepção = 0. Use sempre o mesmo nome de setor para juntar os ambientes nos relatórios.</p><button class="btn">Criar ambiente</button></form>`:`<p class="muted">${E.amb.length>=p.ambientes?`O plano ${esc(p.nome)} permite ${p.ambientes} ambiente(s).`:""}</p>`}`;
 }
 function abaPlano(p){
   const bloq=Object.entries(FUNCOES).filter(([k])=>!p.funcoes.includes(k));
@@ -318,6 +328,18 @@ function contaHTML(){
   <button class="btn ghost sm" onclick="sairTodos()">Sair de todos os aparelhos</button></div></div>`;
 }
 const nomeAmb=id=>E.amb.find(a=>a.id==id)?.nome||"Sem ambiente";
+/* Situação do bem: próprios (compra, doação, leasing) e de terceiros */
+const SITB=[["proprio","Próprio · compra","p"],["doacao","Próprio · doação","p"],["leasing","Leasing (arrendamento)","p"],["locado","Locado","t"],["comodato","Comodato","t"],["cessao","Cessão de uso","t"],["emprestimo","Empréstimo","t"],["demonstracao","Demonstração / teste","t"],["consignado","Consignado","t"]];
+const TIPO_SIT={locado:"locadora",comodato:"comodato",leasing:"leasing",cessao:"instituicao",emprestimo:"instituicao",demonstracao:"fornecedor",consignado:"fornecedor"};
+const empAchar=n=>(E.emps||[]).find(x=>x.nome.trim().toLowerCase()==String(n||"").trim().toLowerCase());
+async function empresaPorNome(nome,k,amb,gest){const n=String(nome||"").trim().replace(/\s+/g," ");if(!n)return null;const e=empAchar(n);if(e)return e.id;
+  const u=gest?null:((E.amb||[]).find(a=>a.id==amb)||{}).estabelecimento_id||null;const r=await DB.addEmpresa({contratante_id:E.v.contratante_id,nome:n,tipo:TIPO_SIT[k]||"outro",estabelecimento_id:u});(E.emps=E.emps||[]).push(r);return r.id}
+function empDica(inp){const d=document.getElementById(inp.id+"_dica");if(d)d.textContent=inp.value.trim()&&!empAchar(inp.value)?"Empresa nova: será cadastrada ao salvar (complete os dados depois em Empresas locadoras).":""}
+const SIT_PRAZO=["leasing","locado","cessao","emprestimo","demonstracao"];
+const sitK=b=>(b&&b.propriedade)||"proprio",sitN=k=>(SITB.find(x=>x[0]==k)||[0,"Próprio · compra"])[1],terc=k=>(SITB.find(x=>x[0]==(k||"proprio"))||[0,0,"p"])[2]=="t",sitEmp=k=>!["proprio","doacao"].includes(k||"proprio");
+const empDoBem=b=>sitK(b)=="doacao"?(b.doador||""):sitEmp(sitK(b))?(((E.emps||[]).find(e=>e.id==b.empresa_id)||{}).nome||""):"";
+const sitOk=(b,f)=>!f||(f=="p"?!terc(sitK(b)):f=="t"?terc(sitK(b)):sitK(b)==f);
+const sitOpts=k=>`<optgroup label="Bens próprios">${SITB.filter(x=>x[2]=="p").map(([v,t])=>`<option value="${v}" ${k==v?"selected":""}>${t}</option>`).join("")}</optgroup><optgroup label="Bens de terceiros">${SITB.filter(x=>x[2]=="t").map(([v,t])=>`<option value="${v}" ${k==v?"selected":""}>${t}</option>`).join("")}</optgroup>`;
 const CAT=["Equipamento","Mobiliário","Eletrônico","Utensílio","Ferramenta","Outro"],EST=["novo","bom","regular","ruim","em manutenção"];
 function modalHTML(){
   if(E.modal.tipo=="baixar")return baixarHTML();
@@ -331,7 +353,13 @@ function modalHTML(){
   <label>Nome do bem *<input id="fn" required maxlength="120" value="${esc(b.nome)}" placeholder="Ex.: Cabine de secagem UV"></label>
   <div class="row"><label>Categoria<select id="fc">${CAT.map(x=>`<option ${b.categoria==x?"selected":""}>${x}</option>`).join("")}</select></label>
   <label>Estado<select id="fe">${EST.map(x=>`<option ${b.estado==x||(!b.estado&&x=="bom")?"selected":""}>${x}</option>`).join("")}</select></label></div>
-  <label>Ambiente<select id="fa">${E.amb.map(a=>`<option value="${a.id}" ${b.ambiente_id==a.id?"selected":""}>${esc(a.nome)}</option>`).join("")}</select></label>
+  <label>Ambiente<select id="fa">${optsAmb(b.ambiente_id)}</select></label>
+  <div class="card" style="background:var(--soft,#f4f6f8);padding:12px;margin:0 0 12px"><label>Situação do bem<select id="fpr" onchange="mudouProp(this.value)">${sitOpts(sitK(b))}</select></label>
+  <label id="wemp" style="display:${sitEmp(sitK(b))?"block":"none"}"><span id="lemp">${sitK(b)=="leasing"?"Empresa de leasing *":"Empresa dona do bem *"}</span><input id="femp" list="lemps" maxlength="120" autocomplete="off" placeholder="Digite o nome ou escolha" value="${esc(b._empNome!=null?b._empNome:(((E.emps||[]).find(e=>e.id==b.empresa_id)||{}).nome||""))}" oninput="empDica(this)" ${sitEmp(sitK(b))?"required":""}><datalist id="lemps">${(E.emps||[]).map(e=>`<option value="${esc(e.nome)}">`).join("")}</datalist><span class="muted" id="femp_dica" style="font-weight:400;font-size:.8rem"></span></label>
+  <label id="wdoa" style="display:${sitK(b)=="doacao"?"block":"none"}">Quem doou (opcional)<input id="fdoa" maxlength="120" value="${esc(b.doador||"")}"></label>
+  <label id="wpos" style="display:${SIT_PRAZO.includes(sitK(b))?"block":"none"}">Válido até / devolver até<input id="fpos" type="date" value="${b.posse_ate||""}"></label></div>
+  ${temManut()?`<div class="row"><label>Tipo de equipamento<input id="ftp" maxlength="80" value="${esc(b.tipo)}" placeholder="Ex.: Monitor multiparâmetro"></label><label>Posição (leito, box, sala)<input id="fpo" maxlength="40" value="${esc(b.posicao)}" placeholder="Ex.: Leito 3"></label></div>
+  <div class="row"><label>Vida útil (anos)<input id="fvu" type="number" min="1" max="50" inputmode="numeric" value="${b.vida_util_anos??""}"></label><label style="display:flex;gap:8px;align-items:center;margin-top:22px"><input type="checkbox" id="fcr" ${b.critico?"checked":""} style="width:auto"> Equipamento crítico</label></div>`:""}
   <div class="row"><label>Marca<input id="fm" maxlength="60" value="${esc(b.marca)}"></label><label>Modelo<input id="fo" maxlength="60" value="${esc(b.modelo)}"></label></div>
   <label>Número de série<input id="fs" maxlength="80" value="${esc(b.numero_serie)}" placeholder="Se tiver"></label>
   <div class="row"><label>Valor (R$)<input id="fv" type="number" step="0.01" min="0" inputmode="decimal" value="${b.valor??""}"></label><label>Data de compra<input id="fd" type="date" value="${b.data_aquisicao||""}"></label></div>
@@ -417,13 +445,18 @@ async function abrirApp(registrar){
     let ult=0;try{ult=+localStorage.getItem("atalaia_abriu")||0}catch(e){}
     if(Date.now()-ult>216e5){DB.registrar(c,"abriu o app",null);try{localStorage.setItem("atalaia_abriu",String(Date.now()))}catch(e){}}}
   try{E.fotoUrl=E.v.foto_path?await DB.urlFoto(E.v.foto_path):null;E.logoUrl=E.v.contratantes.design?.logo?await DB.urlFoto(E.v.contratantes.design.logo):null}catch(e){}
-  [E.amb,E.bens,E.acessos,E.chamados]=await Promise.all([DB.ambientes(c),DB.bens(c),DB.ultimosAcessos().catch(()=>[]),DB.chamados(c).catch(()=>[])]);
+  [E.amb,E.bens,E.acessos,E.chamados,E.unis,E.emps]=await Promise.all([DB.ambientes(c),DB.bens(c),DB.ultimosAcessos().catch(()=>[]),DB.chamados(c).catch(()=>[]),DB.unidades(c),DB.empresas(c)]);
   E.tela="app";render();
 }
 async function sair(){await DB.sair();E.v=null;E.tela="login";E.msg=null;E.modal=null;render()}
 async function sairTodos(){if(!confirm("Sair de todos os aparelhos? Você e qualquer outro aparelho conectado com a sua conta precisarão entrar de novo."))return;
   try{await DB.registrar(E.v.contratante_id,"saiu de todos os aparelhos",null);await DB.sair(true)}catch(e){}E.v=null;E.tela="login";E.msg=["ok","Pronto: a conta foi desconectada de todos os aparelhos."];render()}
-async function recarregar(){const c=E.v.contratante_id;[E.amb,E.bens]=await Promise.all([DB.ambientes(c),DB.bens(c)]);render()}
+async function recarregar(){const c=E.v.contratante_id;[E.amb,E.bens,E.unis,E.emps]=await Promise.all([DB.ambientes(c),DB.bens(c),DB.unidades(c),DB.empresas(c)]);render()}
+const temManut=()=>!!(E.v&&E.v.contratantes.planos.funcoes.includes("calibracoes"));
+const nomeUni=id=>((E.unis||[]).find(u=>u.id==id)||{}).nome||"";
+const variasUnis=()=>(E.unis||[]).length>1;
+function optsAmb(sel){const U=variasUnis()?E.unis:[null];return U.map(u=>{const L=E.amb.filter(a=>!u||a.estabelecimento_id==u.id);if(!L.length)return "";const o=L.map(a=>`<option value="${a.id}" ${sel==a.id?"selected":""}>${esc(a.nome)}${a.grupo?" · "+esc(a.grupo):""}</option>`).join("");return u?`<optgroup label="${esc(u.nome)}">${o}</optgroup>`:o}).join("")}
+function mudouProp(v){const sh=(id,on)=>{const w=$(id);if(w)w.style.display=on?"block":"none"};sh("#wemp",sitEmp(v));sh("#wdoa",v=="doacao");sh("#wpos",SIT_PRAZO.includes(v));const s=$("#femp");if(s)s.required=sitEmp(v);const l=$("#lemp");if(l)l.textContent=v=="leasing"?"Empresa de leasing *":"Empresa dona do bem *"}
 const temColFotos=()=>E.v?.contratantes?.planos?.fotos_por_bem!=null;
 const limFotos=()=>temColFotos()?E.v.contratantes.planos.fotos_por_bem:1;
 const fotosDoBem=b=>b?(Array.isArray(b.fotos)&&b.fotos.length?b.fotos:(b.foto_path?[b.foto_path]:[])):[];
@@ -432,7 +465,7 @@ async function abrirBem(id){const b=id?E.bens.find(x=>x.id==id):null;
   const fs=await Promise.all(fotosDoBem(b).map(async p=>({path:p,url:await urlCache(p)})));
   E.modal={bem:b?{...b}:null,fotos:fs,removidas:[]};abrirNivel();render()}
 function guardarForm(){if(!E.modal||!$("#fn"))return;const b=E.modal.bem||(E.modal.bem={});
-  Object.assign(b,{nome:$("#fn").value,categoria:$("#fc").value,estado:$("#fe").value,ambiente_id:$("#fa").value,marca:$("#fm").value,modelo:$("#fo").value,numero_serie:$("#fs").value,valor:$("#fv").value===""?null:$("#fv").value,data_aquisicao:$("#fd").value,observacao:$("#fb").value})}
+  Object.assign(b,{nome:$("#fn").value,categoria:$("#fc").value,estado:$("#fe").value,ambiente_id:$("#fa").value,marca:$("#fm").value,modelo:$("#fo").value,numero_serie:$("#fs").value,valor:$("#fv").value===""?null:$("#fv").value,data_aquisicao:$("#fd").value,observacao:$("#fb").value,propriedade:$("#fpr")?$("#fpr").value:b.propriedade,_empNome:$("#femp")?$("#femp").value:b._empNome,doador:$("#fdoa")?$("#fdoa").value:b.doador,posse_ate:$("#fpos")?$("#fpos").value:b.posse_ate,tipo:$("#ftp")?$("#ftp").value:b.tipo,posicao:$("#fpo")?$("#fpo").value:b.posicao,vida_util_anos:$("#fvu")?$("#fvu").value:b.vida_util_anos,critico:$("#fcr")?$("#fcr").checked:b.critico})}
 async function prevFoto(inp){const arq=[...inp.files];if(!arq.length)return;guardarForm();
   for(const f of arq){if(E.modal.fotos.length>=limFotos()){toast(`O seu plano permite até ${limFotos()} foto(s) por bem.`);break}
     try{const bl=await comprimir(f);E.modal.fotos.push({blob:bl,url:URL.createObjectURL(bl)})}catch(e){toast("Não foi possível ler a foto.")}}
@@ -443,7 +476,10 @@ async function salvarBem(){
   const btn=$("#fsalvar");btn.disabled=true;btn.textContent="Salvando…";
   const b=E.modal.bem||{},c=E.v.contratante_id;
   const d={nome:$("#fn").value.trim(),categoria:$("#fc").value,estado:$("#fe").value,ambiente_id:$("#fa").value||null,marca:$("#fm").value.trim()||null,modelo:$("#fo").value.trim()||null,numero_serie:$("#fs").value.trim()||null,valor:$("#fv").value===""?null:Number($("#fv").value),data_aquisicao:$("#fd").value||null,observacao:$("#fb").value.trim()||null};
+  if($("#fpr")){const k=$("#fpr").value;d.propriedade=k;const en=sitEmp(k)?$("#femp").value.trim():"";d.empresa_id=null;d.doador=k=="doacao"?($("#fdoa").value.trim()||null):null;d.posse_ate=SIT_PRAZO.includes(k)?($("#fpos").value||null):null;if(sitEmp(k)&&!en){guardarForm();E.modal.erro=sitN(k)+": escreva ou escolha o nome da empresa.";btn.disabled=false;btn.textContent=b.id?"Salvar alterações":"Salvar bem";render();return}}
+  if($("#ftp")){d.tipo=$("#ftp").value.trim()||null;d.posicao=$("#fpo").value.trim()||null;d.vida_util_anos=$("#fvu").value===""?null:Number($("#fvu").value);d.critico=$("#fcr").checked}
   try{
+    if($("#fpr")&&sitEmp(d.propriedade))d.empresa_id=await empresaPorNome($("#femp").value,d.propriedade,d.ambiente_id,E.v.perfil=="gestor");
     const lista=[];for(const f of E.modal.fotos){lista.push(f.path||await DB.enviarFoto(c,f.blob))}
     d.foto_path=lista[0]||null;if(temColFotos())d.fotos=lista;
     let r;
@@ -459,7 +495,8 @@ async function confirmarExclusao(id){const b=E.bens.find(x=>x.id==id);const m=($
   if(m.length<5){toast("Escreva o motivo da exclusão (pelo menos 5 letras).");return}
   try{await DB.excluir("bens",id,m);E.desfazer={t:"bens",id,nome:rot(b),ate:Date.now()+115000};toast("Excluído. Você pode desfazer por 2 minutos.");fecharSemVoltar();await recarregar();setTimeout(render,116000)}catch(e){E.modal.erro=e.message;render()}}
 async function desfazer(){const d=E.desfazer;if(!d)return;try{await DB.desfazer(d.t,d.id);E.desfazer=null;toast("Exclusão desfeita.");await recarregar()}catch(e){E.desfazer=null;toast(e.message);render()}}
-async function novoAmb(){try{await DB.addAmbiente(E.v.contratante_id,$("#na").value.trim());toast("Ambiente criado.");await recarregar()}catch(e){toast(e.message)}}
+async function novoAmb(){const n=$("#na").value.trim();if(!n)return;const ex={};if($("#nu"))ex.estabelecimento_id=$("#nu").value;if($("#ng")&&$("#ng").value.trim())ex.grupo=$("#ng").value.trim();if($("#np")&&Number($("#np").value))ex.posicoes=Number($("#np").value);if($("#nt")&&$("#nt").value)ex.tipo_ronda=$("#nt").value;if($("#nr")&&$("#nr").value.trim())ex.responsavel_nome=$("#nr").value.trim();
+  try{await DB.addAmbiente(E.v.contratante_id,n,ex);toast("Ambiente criado.");await recarregar()}catch(e){toast(e.message)}}
 async function renomear(id){const a=E.amb.find(x=>x.id==id);const nome=window.prompt("Novo nome do ambiente",a.nome);if(!nome||!nome.trim())return;try{await DB.renAmbiente(id,nome.trim());await recarregar()}catch(e){toast(e.message)}}
 async function carregarFotosVisiveis(){for(const el of document.querySelectorAll("[data-foto]")){const p=el.dataset.foto;if(!p)continue;let u=E.fotos[p];if(!u){u=await DB.urlFoto(p);if(u)E.fotos[p]=u}if(u&&el.isConnected){const im=document.createElement("img");im.className="ft";im.src=u;im.alt="";el.replaceWith(im)}}}
 /* ---------------- Voltar (botão na tela e botão voltar do celular) ---------------- */
@@ -488,8 +525,8 @@ function exportar(){E.modal={tipo:"baixar"};abrirNivel();render()}
 function baixarHTML(){return `<div class="modal" onclick="if(event.target==this)voltar()"><div class="sheet"><button type="button" class="voltar" onclick="voltar()">← Voltar</button><h2>Baixar a lista de bens</h2><p class="sub">${E.bens.length} bem(ns) de ${esc(E.v.contratantes.nome)}. O arquivo vai para a pasta Downloads do aparelho.</p>
   <div class="opc-baixar"><button class="btn ghost" id="bx" onclick="baixarExcel()"><b>📊 Planilha Excel (.xlsx)</b><br><small class="muted">Para editar, filtrar e somar no Excel ou no Google Planilhas.</small></button>
   <button class="btn ghost" id="bp" onclick="baixarPDF()"><b>📄 Relatório PDF com fotos</b><br><small class="muted">Para imprimir ou enviar. Mostra cada bem com as fotos.</small></button></div></div></div>`}
-function colunasBaixar(){return [...(temPat()?[["patrimonio","Patrimônio"]]:[]),["nome","Bem"],["categoria","Categoria"],["ambiente","Ambiente"],["marca","Marca"],["modelo","Modelo"],["numero_serie","Nº de série"],["estado","Estado"],["valor","Valor (R$)"],["data_aquisicao","Data de compra"],["observacao","Observação"],["qtd_fotos","Fotos"]]}
-function valorCampo(b,k){return k=="ambiente"?nomeAmb(b.ambiente_id):k=="data_aquisicao"?(b[k]?dtBR(b[k]):""):k=="qtd_fotos"?fotosDoBem(b).length:(b[k]??"")}
+function colunasBaixar(){return [...(temPat()?[["patrimonio","Patrimônio"]]:[]),["nome","Bem"],["categoria","Categoria"],["ambiente","Ambiente"],["marca","Marca"],["modelo","Modelo"],["numero_serie","Nº de série"],["estado","Estado"],["valor","Valor (R$)"],["data_aquisicao","Data de compra"],["situacao","Situação"],["empresa","Empresa / doador"],["posse_ate","Válido até"],["observacao","Observação"],["qtd_fotos","Fotos"]]}
+function valorCampo(b,k){return k=="situacao"?sitN(sitK(b)):k=="empresa"?empDoBem(b):k=="posse_ate"?(b.posse_ate?dtBR(b.posse_ate):""):k=="ambiente"?nomeAmb(b.ambiente_id):k=="data_aquisicao"?(b[k]?dtBR(b[k]):""):k=="qtd_fotos"?fotosDoBem(b).length:(b[k]??"")}
 function nomeArquivo(ext){return `bens_${E.v.contratantes.sigla}_${new Date().toISOString().slice(0,10)}.${ext}`}
 function baixarBlob(blob,nome){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
 function crc32(u){let t=crc32.t;if(!t){t=crc32.t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}}let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=t[(c^u[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0}
@@ -540,7 +577,7 @@ async function baixarPDF(){
     const tot=E.bens.reduce((s,b)=>s+(Number(b.valor)||0),0);doc.setFont("helvetica","normal");doc.setFontSize(9.5);if(tot)doc.text("Valor total informado: "+brl(tot),W-M,y,{align:"right"});y+=6;
     for(const b of E.bens){
       const ps=fotosDoBem(b).slice(0,limFotos());const fotos=[];for(const p of ps.slice(0,4)){const d=await fotoDados(p);if(d)fotos.push(d)}
-      const campos=[...(b.patrimonio?[["Patrimônio",b.patrimonio]]:[]),["Categoria",b.categoria],["Ambiente",nomeAmb(b.ambiente_id)],["Estado",b.estado],["Marca",b.marca],["Modelo",b.modelo],["Nº de série",b.numero_serie],["Valor",b.valor!=null&&b.valor!==""?brl(Number(b.valor)):""],["Data de compra",b.data_aquisicao?dtBR(b.data_aquisicao):""]].filter(x=>x[1]);
+      const campos=[...(b.patrimonio?[["Patrimônio",b.patrimonio]]:[]),["Categoria",b.categoria],["Ambiente",nomeAmb(b.ambiente_id)],["Estado",b.estado],["Marca",b.marca],["Modelo",b.modelo],["Nº de série",b.numero_serie],["Valor",b.valor!=null&&b.valor!==""?brl(Number(b.valor)):""],["Data de compra",b.data_aquisicao?dtBR(b.data_aquisicao):""],["Situação",sitK(b)!="proprio"?sitN(sitK(b))+(empDoBem(b)?" · "+empDoBem(b):"")+(b.posse_ate?" · até "+dtBR(b.posse_ate):""):""]].filter(x=>x[1]);
       const obs=b.observacao?doc.splitTextToSize("Observação: "+b.observacao,W-2*M-8):[];
       const hFoto=fotos.length?42:0,hTxt=8+Math.ceil(campos.length/2)*5+obs.length*4.2;const alt=Math.max(hTxt,0)+hFoto+8;
       if(y+alt>H-16){doc.addPage();topo();y=28}
