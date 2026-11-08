@@ -95,7 +95,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.3",
+  versao:"0.3.4",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -700,7 +700,7 @@ function manHome(){const L=meusChs(),novos=L.filter(c=>c.situacao=="aberto"),com
   </div>
   ${E.v.perfil=="colaborador"?`<p class="muted" style="font-size:.85rem">Cadastros, relatórios, etiquetas e configurações ficam com o Gestor e o Administrador.</p>`:`<p class="muted" style="font-size:.85rem">No computador (ou no botão 🖥 Painel), o administrador tem o painel completo.</p>`}`}
 function linhaCh(c){const s=SITM[c.situacao]||[c.situacao,"#6b7078"],p=PRIC[c.prioridade]||["",""];
-  return `<button class="rowch" onclick="irMan('item','${c.id}')" style="--pc:${p[1]}"><span class="dot"></span><span class="tx"><b>Nº ${c.numero} · ${esc(c.descricao)}</b><span>${c.origem=="na_hora"?"Feita na hora":"Chamado"} · ${esc(nomeAmbC(c.ambiente_id))}${variasUnis()?" · "+esc(nomeUni(c.estabelecimento_id)):""} · ${ha(c.aberto_em)}</span><span>${c.responsavel_id?`com <b>${esc(nomeMem(c.responsavel_id)||"técnico")}</b>`:"<b>sem responsável</b>"}${atrasado(c)?` · <span style="color:#c8372d;font-weight:700">atrasado</span>`:""}</span><span><span class="tg" style="--tc:${s[1]}">${esc(s[0])}</span> <span class="tg" style="--tc:${p[1]}">${p[0]}</span></span></span></button>`}
+  return `<button class="rowch" onclick="irMan('item','${c.id}')" style="--pc:${p[1]}"><span class="dot"></span><span class="tx"><b>Nº ${c.numero??"— (sem internet)"} · ${esc(c.descricao)}</b><span>${c.origem=="na_hora"?"Feita na hora":"Chamado"} · ${esc(nomeAmbC(c.ambiente_id))}${variasUnis()?" · "+esc(nomeUni(c.estabelecimento_id)):""} · ${ha(c.aberto_em)}</span><span>${c.responsavel_id?`com <b>${esc(nomeMem(c.responsavel_id)||"técnico")}</b>`:"<b>sem responsável</b>"}${atrasado(c)?` · <span style="color:#c8372d;font-weight:700">atrasado</span>`:""}</span><span><span class="tg" style="--tc:${s[1]}">${esc(s[0])}</span> <span class="tg" style="--tc:${p[1]}">${p[0]}</span></span></span></button>`}
 function chip(k,v,t){const on=(E.mf[k]||"")==v;return `<button class="chp" aria-pressed="${on}" onclick="E.mf.${k}='${v}';render()">${t}</button>`}
 function manLista(){const f=E.mf||{},pri={urgente:0,alta:1,media:2,baixa:3},so={aberto:0,aceito:1,em_atendimento:2,concluido:3,confirmado:4};
   const L=meusChs().filter(c=>(!f.s||(f.s=="aberto"?emAberto(c):c.situacao==f.s))&&(!f.q||(f.q=="eu"?souRespCh(c)||(c._ajud||[]).includes(meuId()):!c.responsavel_id))&&(!f.o||(f.o=="na_hora"?c.origem=="na_hora":c.origem!="na_hora")))
@@ -719,7 +719,7 @@ async function carregarItem(){const id=E.chSel;E.it={ev:[],fo:[],aj:[],as:[],car
 function manItem(){const c=(E.chs||[]).find(x=>x.id==E.chSel);if(!c)return `<button class="voltar" onclick="voltar()">← Voltar</button><p class="muted">Chamado não encontrado.</p>`;
   const it=E.it||{ev:[],fo:[],aj:[],as:[]},s=SITM[c.situacao]||[c.situacao,"#6b7078"],p=PRIC[c.prioridade]||["",""],meu=souRespCh(c),ajudo=(it.aj||[]).some(a=>a.user_id==meuId()),adm=souAdm();
   const tem=e=>(it.fo||[]).some(f=>f.etapa==e),bem=c.bem_id?(E.bens||[]).find(b=>b.id==c.bem_id):null;
-  let h=`<button class="voltar" onclick="voltar()">← Voltar</button><h1>Chamado nº ${c.numero}</h1>
+  let h=`<button class="voltar" onclick="voltar()">← Voltar</button><h1>Chamado nº ${c.numero??"— (sem internet)"}</h1>
   <div class="faixa" style="--tc:${s[1]}">${esc(s[0])}${c.responsavel_id&&emAberto(c)?" · com "+esc(nomeMem(c.responsavel_id)||"técnico"):""}${(it.aj||[]).length?" · ajudante: "+it.aj.map(a=>esc(a.nome||"")).join(", "):""}</div>
   ${E.it&&E.it.erro?`<div class="msg err">${esc(E.it.erro)}</div>`:""}
   <div class="card"><p style="margin:0 0 8px"><b>${esc(c.descricao)}</b></p><dl class="dl">
@@ -927,7 +927,7 @@ function manNovoCh(){const a=(E.amb||[]).find(x=>x.id==E.ncA),B=(E.bens||[]).fil
   <label>Prioridade<select id="ncp"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></label>
   <button class="btn amb full" onclick="salvarNovoCh()">Abrir chamado</button></div>`}
 async function salvarNovoCh(){const d=($("#ncd").value||"").trim();if(d.length<5){toast("Descreva o problema (pelo menos 5 letras).");return}
-  try{const c=await DB.abrirChM(E.ncA,d,$("#ncp").value,$("#ncb").value||null,"app");E.chs=[c,...(E.chs||[])];E.ncTxt="";toast(`Chamado nº ${c.numero} aberto.`);E.mt="item";E.chSel=c.id;carregarItem()}catch(e){toast(e.message)}}
+  try{const c=await DB.abrirChM(E.ncA,d,$("#ncp").value,$("#ncb").value||null,"app");E.chs=[c,...(E.chs||[])];E.ncTxt="";toast(c.numero?`Chamado nº ${c.numero} aberto.`:"Chamado aberto.");E.mt="item";E.chSel=c.id;carregarItem()}catch(e){toast(e.message)}}
 async function vistDoAmb(id){const a=(E.amb||[]).find(x=>x.id==id);E.aba="ron";if(!E.ron||E.ron.carregando)await carregarRon();if(MEDT.includes(a.tipo_ronda))abrirMedC(id);else abrirVistC(id)}
 
 /* ======================= APP DO COLABORADOR · ETAPA 4 =======================
@@ -1214,6 +1214,143 @@ function imprimirEtqAmb(){const el=$("#etqprint");if(!el)return;const w=window.o
   w.document.write(`<!doctype html><meta charset="utf-8"><title>Etiqueta do QR</title><style>:root{--amb:${cor}}body{margin:0;display:grid;place-items:center;min-height:95vh;font-family:Arial}svg{width:100%;height:100%;display:block}@page{margin:10mm}</style>${el.innerHTML}`);w.document.close();w.focus();setTimeout(()=>w.print(),400);
   try{DB.registrar&&DB.registrar(E.v.contratante_id,"imprimiu QR Code",((E.amb||[]).find(x=>x.id==E.ambSel)||{}).nome||"")}catch(e){}}
 async function copiarLinkAmb(){const a=(E.amb||[]).find(x=>x.id==E.ambSel);try{await navigator.clipboard.writeText(linkQRAmb(a));toast("Link copiado.")}catch(e){toast(linkQRAmb(a))}}
+
+/* ======================= APP DO COLABORADOR · ETAPA 5 · SEM INTERNET =======================
+   * O app abre sem internet (service worker guarda a página e as bibliotecas).
+   * Os últimos dados vistos ficam guardados no aparelho (IndexedDB) e aparecem sem internet.
+   * O que é feito sem internet (chamado, assumir/iniciar/concluir, fotos, assinatura, ronda,
+     medições, serviço com laudo, anexo, troca) entra numa fila e é enviado sozinho, na ordem,
+     quando a internet volta. Nada é perdido; o que o servidor recusar fica listado para ver. */
+const OFF_LER=["usuario","nivel","fatores","chamados","ultimosAcessos","meuVinculo","ambientes","unidades","empresas","bens",
+  "chs","mems","eventosCh","fotosCh","ajudantes","assinaturas","rcfgC","rondasDia","regsRonda","medsRonda",
+  "agendaMan","progBem","realizadosBem","docsBem","trocas","auditoriasAmb"];
+const OFF_FILA=["abrirChM","acaoCh","ajudar","subirFotoCh","regFoto","assinarOS","iniRonda","regAmb","regMed","fimRonda","subirFotoRonda",
+  "addRealizado","arquivo","addDoc","informarTroca"];
+const OFF_DESC={abrirChM:"Abrir chamado",acaoCh:"Ação no chamado",ajudar:"Entrar como ajudante",subirFotoCh:"Foto do chamado",regFoto:"Registro da foto",
+  assinarOS:"Assinatura da OS",iniRonda:"Início da ronda",regAmb:"Ambiente da ronda",regMed:"Medições da ronda",fimRonda:"Conclusão da ronda",subirFotoRonda:"Foto da ronda",
+  addRealizado:"Serviço realizado",arquivo:"Arquivo (laudo/anexo)",addDoc:"Documento do bem",informarTroca:"Troca de equipamento"};
+const OFF_VAZIO=["eventosCh","fotosCh","ajudantes","assinaturas","regsRonda","medsRonda","progBem","realizadosBem","docsBem","trocas","auditoriasAmb","mems","empresas","rondasDia","chs","agendaMan"];
+const OFF_PODE_ESVAZIAR={chs:1,rondasDia:1,agendaMan:1,bens:1,ambientes:1};
+const OFF={uid:"anon",fila:[],mapa:{},mem:{},enviando:false,erros:[],aberto:false,ultimo:0};
+const offTmp=()=>"off-"+crypto.randomUUID();
+const semRede=()=>navigator.onLine===false;
+const erroRede=e=>/failed to fetch|networkerror|load failed|network request failed|fetch failed|err_internet|err_network|sem internet/i.test(String(e&&(e.message||e)));
+
+/* ---- IndexedDB (com reserva em memória se o navegador bloquear) ---- */
+let offIdbP=null;
+function offIdb(){if(!("indexedDB" in window))return Promise.reject(new Error("sem IndexedDB"));return offIdbP||(offIdbP=new Promise((ok,er)=>{try{const r=indexedDB.open("atalaia-off",1);
+  r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains("cache"))d.createObjectStore("cache");if(!d.objectStoreNames.contains("fila"))d.createObjectStore("fila",{keyPath:"seq",autoIncrement:true});if(!d.objectStoreNames.contains("mapa"))d.createObjectStore("mapa")};
+  r.onsuccess=()=>ok(r.result);r.onerror=()=>er(r.error)}catch(e){er(e)}}))}
+async function offTx(store,mode,fn){const d=await offIdb();return new Promise((ok,er)=>{const t=d.transaction(store,mode),s=t.objectStore(store);let res;const q=fn(s);if(q)q.onsuccess=()=>{res=q.result};t.oncomplete=()=>ok(res);t.onerror=()=>er(t.error);t.onabort=()=>er(t.error)})}
+async function cacheGet(k){if(k in OFF.mem)return OFF.mem[k];try{const v=await offTx("cache","readonly",s=>s.get(k));if(v!==undefined)OFF.mem[k]=v;return v}catch(e){return undefined}}
+async function cachePut(k,v){OFF.mem[k]=v;try{await offTx("cache","readwrite",s=>s.put(v,k))}catch(e){}}
+async function cachePatch(k,fn,base){let v=await cacheGet(k);if(v===undefined)v=base!==undefined?base:[];try{v=fn(structuredClone?structuredClone(v):JSON.parse(JSON.stringify(v)))??v}catch(e){}await cachePut(k,v)}
+const ck=(k,a)=>OFF.uid+"|"+k+"|"+JSON.stringify(a);
+async function offLimparTudo(){OFF.mem={};OFF.fila=[];OFF.mapa={};OFF.erros=[];try{await offTx("cache","readwrite",s=>s.clear());await offTx("fila","readwrite",s=>s.clear());await offTx("mapa","readwrite",s=>s.clear())}catch(e){}updOffBar()}
+async function offCarregarFila(){try{OFF.fila=await offTx("fila","readonly",s=>s.getAll())||[];const ks=await offTx("mapa","readonly",s=>s.getAllKeys())||[],vs=await offTx("mapa","readonly",s=>s.getAll())||[];ks.forEach((k,i)=>OFF.mapa[k]=vs[i])}catch(e){}}
+
+/* ---- troca dos números provisórios pelos reais ---- */
+function offTrocar(x){if(typeof x=="string"){for(const [k,v] of Object.entries(OFF.mapa)){if(x===k)return v;if(x.includes(k))x=x.split(k).join(String(v))}return x}
+  if(Array.isArray(x))return x.map(offTrocar);if(x&&typeof x=="object"&&!(x instanceof Blob)){const o={};for(const k in x)o[k]=offTrocar(x[k]);return o}return x}
+const temTmp=a=>/off-[0-9a-f-]{36}|off\/[0-9a-f-]{36}/.test(JSON.stringify(a,(k,v)=>v instanceof Blob?null:v));
+
+/* ---- resultados provisórios (o app segue funcionando sem internet) ---- */
+function chLocal(id){return (E.chs||[]).find(x=>x.id==id)}
+const OFF_OTM={
+  abrirChM:(amb,desc,pri,bem,origem)=>({id:offTmp(),numero:null,ambiente_id:amb,estabelecimento_id:((E.amb||[]).find(a=>a.id==amb)||{}).estabelecimento_id||E.v.estabelecimento_id||null,descricao:desc,prioridade:pri,situacao:"aberto",origem:origem||"app",aberto_em:new Date().toISOString(),bem_id:bem||null,solicitante_nome:E.v.nome,_off:true}),
+  acaoCh:(id,a,o)=>{o=o||{};const c={...(chLocal(id)||{id})},ag=new Date().toISOString();
+    if(a=="aceitar")Object.assign(c,{situacao:"aceito",aceito_em:ag,responsavel_id:meuId()});else if(a=="atribuir")Object.assign(c,{situacao:"aceito",aceito_em:c.aceito_em||ag,responsavel_id:o.resp});
+    else if(a=="iniciar")Object.assign(c,{situacao:"em_atendimento",iniciado_em:ag});else if(a=="concluir"){if((o.solucao||"").length<5)throw new Error("Descreva o que foi feito (pelo menos 5 letras).");Object.assign(c,{situacao:"concluido",iniciado_em:c.iniciado_em||ag,concluido_em:ag,solucao:o.solucao,custo:o.custo??null})}
+    else if(a=="confirmar")Object.assign(c,{situacao:"confirmado",confirmado_em:ag});else if(a=="reabrir")Object.assign(c,{situacao:"em_atendimento",concluido_em:null});c._off=true;return c},
+  ajudar:()=>"ok",
+  subirFotoCh:(c,id,blob)=>{const p="off/"+crypto.randomUUID();try{E.fotos[p]=URL.createObjectURL(blob)}catch(e){}return p},
+  regFoto:()=>({na_hora:true,_off:true}),
+  assinarOS:()=>"ok",
+  iniRonda:()=>offTmp(),
+  regAmb:()=>({ocorrencias:0,_off:true}),
+  regMed:()=>({chamados:[],_off:true}),
+  fimRonda:()=>({_off:true}),
+  subirFotoRonda:(c,blob)=>{const p="off/"+crypto.randomUUID();try{E.fotos[p]=URL.createObjectURL(blob)}catch(e){}return p},
+  addRealizado:d=>({...d,id:offTmp(),registrado_em:new Date().toISOString(),quem:E.v.nome,_off:true}),
+  arquivo:(c,blob)=>{const p="off/"+crypto.randomUUID();try{E.fotos[p]=URL.createObjectURL(blob)}catch(e){}return p},
+  addDoc:d=>({...d,id:offTmp(),enviado_em:new Date().toISOString(),quem:E.v.nome,_off:true}),
+  informarTroca:(bem,p,s,m,origem,obs)=>{const b=(E.bens||[]).find(x=>x.id==bem)||{};if(!p&&!s)throw new Error("Informe o patrimônio ou o nº de série que está na etiqueta.");
+    return {id:offTmp(),contratante_id:E.v.contratante_id,bem_id:bem,ambiente_id:b.ambiente_id,estabelecimento_id:b.estabelecimento_id,posicao:b.posicao||null,patrimonio_informado:(p||"").toUpperCase()||null,serie_informada:s||null,modelo_informado:m||null,origem:origem||"app",observacao:obs||null,situacao:"pendente",informado_em:new Date().toISOString(),informado_por:E.v.nome,_off:true}}};
+/* o que muda nos dados guardados, para a tela mostrar o que foi feito sem internet */
+async function offAplicar(k,a,r){const c=E.v&&E.v.contratante_id,ag=new Date().toISOString();
+  if(k=="abrirChM")await cachePatch(ck("chs",[c]),L=>[r,...L]);
+  if(k=="acaoCh")await cachePatch(ck("chs",[c]),L=>L.map(x=>x.id==a[0]?{...x,...r}:x));
+  if(k=="ajudar")await cachePatch(ck("ajudantes",[a[0]]),L=>[...L,{user_id:meuId(),nome:E.v.nome,em:ag}]);
+  if(k=="regFoto")await cachePatch(ck("fotosCh",[a[0]]),L=>[...L,{path:a[1],etapa:a[2],tirada_em:a[3],na_hora:true,carimbo:a[5]}]);
+  if(k=="assinarOS")await cachePatch(ck("assinaturas",[a[0]]),L=>[...L,{papel:a[1],nome:a[2],assinado_em:ag}]);
+  if(k=="iniRonda")await cachePatch(ck("rondasDia",[c,a[0]]),L=>[...L,{id:r,estabelecimento_id:a[0],tipo:a[1],iniciada_em:ag}]);
+  if(k=="regAmb")await cachePatch(ck("regsRonda",[a[0]]),L=>[...L,...(a[2]||[]).map(i=>({ambiente_id:a[1],item:i.item,resultado:i.resultado}))]);
+  if(k=="fimRonda"){for(const key of Object.keys(OFF.mem).filter(x=>x.startsWith(OFF.uid+"|rondasDia|")))await cachePatch(key,L=>L.map(x=>x.id==a[0]?{...x,concluida_em:ag}:x))}
+  if(k=="addRealizado")await cachePatch(ck("realizadosBem",[r.bem_id]),L=>[r,...L]);
+  if(k=="addDoc")await cachePatch(ck("docsBem",[r.bem_id]),L=>[r,...L]);
+  if(k=="informarTroca")await cachePatch(ck("trocas",[c]),L=>[r,...L])}
+
+/* ---- embrulha os métodos do DB ---- */
+function offEmbrulhar(){
+  OFF_LER.forEach(k=>{const f=DB[k];if(typeof f!="function"||f._off)return;const g=async(...a)=>{a=offTrocar(a);const key=ck(k,a);
+    if(temTmp(a)){const v=await cacheGet(key);return v!==undefined?v:[]}
+    if(semRede()){const v=await cacheGet(key);if(v!==undefined)return v;if(OFF_VAZIO.includes(k))return [];throw new Error("Sem internet e sem dados guardados desta tela. Abra-a uma vez com internet.")}
+    try{const r=await f(...a);if(Array.isArray(r)&&!r.length){const v=await cacheGet(key);if(Array.isArray(v)&&v.length&&!(k in OFF_PODE_ESVAZIAR))return v}if(r!==undefined)cachePut(key,r);return r}catch(e){if(erroRede(e)){const v=await cacheGet(key);if(v!==undefined)return v;if(OFF_VAZIO.includes(k))return []}throw e}};g._off=1;DB[k]=g});
+  OFF_FILA.forEach(k=>{const f=DB[k];if(typeof f!="function"||f._off)return;OFF[k]=f;const g=async(...a)=>{a=offTrocar(a);
+    if(!semRede()&&!temTmp(a)&&!OFF.fila.length){try{return await f(...a)}catch(e){if(!erroRede(e))throw e}}
+    return offGuardar(k,a)};g._off=1;DB[k]=g});
+  if(DB.carimbo&&!DB.carimbo._off){const f=DB.carimbo;const loc=id=>{const c=chLocal(id)||{};return {numero:c.numero||"(sem internet)",unidade:nomeUni(c.estabelecimento_id)||"",ambiente:nomeAmbC(c.ambiente_id),empresa:E.v.contratantes.nome,agora:new Date().toLocaleString("pt-BR")+" (hora do aparelho)"}};
+    DB.carimbo=async id=>{id=offTrocar(id);if(semRede()||temTmp([id]))return loc(id);try{return await f(id)}catch(e){if(erroRede(e))return loc(id);throw e}};DB.carimbo._off=1}
+  if(DB.urlFoto&&!DB.urlFoto._off){const f=DB.urlFoto;DB.urlFoto=async p=>{if(!p||semRede()||String(p).startsWith("off/"))return E.fotos[p]||null;try{return await f(p)}catch(e){return null}};DB.urlFoto._off=1}
+  if(DB.registrar&&!DB.registrar._off){const f=DB.registrar;DB.registrar=async(...a)=>{if(semRede())return null;try{return await f(...a)}catch(e){return null}};DB.registrar._off=1}
+  if(DB.sessao&&!DB.sessao._off){const f=DB.sessao;DB.sessao=async()=>{const s=await f();if(s&&s.user)OFF.uid=s.user.id||s.user.email||"anon";return s};DB.sessao._off=1}
+  if(DB.entrar&&!DB.entrar._off){const f=DB.entrar;DB.entrar=async(...a)=>{const r=await f(...a);try{await DB.sessao()}catch(e){}return r};DB.entrar._off=1}
+  if(DB.sair&&!DB.sair._off){const f=DB.sair;DB.sair=async(...a)=>{if(OFF.fila.length&&!confirm(`Há ${OFF.fila.length} registro(s) feitos sem internet que ainda não foram enviados. Se sair agora, eles serão perdidos. Sair mesmo assim?`))throw new Error("Saída cancelada. Conecte-se à internet para enviar os registros.");await offLimparTudo();return f(...a)};DB.sair._off=1}}
+
+async function offGuardar(k,a){const opt=OFF_OTM[k](...a);const it={k,args:a,opt,desc:OFF_DESC[k]||k,em:new Date().toISOString(),quem:E.v&&E.v.nome};
+  try{it.seq=await offTx("fila","readwrite",s=>s.add(it))}catch(e){it.seq=Date.now()+Math.random()}OFF.fila.push(it);
+  await offAplicar(k,a,opt);offMarcar();updOffBar();if(!semRede())setTimeout(()=>offEnviar(),400);return opt}
+function offMarcar(){OFF.ultimo=Date.now()}
+
+/* ---- envio da fila quando a internet volta ---- */
+async function offEnviar(manual){if(OFF.enviando||!OFF.fila.length)return;if(semRede()){if(manual)toast("Ainda sem internet. Os registros continuam guardados no aparelho.");return}
+  OFF.enviando=true;updOffBar();let ok=0,parou=false;
+  while(OFF.fila.length){const it=OFF.fila[0];const f=OFF[it.k];let args=offTrocar(it.args);
+    try{if(temTmp(args))throw new Error("Depende de um registro que o servidor recusou.");const r=await f(...args);
+      if(typeof it.opt=="string"&&typeof r=="string"&&it.opt!==r)OFF.mapa[it.opt]=r;
+      else if(it.opt&&typeof it.opt=="object"&&it.opt.id&&r&&typeof r=="object"&&r.id)OFF.mapa[it.opt.id]=r.id;
+      try{for(const [kk,vv] of Object.entries(OFF.mapa))await offTx("mapa","readwrite",s=>s.put(vv,kk))}catch(e){}
+      ok++}
+    catch(e){if(erroRede(e)){parou=true;break}OFF.erros.push({desc:it.desc,em:it.em,erro:e.message,k:it.k})}
+    OFF.fila.shift();try{await offTx("fila","readwrite",s=>s.delete(it.seq))}catch(e){}updOffBar()}
+  OFF.enviando=false;if(E.chSel&&OFF.mapa[E.chSel])E.chSel=OFF.mapa[E.chSel];if(!OFF.fila.length){OFF.mapa={};try{await offTx("mapa","readwrite",s=>s.clear())}catch(e){}}
+  updOffBar();
+  if(ok){toast(`${ok} registro(s) feitos sem internet foram enviados.`);try{if(E.v){const c=E.v.contratante_id;E.chs=await DB.chs(c);if(typeof carregarRon=="function"&&E.ron)await carregarRon();E.fic=null;E.agenda=null;if(E.mt=="item"&&typeof carregarItem=="function")carregarItem();render()}}catch(e){}}
+  if(OFF.erros.length&&!parou)OFF.aberto=true,updOffBar()}
+
+/* ---- faixa de aviso ---- */
+function updOffBar(){let el=document.getElementById("offbar");if(!el){el=document.createElement("div");el.id="offbar";el.setAttribute("role","status");document.body.appendChild(el)}
+  const n=OFF.fila.length,off=semRede(),er=OFF.erros.length;
+  if(!off&&!n&&!er){el.style.display="none";el.innerHTML="";document.body.style.paddingBottom="";return}
+  const cor=er?"#c8372d":off?"#5b6470":"#2f6fb5";
+  el.style.cssText=`display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(64px + env(safe-area-inset-bottom));z-index:60;width:min(560px,calc(100% - 24px));background:${cor};color:#fff;border-radius:14px;padding:10px 14px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:.9rem`;
+  const tit=OFF.enviando?`Enviando ${n} registro(s)…`:off?`📶 Sem internet${n?` · ${n} registro(s) guardado(s) no aparelho`:" · mostrando os últimos dados salvos"}`:n?`${n} registro(s) esperando para enviar`:`${er} registro(s) não foram aceitos pelo servidor`;
+  el.innerHTML=`<div style="display:flex;gap:8px;align-items:center;justify-content:space-between"><b>${tit}</b><span style="display:flex;gap:6px">${n&&!off&&!OFF.enviando?`<button onclick="offEnviar(true)" style="background:#fff;color:#111;border:0;border-radius:99px;padding:4px 10px;font-weight:700;cursor:pointer">Enviar agora</button>`:""}${n||er?`<button onclick="OFF.aberto=!OFF.aberto;updOffBar()" style="background:transparent;color:#fff;border:1px solid #fff;border-radius:99px;padding:4px 10px;cursor:pointer">${OFF.aberto?"Fechar":"Ver"}</button>`:""}</span></div>
+  ${OFF.aberto?`<div style="margin-top:8px;max-height:40vh;overflow:auto;display:grid;gap:6px">${OFF.fila.map(it=>`<div style="background:rgba(255,255,255,.14);border-radius:8px;padding:6px 8px">⏳ ${esc(it.desc)} · ${hm(it.em)}</div>`).join("")}
+   ${OFF.erros.map((x,i)=>`<div style="background:rgba(0,0,0,.2);border-radius:8px;padding:6px 8px">✖ ${esc(x.desc)} · ${hm(x.em)}<br><span style="opacity:.9">${esc(x.erro)}</span></div>`).join("")}
+   ${er?`<button onclick="OFF.erros=[];OFF.aberto=false;updOffBar()" style="background:#fff;color:#111;border:0;border-radius:99px;padding:6px 10px;font-weight:700;cursor:pointer">Entendi, limpar avisos</button>`:""}
+   <span style="opacity:.85;font-size:.8rem">Os registros são enviados sozinhos, na ordem em que foram feitos, assim que a internet voltar. Fotos feitas sem internet ficam com a hora do aparelho no carimbo.</span></div>`:""}`;document.body.style.paddingBottom=`calc(${el.offsetHeight+90}px + env(safe-area-inset-bottom))`}
+
+/* ---- avisos nas mensagens ---- */
+{const t0=toast;toast=function(t){if(Date.now()-OFF.ultimo<1500&&!/sem internet|guardado/i.test(t))t+=" · guardado no aparelho, será enviado quando a internet voltar.";return t0(t)}}
+
+/* ---- ligar tudo ---- */
+offEmbrulhar();
+offCarregarFila().then(()=>{updOffBar();setTimeout(()=>offEnviar(),3000)});
+addEventListener("online",()=>{updOffBar();setTimeout(()=>offEnviar(),800)});
+addEventListener("offline",()=>{updOffBar();toast("Sem internet. Você pode continuar: o que fizer fica guardado e é enviado depois.")});
+setInterval(()=>{if(OFF.fila.length&&!semRede())offEnviar()},30000);
+if("serviceWorker" in navigator&&(location.protocol=="https:"||location.hostname=="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
 
 iniciar();
 
