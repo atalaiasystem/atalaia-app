@@ -85,7 +85,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.1.9",
+  versao:"0.2.0",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -287,7 +287,7 @@ function abaAmb(p){
   ${pode&&E.amb.length<p.ambientes?`<form class="card" onsubmit="event.preventDefault();novoAmb()"><h2>Novo ambiente</h2><label>Nome do ambiente *<input id="na" required maxlength="80" placeholder="Como a equipe chama. Ex.: Enfermaria Adulto 01" autocomplete="off"></label>
   ${variasUnis()?`<label>Unidade<select id="nu">${E.unis.map(u=>`<option value="${u.id}">${esc(u.nome)}</option>`).join("")}</select></label>`:""}
   <label>Setor (opcional)<input id="ng" maxlength="80" list="ngl" placeholder="Ex.: Clínica Médica" autocomplete="off"><datalist id="ngl">${[...new Set(E.amb.map(a=>a.grupo).filter(Boolean))].map(g=>`<option value="${esc(g)}">`).join("")}</datalist></label>
-  <div class="row"><label>Leitos, boxes ou salas<input id="np" type="number" min="0" max="9999" value="0" inputmode="numeric"></label>${temManut()?`<label>Tipo na ronda<select id="nt"><option value="">Ambiente comum</option><option value="gases">Central de gases</option><option value="geradores">Casa de geradores</option><option value="qgbt">QGBT / subestação</option><option value="fora">Fora da ronda</option></select></label>`:""}</div>
+  <div class="row"><label>Leitos, boxes ou salas<input id="np" type="number" min="0" max="9999" value="0" inputmode="numeric"></label>${temManut()?`<label>Tipo na ronda<select id="nt"><option value="">Ambiente comum</option><option value="gases">Central de gases</option><option value="geradores">Casa de geradores</option><option value="caixa_agua">Caixa d'água</option><option value="usina">Usina de oxigênio</option><option value="qgbt">QGBT / subestação</option><option value="fora">Fora da ronda</option></select></label>`:""}</div>
   <label>Responsável pelo ambiente (opcional)<input id="nr" maxlength="120"></label>
   <p class="muted" style="margin:0 0 10px">Ex.: enfermaria com 10 leitos = 10. Recepção = 0. Use sempre o mesmo nome de setor para juntar os ambientes nos relatórios.</p><button class="btn">Criar ambiente</button></form>`:`<p class="muted">${E.amb.length>=p.ambientes?`O plano ${esc(p.nome)} permite ${p.ambientes} ambiente(s).`:""}</p>`}`;
 }
