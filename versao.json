@@ -1,1 +1,1 @@
-{"app": "0.3.4", "matriz": "0.3.5", "novidade": "App do Colaborador: funciona sem internet. Os registros ficam guardados no aparelho e são enviados sozinhos quando a internet volta."}
+{"app": "0.3.5", "gestor": "0.8.6", "matriz": "0.3.5", "novidade": "Cadastro de bens: número de patrimônio pelo app, leitura da etiqueta do fabricante (nº de série e modelo) e cadastro em sequência no mesmo ambiente. Valores dos bens só para o Gestor."}

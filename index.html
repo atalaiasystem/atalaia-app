@@ -77,6 +77,7 @@ nav.tabs svg{width:22px;height:22px}
 .tg{display:inline-block;font-size:.72rem;font-weight:700;color:var(--tc);border:1.5px solid var(--tc);border-radius:99px;padding:1px 8px;margin-top:3px}
 .chps{display:flex;gap:6px;flex-wrap:wrap}.chp{border:1.5px solid var(--line);background:var(--card);border-radius:99px;padding:6px 12px;font-size:.84rem;cursor:pointer}.chp[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
 .faixa{background:var(--tc);color:#fff;font-weight:700;border-radius:12px;padding:10px 14px;margin:0 0 12px}
+.campo-leitor{display:flex;gap:6px;align-items:stretch}.campo-leitor input{flex:1;min-width:0}.campo-leitor .btn{margin:0;white-space:nowrap}
 .dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:.9rem}.dl dt{color:var(--mut)}.dl dd{margin:0;min-width:0}
 .fotos-ch{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:8px}.fotos-ch figure{margin:0}.fotos-ch img,.fotos-ch .ph{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;background:var(--soft);display:block}.fotos-ch figcaption{font-size:.78rem;color:var(--mut);margin-top:3px}
 .fpick{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border:1.5px dashed var(--line);border-radius:12px;padding:10px 12px}.fpick.ok{border-style:solid;border-color:#1f9a55}
@@ -95,7 +96,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.4",
+  versao:"0.3.5",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -196,7 +197,7 @@ function mockDB(){
     async unidades(){return [{id:"e1",nome:"Sede",tipo:"empresa"}]},async empresas(){return [{id:"m1",nome:"Locadora Exemplo",tipo:"locadora"},{id:"m2",nome:"Assistência Técnica Exemplo",tipo:"assistencia"}]},async addEmpresa(d){return {id:"m"+Date.now(),nome:d.nome,tipo:d.tipo}},
     async renAmbiente(id,nome){const a=amb.find(x=>x.id==id);a.nome=nome;return a},
     async bens(){return bens.filter(b=>b.ativo).sort((a,b)=>String(b.criado_em).localeCompare(String(a.criado_em)))},
-    async addBem(b){await w(250);if(bens.filter(x=>x.ativo).length>=plano.bens)throw new Error(`Limite do plano atingido: ${plano.bens} bens. Para cadastrar mais, conheça os planos pagos.`);if(b.numero_serie&&bens.some(x=>x.numero_serie==b.numero_serie))throw new Error("Já existe um bem com este número de série.");const n={...b,id:"b"+Date.now(),patrimonio:null,criado_em:new Date().toISOString(),ativo:true};bens.push(n);return n},
+    async addBem(b){await w(250);if(bens.filter(x=>x.ativo).length>=plano.bens)throw new Error(`Limite do plano atingido: ${plano.bens} bens. Para cadastrar mais, conheça os planos pagos.`);if(b.numero_serie&&bens.some(x=>x.numero_serie==b.numero_serie))throw new Error("Já existe um bem com este número de série.");const n={...b,id:"b"+Date.now(),patrimonio:temPat()?(b.patrimonio||"HTA-"+String(100+bens.length).padStart(4,"0")):null,criado_em:new Date().toISOString(),ativo:true};bens.push(n);return n},
     async updBem(id,b){const x=bens.find(y=>y.id==id);Object.assign(x,b);return x},
     async enviarFoto(ci,blob){const p="demo/"+Date.now();fotos[p]=URL.createObjectURL(blob);return p},
     async urlFoto(p){return fotos[p]||null},async apagarFotos(){},async registrar(){},
@@ -363,6 +364,8 @@ function modalHTML(){
   <p style="margin:0 0 6px;font-weight:600;font-size:.88rem">Fotos do bem <span class="muted" style="font-weight:400">· ${fs.length} de ${lim}${lim>1?" · a primeira é a capa":""}</span></p>
   ${fs.length?`<div class="fotos-grade">${fs.map((f,i)=>`<div class="fg">${f.url?`<img src="${f.url}" alt="Foto ${i+1}">`:""}${i==0&&lim>1?`<span class="fg-capa">Capa</span>`:""}<button type="button" class="fg-x" onclick="removerFoto(${i})" aria-label="Remover foto ${i+1}">✕</button></div>`).join("")}</div>`:""}
   ${fs.length<lim?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"><label class="btn ghost sm btn-foto">📷 Tirar foto<input type="file" accept="image/*" capture="environment" onchange="prevFoto(this)" style="display:none"></label><label class="btn ghost sm btn-foto">🖼 Da galeria<input type="file" accept="image/*" ${lim-fs.length>1?"multiple":""} onchange="prevFoto(this)" style="display:none"></label></div>`:`<p class="muted" style="margin:0 0 12px">Limite de ${lim} foto(s) por bem do seu plano. Remova uma foto para trocar.</p>`}
+  ${E.modal.seq?`<div class="msg info">✔ ${E.modal.seq} bem(ns) cadastrado(s) em <b>${esc(nomeAmb(b.ambiente_id)||"")}</b> nesta sequência. Continue com o próximo.</div>`:""}
+  ${novo&&temPat()?`<label>Nº de patrimônio (da etiqueta)<span class="campo-leitor"><input id="fpt" maxlength="40" autocomplete="off" autocapitalize="characters" value="${esc(b.patrimonio||"")}" placeholder="Deixe em branco para gerar automático"><button type="button" class="btn ghost sm" onclick="lerParaCampo('fpt','a etiqueta de patrimônio')" aria-label="Ler etiqueta com a câmera">📷</button></span><span class="muted" style="font-weight:400;font-size:.8rem">Use o número de uma etiqueta já impressa (livre) ou deixe em branco.</span></label>`:""}
   <label>Nome do bem *<input id="fn" required maxlength="120" value="${esc(b.nome)}" placeholder="Ex.: Cabine de secagem UV"></label>
   <div class="row"><label>Categoria<select id="fc">${CAT.map(x=>`<option ${b.categoria==x?"selected":""}>${x}</option>`).join("")}</select></label>
   <label>Estado<select id="fe">${EST.map(x=>`<option ${b.estado==x||(!b.estado&&x=="bom")?"selected":""}>${x}</option>`).join("")}</select></label></div>
@@ -373,11 +376,13 @@ function modalHTML(){
   <label id="wpos" style="display:${SIT_PRAZO.includes(sitK(b))?"block":"none"}">Válido até / devolver até<input id="fpos" type="date" value="${b.posse_ate||""}"></label></div>
   ${temManut()?`<div class="row"><label>Tipo de equipamento<input id="ftp" maxlength="80" value="${esc(b.tipo)}" placeholder="Ex.: Monitor multiparâmetro"></label><label>Posição (leito, box, sala)<input id="fpo" maxlength="40" value="${esc(b.posicao)}" placeholder="Ex.: Leito 3"></label></div>
   <div class="row"><label>Vida útil (anos)<input id="fvu" type="number" min="1" max="50" inputmode="numeric" value="${b.vida_util_anos??""}"></label><label style="display:flex;gap:8px;align-items:center;margin-top:22px"><input type="checkbox" id="fcr" ${b.critico?"checked":""} style="width:auto"> Equipamento crítico</label></div>`:""}
-  <div class="row"><label>Marca<input id="fm" maxlength="60" value="${esc(b.marca)}"></label><label>Modelo<input id="fo" maxlength="60" value="${esc(b.modelo)}"></label></div>
-  <label>Número de série<input id="fs" maxlength="80" value="${esc(b.numero_serie)}" placeholder="Se tiver"></label>
-  <div class="row"><label>Valor (R$)<input id="fv" type="number" step="0.01" min="0" inputmode="decimal" value="${b.valor??""}"></label><label>Data de compra<input id="fd" type="date" value="${b.data_aquisicao||""}"></label></div>
+  <button type="button" class="btn ghost full" style="margin:0 0 10px" onclick="lerEtiquetaEquip()">▥ Ler a etiqueta do equipamento (preenche nº de série e modelo)</button>
+  <div class="row"><label>Marca<input id="fm" maxlength="60" value="${esc(b.marca)}"></label><label>Modelo<span class="campo-leitor"><input id="fo" maxlength="60" value="${esc(b.modelo)}"><button type="button" class="btn ghost sm" onclick="lerParaCampo('fo','o código do modelo')" aria-label="Ler modelo com a câmera">▥</button></span></label></div>
+  <label>Número de série<span class="campo-leitor"><input id="fs" maxlength="80" value="${esc(b.numero_serie)}" placeholder="Se tiver"><button type="button" class="btn ghost sm" onclick="lerParaCampo('fs','o código de barras do nº de série')" aria-label="Ler nº de série com a câmera">▥ Ler</button></span></label>
+  <div class="row">${veValor()?`<label>Valor (R$)<input id="fv" type="number" step="0.01" min="0" inputmode="decimal" value="${b.valor??""}"></label>`:`<label>Valor (R$)<input disabled value="🔒 Restrito ao Gestor" style="color:var(--mut)"></label>`}<label>Data de compra<input id="fd" type="date" value="${b.data_aquisicao||""}"></label></div>
   <label>Observação<textarea id="fb" rows="2" maxlength="500">${esc(b.observacao)}</textarea></label>
   <button class="btn amb full" id="fsalvar">${novo?"Salvar bem":"Salvar alterações"}</button>
+  ${novo?`<button type="button" class="btn ghost full" id="fsalvar2" style="margin-top:8px" onclick="E.modal.continuar=true;salvarBem()">＋ Salvar e continuar incluindo neste ambiente</button>`:""}
   <div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn ghost" style="flex:1" onclick="voltar()">Cancelar</button>${novo?"":`<button type="button" class="btn ghost" style="flex:1;color:var(--bad)" onclick="inativar('${b.id}')">Dar baixa</button>`}</div>
   ${novo?"":E.modal.excluindo?`<div class="msg err" style="margin-top:12px"><b>Excluir este cadastro?</b> Use só para cadastro feito por engano (para bem que saiu da empresa, use “Dar baixa”). O registro fica guardado para o Gestor, com o motivo.
    <label style="margin:10px 0 8px">Motivo da exclusão *<textarea id="xm" rows="2" maxlength="300" placeholder="Ex.: cadastrado em duplicidade"></textarea></label>
@@ -484,7 +489,7 @@ async function abrirBem(id){const b=id?E.bens.find(x=>x.id==id):null;
   const fs=await Promise.all(fotosDoBem(b).map(async p=>({path:p,url:await urlCache(p)})));
   E.modal={bem:b?{...b}:null,fotos:fs,removidas:[]};abrirNivel();render()}
 function guardarForm(){if(!E.modal||!$("#fn"))return;const b=E.modal.bem||(E.modal.bem={});
-  Object.assign(b,{nome:$("#fn").value,categoria:$("#fc").value,estado:$("#fe").value,ambiente_id:$("#fa").value,marca:$("#fm").value,modelo:$("#fo").value,numero_serie:$("#fs").value,valor:$("#fv").value===""?null:$("#fv").value,data_aquisicao:$("#fd").value,observacao:$("#fb").value,propriedade:$("#fpr")?$("#fpr").value:b.propriedade,_empNome:$("#femp")?$("#femp").value:b._empNome,doador:$("#fdoa")?$("#fdoa").value:b.doador,posse_ate:$("#fpos")?$("#fpos").value:b.posse_ate,tipo:$("#ftp")?$("#ftp").value:b.tipo,posicao:$("#fpo")?$("#fpo").value:b.posicao,vida_util_anos:$("#fvu")?$("#fvu").value:b.vida_util_anos,critico:$("#fcr")?$("#fcr").checked:b.critico})}
+  Object.assign(b,{nome:$("#fn").value,categoria:$("#fc").value,estado:$("#fe").value,ambiente_id:$("#fa").value,marca:$("#fm").value,modelo:$("#fo").value,numero_serie:$("#fs").value,valor:$("#fv")?($("#fv").value===""?null:$("#fv").value):b.valor,patrimonio:$("#fpt")?$("#fpt").value:b.patrimonio,data_aquisicao:$("#fd").value,observacao:$("#fb").value,propriedade:$("#fpr")?$("#fpr").value:b.propriedade,_empNome:$("#femp")?$("#femp").value:b._empNome,doador:$("#fdoa")?$("#fdoa").value:b.doador,posse_ate:$("#fpos")?$("#fpos").value:b.posse_ate,tipo:$("#ftp")?$("#ftp").value:b.tipo,posicao:$("#fpo")?$("#fpo").value:b.posicao,vida_util_anos:$("#fvu")?$("#fvu").value:b.vida_util_anos,critico:$("#fcr")?$("#fcr").checked:b.critico})}
 async function prevFoto(inp){const arq=[...inp.files];if(!arq.length)return;guardarForm();
   for(const f of arq){if(E.modal.fotos.length>=limFotos()){toast(`O seu plano permite até ${limFotos()} foto(s) por bem.`);break}
     try{const bl=await comprimir(f);E.modal.fotos.push({blob:bl,url:URL.createObjectURL(bl)})}catch(e){toast("Não foi possível ler a foto.")}}
@@ -494,7 +499,10 @@ function comprimir(file){return new Promise((ok,er)=>{const img=new Image();img.
 async function salvarBem(){
   const btn=$("#fsalvar");btn.disabled=true;btn.textContent="Salvando…";
   const b=E.modal.bem||{},c=E.v.contratante_id;
-  const d={nome:$("#fn").value.trim(),categoria:$("#fc").value,estado:$("#fe").value,ambiente_id:$("#fa").value||null,marca:$("#fm").value.trim()||null,modelo:$("#fo").value.trim()||null,numero_serie:$("#fs").value.trim()||null,valor:$("#fv").value===""?null:Number($("#fv").value),data_aquisicao:$("#fd").value||null,observacao:$("#fb").value.trim()||null};
+  const d={nome:$("#fn").value.trim(),categoria:$("#fc").value,estado:$("#fe").value,ambiente_id:$("#fa").value||null,marca:$("#fm").value.trim()||null,modelo:$("#fo").value.trim()||null,numero_serie:$("#fs").value.trim()||null,data_aquisicao:$("#fd").value||null,observacao:$("#fb").value.trim()||null};
+  if($("#fv"))d.valor=$("#fv").value===""?null:Number($("#fv").value);
+  if($("#fpt")&&$("#fpt").value.trim())d.patrimonio=$("#fpt").value.trim().toUpperCase();
+  const cont=!!E.modal.continuar;E.modal.continuar=false;
   if($("#fpr")){const k=$("#fpr").value;d.propriedade=k;const en=sitEmp(k)?$("#femp").value.trim():"";d.empresa_id=null;d.doador=k=="doacao"?($("#fdoa").value.trim()||null):null;d.posse_ate=SIT_PRAZO.includes(k)?($("#fpos").value||null):null;if(sitEmp(k)&&!en){guardarForm();E.modal.erro=sitN(k)+": escreva ou escolha o nome da empresa.";btn.disabled=false;btn.textContent=b.id?"Salvar alterações":"Salvar bem";render();return}}
   if($("#ftp")){d.tipo=$("#ftp").value.trim()||null;d.posicao=$("#fpo").value.trim()||null;d.vida_util_anos=$("#fvu").value===""?null:Number($("#fvu").value);d.critico=$("#fcr").checked}
   try{
@@ -504,8 +512,11 @@ async function salvarBem(){
     let r;
     if(b.id){r=await DB.updBem(b.id,d);toast("Alterações salvas.")}
     else{r=await DB.addBem({...d,contratante_id:c});toast(r.patrimonio?"Bem cadastrado com o patrimônio "+r.patrimonio+".":"Bem cadastrado.");DB.registrar(c,"cadastrou bem",rot(r))}
-    const rem=E.modal.removidas||[];fecharSemVoltar();DB.apagarFotos(rem);await recarregar();
-  }catch(e){E.modal.erro=e.message;render()}
+    const rem=E.modal.removidas||[];
+    if(cont&&!b.id){const seq=(E.modal.seq||0)+1,base={ambiente_id:d.ambiente_id,categoria:d.categoria,estado:d.estado,propriedade:d.propriedade,_empNome:$("#femp")?$("#femp").value:"",doador:d.doador,posse_ate:d.posse_ate,posicao:d.posicao,tipo:d.tipo};
+      E.modal={bem:base,fotos:[],removidas:[],seq};DB.apagarFotos(rem);await recarregar();document.querySelector(".modal .sheet")?.scrollTo(0,0);scrollTo(0,0);setTimeout(()=>{const f=$("#fpt")||$("#fn");if(f)f.focus()},100);return}
+    fecharSemVoltar();DB.apagarFotos(rem);await recarregar();
+  }catch(e){guardarForm();E.modal.erro=e.message;render()}
 }
 async function inativar(id){const b=E.bens.find(x=>x.id==id);if(!b)return;
   if(E.modal.confirmar!==id){E.modal.confirmar=id;E.modal.erro=`Toque de novo em “Dar baixa” para confirmar. O bem ${esc(rot(b))} sai da lista, mas o registro fica guardado${b.patrimonio?" e o número não é reaproveitado":""}.`;render();return}
@@ -544,9 +555,10 @@ setInterval(checarVersao,10*60*1000);document.addEventListener("visibilitychange
 /* ---------------- Baixar: Excel (.xlsx) e PDF com fotos ---------------- */
 function exportar(){E.modal={tipo:"baixar"};abrirNivel();render()}
 function baixarHTML(){return `<div class="modal" onclick="if(event.target==this)voltar()"><div class="sheet"><button type="button" class="voltar" onclick="voltar()">← Voltar</button><h2>Baixar a lista de bens</h2><p class="sub">${E.bens.length} bem(ns) de ${esc(E.v.contratantes.nome)}. O arquivo vai para a pasta Downloads do aparelho.</p>
+  ${veValor()?`<label class="chk" style="display:flex;gap:8px;align-items:center;margin:0 0 12px"><input type="checkbox" style="width:auto" ${E.comValor?"checked":""} onchange="E.comValor=this.checked"> Incluir os valores dos bens (desmarcado: sai sem valores)</label>`:`<p class="muted" style="margin:0 0 12px;font-size:.85rem">🔒 Os valores dos bens são restritos ao Gestor e não saem no arquivo.</p>`}
   <div class="opc-baixar"><button class="btn ghost" id="bx" onclick="baixarExcel()"><b>📊 Planilha Excel (.xlsx)</b><br><small class="muted">Para editar, filtrar e somar no Excel ou no Google Planilhas.</small></button>
   <button class="btn ghost" id="bp" onclick="baixarPDF()"><b>📄 Relatório PDF com fotos</b><br><small class="muted">Para imprimir ou enviar. Mostra cada bem com as fotos.</small></button></div></div></div>`}
-function colunasBaixar(){return [...(temPat()?[["patrimonio","Patrimônio"]]:[]),["nome","Bem"],["categoria","Categoria"],["ambiente","Ambiente"],["marca","Marca"],["modelo","Modelo"],["numero_serie","Nº de série"],["estado","Estado"],["valor","Valor (R$)"],["data_aquisicao","Data de compra"],["situacao","Situação"],["empresa","Empresa / doador"],["posse_ate","Válido até"],["observacao","Observação"],["qtd_fotos","Fotos"]]}
+function colunasBaixar(){return [...(temPat()?[["patrimonio","Patrimônio"]]:[]),["nome","Bem"],["categoria","Categoria"],["ambiente","Ambiente"],["marca","Marca"],["modelo","Modelo"],["numero_serie","Nº de série"],["estado","Estado"],...(comValor()?[["valor","Valor (R$)"]]:[]),["data_aquisicao","Data de compra"],["situacao","Situação"],["empresa","Empresa / doador"],["posse_ate","Válido até"],["observacao","Observação"],["qtd_fotos","Fotos"]]}
 function valorCampo(b,k){return k=="situacao"?sitN(sitK(b)):k=="empresa"?empDoBem(b):k=="posse_ate"?(b.posse_ate?dtBR(b.posse_ate):""):k=="ambiente"?nomeAmb(b.ambiente_id):k=="data_aquisicao"?(b[k]?dtBR(b[k]):""):k=="qtd_fotos"?fotosDoBem(b).length:(b[k]??"")}
 function nomeArquivo(ext){return `bens_${E.v.contratantes.sigla}_${new Date().toISOString().slice(0,10)}.${ext}`}
 function baixarBlob(blob,nome){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
@@ -595,10 +607,10 @@ async function baixarPDF(){
     const rodape=(n,t)=>{doc.setFontSize(8);doc.setTextColor(107,112,120);doc.text("Atalaia System - Sistema de Gestão de Patrimônio e Manutenção",M,H-8);doc.text(`Página ${n} de ${t}`,W-M,H-8,{align:"right"});doc.setTextColor(29,31,35)};
     topo();let y=28;
     doc.setFont("helvetica","bold");doc.setFontSize(11);doc.text(`${E.bens.length} bem(ns) cadastrados`,M,y);
-    const tot=E.bens.reduce((s,b)=>s+(Number(b.valor)||0),0);doc.setFont("helvetica","normal");doc.setFontSize(9.5);if(tot)doc.text("Valor total informado: "+brl(tot),W-M,y,{align:"right"});y+=6;
+    const tot=E.bens.reduce((s,b)=>s+(Number(b.valor)||0),0);doc.setFont("helvetica","normal");doc.setFontSize(9.5);if(tot&&comValor())doc.text("Valor total informado: "+brl(tot),W-M,y,{align:"right"});y+=6;
     for(const b of E.bens){
       const ps=fotosDoBem(b).slice(0,limFotos());const fotos=[];for(const p of ps.slice(0,4)){const d=await fotoDados(p);if(d)fotos.push(d)}
-      const campos=[...(b.patrimonio?[["Patrimônio",b.patrimonio]]:[]),["Categoria",b.categoria],["Ambiente",nomeAmb(b.ambiente_id)],["Estado",b.estado],["Marca",b.marca],["Modelo",b.modelo],["Nº de série",b.numero_serie],["Valor",b.valor!=null&&b.valor!==""?brl(Number(b.valor)):""],["Data de compra",b.data_aquisicao?dtBR(b.data_aquisicao):""],["Situação",sitK(b)!="proprio"?sitN(sitK(b))+(empDoBem(b)?" · "+empDoBem(b):"")+(b.posse_ate?" · até "+dtBR(b.posse_ate):""):""]].filter(x=>x[1]);
+      const campos=[...(b.patrimonio?[["Patrimônio",b.patrimonio]]:[]),["Categoria",b.categoria],["Ambiente",nomeAmb(b.ambiente_id)],["Estado",b.estado],["Marca",b.marca],["Modelo",b.modelo],["Nº de série",b.numero_serie],...(comValor()?[["Valor",b.valor!=null&&b.valor!==""?brl(Number(b.valor)):""]]:[]),["Data de compra",b.data_aquisicao?dtBR(b.data_aquisicao):""],["Situação",sitK(b)!="proprio"?sitN(sitK(b))+(empDoBem(b)?" · "+empDoBem(b):"")+(b.posse_ate?" · até "+dtBR(b.posse_ate):""):""]].filter(x=>x[1]);
       const obs=b.observacao?doc.splitTextToSize("Observação: "+b.observacao,W-2*M-8):[];
       const hFoto=fotos.length?42:0,hTxt=8+Math.ceil(campos.length/2)*5+obs.length*4.2;const alt=Math.max(hTxt,0)+hFoto+8;
       if(y+alt>H-16){doc.addPage();topo();y=28}
@@ -613,6 +625,70 @@ async function baixarPDF(){
   }catch(e){toast(e.message||"Não foi possível gerar o PDF.")}
   if(bt){bt.disabled=false;bt.querySelector("b").textContent="📄 Relatório PDF com fotos"}
 }
+
+/* ---------------- Cadastro: valores restritos, leitor de código para campos, cadastrar em sequência ---------------- */
+const veValor=()=>!!(E.v&&E.v.perfil=="gestor");
+const comValor=()=>veValor()&&!!E.comValor;
+function novoBemEm(amb){E.modal={bem:{ambiente_id:amb},fotos:[],removidas:[]};abrirNivel();render()}
+const ZXING={src:"https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js",sri:"sha384-BzBxP10ZE72aitqj5UMmUsbKFliP/DZqA8Wq+BNNhlIJDGoEd1tpkMYXOg9+n6sB"};
+function carregarZXing(){if(window.ZXing)return Promise.resolve();return new Promise((ok,er)=>{const s=document.createElement("script");s.src=ZXING.src;s.integrity=ZXING.sri;s.crossOrigin="anonymous";s.onload=ok;s.onerror=()=>er(new Error("Não foi possível carregar o leitor."));document.head.appendChild(s)})}
+let lcStream=null,lcLoop=null;
+function fecharLeitorCampo(){clearTimeout(lcLoop);if(lcStream){lcStream.getTracks().forEach(t=>t.stop());lcStream=null}const o=document.getElementById("lcov");if(o)o.remove()}
+async function lerParaCampo(id,oque){fecharLeitorCampo();const ov=document.createElement("div");ov.id="lcov";ov.style.cssText="position:fixed;inset:0;z-index:90;background:#111;display:grid;place-items:center;padding:16px";
+  ov.innerHTML=`<div style="width:min(520px,100%);display:grid;gap:10px;color:#fff;text-align:center"><b>Aponte a câmera para ${esc(oque)}</b><div style="position:relative"><video id="lcv" playsinline muted style="width:100%;border-radius:12px;background:#000;aspect-ratio:4/3;object-fit:cover"></video><div style="position:absolute;left:8%;right:8%;top:42%;height:16%;border:2px solid #f3a93b;border-radius:8px;pointer-events:none"></div></div><span id="lcmsg" style="font-size:.85rem;opacity:.85">Funciona com código de barras e QR Code. Segure firme, a uns 15 cm.</span><button type="button" class="btn amb" onclick="fecharLeitorCampo()">Cancelar</button></div>`;
+  document.body.appendChild(ov);const msg=t=>{const m=document.getElementById("lcmsg");if(m)m.textContent=t};
+  const pronto=txt=>{txt=String(txt||"").trim();if(!txt)return;const m=txt.match(/[?&](?:p|patrimonio)=([^&#]+)/i);if(m)txt=decodeURIComponent(m[1]);if(navigator.vibrate)navigator.vibrate(80);fecharLeitorCampo();const el=$("#"+id);if(el){el.value=txt;el.dispatchEvent(new Event("input"))}toast("Lido: "+txt)};
+  try{lcStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}},audio:false});const v=document.getElementById("lcv");if(!v){fecharLeitorCampo();return}v.srcObject=lcStream;await v.play();
+    let det=null;if("BarcodeDetector" in window){try{const fs=await BarcodeDetector.getSupportedFormats();if(fs.includes("code_128"))det=new BarcodeDetector({formats:fs.filter(f=>["code_128","code_39","code_93","ean_13","ean_8","upc_a","upc_e","itf","codabar","qr_code","data_matrix"].includes(f))})}catch(e){}}
+    if(det){const passo=async()=>{if(!lcStream)return;try{const r=await det.detect(v);if(r.length){pronto(r[0].rawValue);return}}catch(e){}lcLoop=setTimeout(passo,200)};passo();return}
+    msg("Carregando o leitor…");await carregarZXing();if(!lcStream)return;msg("Funciona com código de barras e QR Code. Segure firme, a uns 15 cm.");
+    const hints=new Map();hints.set(ZXing.DecodeHintType.TRY_HARDER,true);const rd=new ZXing.MultiFormatReader();rd.setHints(hints);
+    const cv=document.createElement("canvas"),cx=cv.getContext("2d",{willReadFrequently:true});
+    const passo=()=>{if(!lcStream)return;try{if(v.videoWidth){cv.width=v.videoWidth;cv.height=v.videoHeight;cx.drawImage(v,0,0);const r=rd.decode(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(cv))));if(r){pronto(r.getText());return}}}catch(e){}lcLoop=setTimeout(passo,250)};passo()}
+  catch(e){fecharLeitorCampo();toast(/Permission|NotAllowed/i.test(e.name+e.message)?"A câmera foi bloqueada. Libere a câmera para este site nas configurações do navegador.":"Não foi possível abrir a câmera. Digite o número.")}}
+
+/* leitura da etiqueta do fabricante: lê todos os códigos e separa nº de série e modelo */
+function gs1(txt){const t=String(txt).replace(/^\]..?/,"");const o={};
+  if(/\(\d{2,4}\)/.test(t)){for(const m of t.matchAll(/\((\d{2,4})\)([^(]+)/g))o[m[1]]=m[2].trim();return o}
+  const FIX={"00":18,"01":14,"02":14,"11":6,"12":6,"13":6,"15":6,"16":6,"17":6,"20":2};let i=0;
+  if(!/^(01|00|02|10|11|17|21|240|241)/.test(t))return o;
+  while(i<t.length){const a2=t.substr(i,2),a3=t.substr(i,3);let ai,len=null;
+    if(FIX[a2]!=null){ai=a2;len=FIX[a2]}else if(["10","21","22"].includes(a2))ai=a2;else if(["240","241","250","251"].includes(a3))ai=a3;else break;
+    i+=ai.length;let v;if(len){v=t.substr(i,len);i+=len}else{const j=t.indexOf("\x1d",i);v=j<0?t.slice(i):t.slice(i,j);i=j<0?t.length:j+1}o[ai]=v}
+  return o}
+function classificarCodigos(L){const r={serie:null,modelo:null,outros:[]};
+  for(const c of L){const g=gs1(c);if(g["21"]||g["240"]||g["241"]){if(g["21"]&&!r.serie)r.serie=g["21"];if((g["240"]||g["241"])&&!r.modelo)r.modelo=g["240"]||g["241"];continue}
+    const kv=[...c.matchAll(/(S\/?N|SN|SERIAL|S[ÉE]RIE|MOD(?:EL|ELO)?|REF|P\/?N)\s*[:=]\s*([^\s;|,]+)/gi)];
+    if(kv.length){kv.forEach(([,k,v])=>{if(/S\/?N|SN|SERIAL|S[ÉE]RIE/i.test(k)){if(!r.serie)r.serie=v}else if(!r.modelo)r.modelo=v});continue}
+    const m1=c.match(/^(?:S\/?N|SN|SER(?:IE|IAL)?|N[º°o]?\s*S[ÉE]RIE)[\s:.#-]*(.+)$/i),m2=c.match(/^(?:MOD(?:EL|ELO)?|REF|P\/?N|PN|TYPE|TIPO)[\s:.#-]*(.+)$/i);
+    if(m1&&!r.serie){r.serie=m1[1].trim();continue}if(m2&&!r.modelo){r.modelo=m2[1].trim();continue}
+    if(/^https?:\/\//i.test(c))continue;r.outros.push(c)}
+  return r}
+let leqCods=[];
+async function lerEtiquetaEquip(){fecharLeitorCampo();leqCods=[];const ov=document.createElement("div");ov.id="lcov";ov.style.cssText="position:fixed;inset:0;z-index:90;background:#111;display:grid;place-items:center;padding:16px;overflow:auto";
+  ov.innerHTML=`<div style="width:min(520px,100%);display:grid;gap:10px;color:#fff;text-align:center"><b>Aponte para a etiqueta do fabricante</b><video id="lcv" playsinline muted style="width:100%;border-radius:12px;background:#000;aspect-ratio:4/3;object-fit:cover"></video><span id="lcmsg" style="font-size:.85rem;opacity:.85">Mostre todos os códigos da etiqueta (nº de série e modelo). Os campos são preenchidos sozinhos.</span><div id="leqlist" style="display:grid;gap:6px;text-align:left"></div><div style="display:flex;gap:8px"><button type="button" class="btn ghost" style="flex:1;color:#fff;border-color:#fff" onclick="fecharLeitorCampo()">Cancelar</button><button type="button" class="btn amb" style="flex:1" onclick="aplicarEtiquetaEquip(true)">Pronto</button></div></div>`;
+  document.body.appendChild(ov);const msg=t=>{const m=document.getElementById("lcmsg");if(m)m.textContent=t};
+  const achou=lista=>{let novo=false;for(let t of lista){t=String(t||"").trim();if(t&&!leqCods.includes(t)&&leqCods.length<8){leqCods.push(t);novo=true}}if(!novo)return;if(navigator.vibrate)navigator.vibrate(60);
+    const r=classificarCodigos(leqCods);if(r.serie&&r.modelo){aplicarEtiquetaEquip(false);return}desenharLeq()};
+  try{lcStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1920},height:{ideal:1080}},audio:false});const v=document.getElementById("lcv");if(!v){fecharLeitorCampo();return}v.srcObject=lcStream;await v.play();
+    let det=null;if("BarcodeDetector" in window){try{const fs=await BarcodeDetector.getSupportedFormats();if(fs.includes("code_128"))det=new BarcodeDetector({formats:fs.filter(f=>["code_128","code_39","code_93","ean_13","ean_8","upc_a","upc_e","itf","codabar","qr_code","data_matrix","pdf417"].includes(f))})}catch(e){}}
+    if(det){const passo=async()=>{if(!lcStream)return;try{const r=await det.detect(v);if(r.length)achou(r.map(x=>x.rawValue))}catch(e){}if(lcStream)lcLoop=setTimeout(passo,250)};passo();return}
+    msg("Carregando o leitor…");await carregarZXing();if(!lcStream)return;msg("Mostre todos os códigos da etiqueta (nº de série e modelo). Os campos são preenchidos sozinhos.");
+    const hints=new Map();hints.set(ZXing.DecodeHintType.TRY_HARDER,true);const rd=new ZXing.MultiFormatReader();rd.setHints(hints);
+    const cv=document.createElement("canvas"),cx=cv.getContext("2d",{willReadFrequently:true}),c2=document.createElement("canvas"),x2=c2.getContext("2d",{willReadFrequently:true});
+    const passo=()=>{if(!lcStream)return;try{if(v.videoWidth){cv.width=v.videoWidth;cv.height=v.videoHeight;cx.drawImage(v,0,0);const L=[];const tenta=src=>{try{L.push(rd.decode(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(src))).getText())}catch(e){}};
+      const full=new ZXing.HTMLCanvasElementLuminanceSource(cv);tenta(full);const W=cv.width,H=cv.height;
+      for(const [y,h] of [[0,.5],[.5,.5],[0,.34],[.33,.34],[.66,.34]]){const hh=Math.floor(H*h);c2.width=W;c2.height=hh;x2.drawImage(cv,0,Math.floor(H*y),W,hh,0,0,W,hh);tenta(new ZXing.HTMLCanvasElementLuminanceSource(c2))}
+      if(L.length)achou(L)}}catch(e){}if(lcStream)lcLoop=setTimeout(passo,300)};passo()}
+  catch(e){fecharLeitorCampo();toast(/Permission|NotAllowed/i.test(e.name+e.message)?"A câmera foi bloqueada. Libere a câmera para este site nas configurações do navegador.":"Não foi possível abrir a câmera. Digite os números.")}}
+function desenharLeq(){const el=document.getElementById("leqlist");if(!el)return;const r=classificarCodigos(leqCods);
+  el.innerHTML=(r.serie?`<div>✔ Nº de série: <b>${esc(r.serie)}</b></div>`:"")+(r.modelo?`<div>✔ Modelo: <b>${esc(r.modelo)}</b></div>`:"")+
+   r.outros.map((c,i)=>`<div style="background:rgba(255,255,255,.12);border-radius:8px;padding:8px"><b style="word-break:break-all">${esc(c)}</b><div style="display:flex;gap:6px;margin-top:6px"><button type="button" class="btn amb sm" onclick="leqMarcar(${i},'serie')">É o nº de série</button><button type="button" class="btn ghost sm" style="color:#fff;border-color:#fff" onclick="leqMarcar(${i},'modelo')">É o modelo</button></div></div>`).join("")+
+   (r.outros.length?`<span style="font-size:.8rem;opacity:.8">Não deu para saber qual é qual: toque no botão certo de cada código.</span>`:"")}
+function leqMarcar(i,campo){const r=classificarCodigos(leqCods),c=r.outros[i];if(c==null)return;leqCods=leqCods.map(x=>x===c?(campo=="serie"?"SN:":"MOD:")+c:x);const n=classificarCodigos(leqCods);if(n.serie&&n.modelo)aplicarEtiquetaEquip(false);else desenharLeq()}
+function aplicarEtiquetaEquip(manual){const r=classificarCodigos(leqCods);if(!r.serie&&!r.modelo&&r.outros.length==1&&manual)r.serie=r.outros[0];
+  const put=(id,v)=>{const el=$("#"+id);if(el&&v){el.value=v;el.dispatchEvent(new Event("input"))}};put("fs",r.serie);put("fo",r.modelo);fecharLeitorCampo();
+  toast(r.serie||r.modelo?`Preenchido: ${[r.serie?"nº de série "+r.serie:"",r.modelo?"modelo "+r.modelo:""].filter(Boolean).join(" · ")}.`:"Nenhum código lido. Digite os números.")}
 /* ======================= APP DO COLABORADOR · ETAPA 1 =======================
    Área do colaborador, notificações, painel de manutenções (assumir, iniciar,
    concluir com fotos carimbadas de antes/durante/depois), ajudantes,
@@ -912,6 +988,7 @@ function manAmb(){const a=(E.amb||[]).find(x=>x.id==E.ambSel);if(!a)return `<but
   ${typeof temAud=="function"&&temAud()?bigBtn("A","Auditar este ambiente","Conferir os bens com a câmera",`abrirAud('${a.id}')`):""}${typeof abrirEtqAmb=="function"&&souAdm()?bigBtn("▣","Etiqueta do QR","Prévia com a logo e impressão",`abrirEtqAmb()`):""}</div>
   ${typeof respAmbHTML=="function"?respAmbHTML(a):""}
   <div class="card"><b>Chamados em aberto (${C.length})</b>${C.map(linhaCh).join("")||`<p class="muted">Nenhum chamado em aberto aqui.</p>`}</div>
+  <button class="btn ghost full" style="margin:0 0 12px" onclick="novoBemEm('${a.id}')">＋ Cadastrar bem neste ambiente</button>
   <div class="card"><b>Bens do ambiente (${B.length})</b>${B.map(b=>`<button class="rowch" onclick="E.bemSel='${b.id}';irMan('bem')" style="--pc:${["em reparo","em manutenção","ruim"].includes(b.estado)?"#c8372d":"#1f9a55"}"><span class="dot"></span><span class="tx"><b>${esc(b.nome)}</b><span>${esc(b.patrimonio||"sem patrimônio")}${b.numero_serie?" · série "+esc(b.numero_serie):""}${b.posicao?" · "+esc(b.posicao):""}</span></span></button>`).join("")||`<p class="muted">Nenhum bem cadastrado neste ambiente.</p>`}</div>`}
 function manBem(){const b=(E.bens||[]).find(x=>x.id==E.bemSel);if(!b)return `<button class="voltar" onclick="voltar()">← Voltar</button><p class="muted">Bem não encontrado.</p>`;
   const C=(E.chs||[]).filter(c=>c.bem_id==b.id).slice(0,20);

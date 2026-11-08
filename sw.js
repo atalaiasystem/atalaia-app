@@ -1,10 +1,11 @@
 /* Atalaia System · app do celular funcionando sem internet
    Guarda a página do app e as bibliotecas. Os dados ficam no próprio app (IndexedDB).
    Não intercepta o painel do Gestor, a Matriz, a página do QR nem o servidor. */
-const V="atalaia-app-0.3.4";
+const V="atalaia-app-0.3.5";
 const CDN=["https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js",
   "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js",
-  "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"];
+  "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js",
+  "https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"];
 const BASE=new URL("./",self.location).pathname;           // "/" no site
 const PAGINA=BASE+"index.html";
 self.addEventListener("install",ev=>{ev.waitUntil(caches.open(V).then(c=>Promise.all([
