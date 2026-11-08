@@ -85,13 +85,19 @@ function formulario(erro){const a=S.a;
   <label>Telefone ou setor para contato (opcional)<input id="c" maxlength="80"></label>
   <button class="btn" id="env">Enviar chamado</button></form>
   <p class="muted" style="margin-top:10px">Não escreva dados de pacientes. Use só a descrição do problema.</p></div>${meusHTML()}</div>`+rod}
+let _vt=null;
+function pararVolta(){clearInterval(_vt);_vt=null;const v=$("#volta");if(v)v.remove()}
+function contagem(n){clearInterval(_vt);_vt=setInterval(()=>{n--;const e=$("#vs");if(!e){clearInterval(_vt);return}e.textContent=n;if(n<=0)voltarInicio()},1000)}
+function voltarInicio(){pararVolta();const t=P.get("t")||((lerMeus().find(x=>x.codigo==(S.c||P.get("c")))||{}).t);location.href=t?"?t="+encodeURIComponent(t):"./"}
 async function enviar(){const d=$("#d").value.trim();if(d.length<5){formulario("Descreva o problema (pelo menos 5 letras).");return}
   const b=$("#env");b.disabled=true;b.textContent="Enviando…";
   try{const r=await DB.abrir(P.get("t"),d,$("#n").value.trim(),$("#c").value.trim(),$("#b")?$("#b").value:null,S.pri);
-    guardarMeu({codigo:r.codigo,numero:r.numero,ambiente:S.a.ambiente,em:r.aberto_em});
+    guardarMeu({codigo:r.codigo,numero:r.numero,ambiente:S.a.ambiente,em:r.aberto_em,t:P.get("t")});
     $("#app").innerHTML=cab(S.a)+`<div class="wrap"><div class="card" style="text-align:center"><p class="sub" style="margin:0">Chamado registrado</p><div class="num">nº ${r.numero}</div><p class="sub">Aberto em ${dh(r.aberto_em)} (hora do servidor). A equipe de manutenção já recebeu.</p>
-     <a class="btn amb" style="display:block;text-decoration:none;line-height:22px" href="?c=${encodeURIComponent(r.codigo)}">Acompanhar este chamado</a>
-     <p class="muted" style="margin-top:10px">Guarde esta página nos favoritos para acompanhar e avaliar o atendimento depois.</p></div></div>`+rod}
+     <a class="btn amb" style="display:block;text-decoration:none;line-height:22px" href="?c=${encodeURIComponent(r.codigo)}&t=${encodeURIComponent(P.get("t"))}" onclick="pararVolta()">Acompanhar este chamado</a>
+     <button class="btn" style="display:block;width:100%;margin-top:8px" onclick="voltarInicio()">✓ Finalizar e voltar ao início</button>
+     <p class="muted" id="volta" style="margin-top:10px">Volta sozinho ao início em <b id="vs">30</b> s · <a href="#" onclick="event.preventDefault();pararVolta()">ficar nesta tela</a></p>
+     <p class="muted" style="margin-top:6px">O chamado fica guardado neste aparelho, em “Chamados abertos neste aparelho”.</p></div></div>`+rod;contagem(30)}
   catch(e){formulario(e.message)}}
 const TIPOS=[["reclamacao","Reclamação"],["sugestao","Sugestão"],["elogio","Elogio"]];
 function telaAvalie(erro){const a=S.a;S.tp=S.tp||"";
@@ -115,7 +121,7 @@ async function acompanhar(c){try{const x=await DB.ver(c);S.x=x;S.c=c;const ord=E
   ${["concluido","confirmado"].includes(x.situacao)&&!x.avaliacao?`<div class="card" style="text-align:center"><h2>Avalie o atendimento</h2><div class="estrelas">${[1,2,3,4,5].map(n=>`<button type="button" aria-label="${n} estrela(s)" class="${S.nota>=n?"on":""}" onclick="S.nota=${n};acompanharTela()">★</button>`).join("")}</div>
    <label style="text-align:left">Comentário (opcional)<textarea id="ac" rows="2" maxlength="500"></textarea></label><button class="btn" onclick="avaliar()" ${S.nota?"":"disabled"}>Enviar avaliação</button></div>`
    :x.avaliacao?`<div class="card" style="text-align:center"><p class="sub" style="margin:0">Sua avaliação</p><div style="font-size:1.8rem;color:var(--amb)">${"★".repeat(x.avaliacao)}<span style="color:#c9c4ba">${"★".repeat(5-x.avaliacao)}</span></div></div>`:""}
-  <button class="btn ghost" onclick="acompanhar(S.c)">Atualizar</button></div>`+rod}catch(e){$("#app").innerHTML=cab()+`<div class="wrap"><div class="msg err">${esc(e.message)}</div></div>`+rod}}
+  <button class="btn ghost" onclick="acompanhar(S.c)">Atualizar</button>${(P.get("t")||(lerMeus().find(y=>y.codigo==c)||{}).t)?`<button class="btn" style="margin-top:8px" onclick="voltarInicio()">✓ Finalizar e voltar ao início</button>`:""}</div>`+rod}catch(e){$("#app").innerHTML=cab()+`<div class="wrap"><div class="msg err">${esc(e.message)}</div></div>`+rod}}
 function acompanharTela(){const t=$("#ac")?$("#ac").value:"";acompanhar(S.c).then(()=>{if($("#ac"))$("#ac").value=t})}
 async function avaliar(){try{await DB.avaliar(S.c,S.nota,$("#ac").value.trim());S.nota=0;acompanhar(S.c)}catch(e){alert(e.message)}}
 function meusHTML(){const L=lerMeus();return L.length?`<div class="card"><h2>Chamados abertos neste aparelho</h2>${L.map(x=>`<p style="margin:6px 0"><a href="?c=${encodeURIComponent(x.codigo)}">Nº ${x.numero} · ${esc(x.ambiente||"")}</a> <span class="muted">${dh(x.em)}</span></p>`).join("")}</div>`:""}

@@ -93,7 +93,7 @@ label.f{display:grid;gap:5px;font-weight:600;font-size:.85rem;margin-bottom:10px
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.7.7"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.7.8"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1133,7 +1133,7 @@ function pgRel(){const c=E.v.contratante_id;
    <div class="grid g3">${RELS.map(([x,t,d])=>`<button class="card" style="text-align:left;cursor:pointer;font:inherit;color:inherit" onclick="E.rk='${x}';render()"><h3 style="margin:0 0 4px">${t}</h3><span class="note">${d}</span></button>`).join("")}</div>`;
   if(!E.realT)return filtros+`<p class="note">Carregando…</p>`;
   const R=montarRel(k,per);
-  return `<button class="voltar" onclick="E.rk=null;render()">← Voltar</button><div class="top"><div><h1>${esc(R.titulo)}</h1><p class="sub">${esc(R.sub||"")}</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="relPDF()">Baixar PDF</button><button class="btn ghost" onclick="relExcel()">Baixar Excel</button></div></div>${filtros}
+  return `<button class="voltar" onclick="E.rk=null;render()">← Voltar</button><div class="top"><div><h1>${esc(R.titulo)}</h1><p class="sub">${esc(R.sub||"")}</p></div><div style="display:flex;gap:8px;flex-wrap:wrap">${REL_FOTOS.includes(k)?`<button class="btn" onclick="relPDF(true)" title="Inclui as fotos dos registros (antes, durante e depois)">📷 PDF com fotos</button><button class="btn ghost" onclick="relPDF(false)">PDF sem fotos</button>`:`<button class="btn" onclick="relPDF()">Baixar PDF</button>`}<button class="btn ghost" onclick="relExcel()">Baixar Excel</button></div></div>${filtros}
    ${R.extraTopo||""}${R.kpis.length?`<div class="grid g4">${R.kpis.map(([l,v,c])=>kpi(l,v,c)).join("")}</div>`:""}
    ${R.secoes.map(sc=>`<div class="card"><h3 style="margin:0 0 8px">${esc(sc.t)}</h3>${sc.nota?`<p class="note">${esc(sc.nota)}</p>`:""}${sc.linhas.length?`<div class="tbl"><table><tr>${sc.cols.map(x=>`<th>${esc(x)}</th>`).join("")}</tr>${sc.linhas.slice(0,300).map(l=>`<tr>${l.map(v=>`<td>${esc(typeof v=="number"?num(v):v??"")}</td>`).join("")}</tr>`).join("")}</table></div>${sc.linhas.length>300?`<p class="note">Mostrando 300 de ${sc.linhas.length}. O PDF e o Excel trazem todos.</p>`:""}`:`<p class="note">Nada neste período.</p>`}</div>`).join("")}
    ${k=="mensal"?`<div class="card"><h3 style="margin:0 0 8px">Ações para o próximo mês</h3><textarea id="relacoes" rows="4" style="width:100%" oninput="E.relAcoes=this.value">${esc(E.relAcoes??R.acoes)}</textarea><p class="note">Você pode editar este texto; ele sai no PDF.</p></div>`:""}`}
@@ -1200,7 +1200,38 @@ function montarRel(k,per){const chP=E.ch.filter(c=>uniOk(c)&&per.ok(c.aberto_em)
   if(k=="subst"){const L=analiseSubst().filter(x=>uniOk(x.b));return {titulo:"Substituição de equipamentos",sub:"Posição de hoje · critérios: idade x vida útil, chamados em 12 meses, custo de manutenção x valor, estado e tecnovigilância",kpis:[["Substituir",num(L.filter(x=>x.rec=="Substituir").length)],["Avaliar",num(L.filter(x=>x.rec=="Avaliar").length)],["Manter",num(L.filter(x=>x.rec=="Manter").length)]],
     secoes:[{t:"Análise",cols:["Patrimônio","Bem","Unidade","Idade","Vida útil usada","Chamados 12 meses","Custo manutenção","Custo / valor","Pontos","Recomendação"],linhas:L.map(x=>[x.b.patrimonio||"",x.b.nome,nomeUni(x.b.estabelecimento_id),x.idade==null?"—":x.idade.toFixed(1).replace(".",",")+" anos",x.vida==null?"—":Math.round(x.vida)+"%",x.ch12,brl(x.custo),x.pcv==null?"—":Math.round(x.pcv)+"%",x.pts,x.rec])}]}}
   return {titulo:"Relatório",kpis:[],secoes:[]}}
-async function relPDF(){const per=relPeriodo(),R=montarRel(E.rk,per);try{
+/* ---- Relatório com fotos (inventário, rondas e manutenções) ---- */
+const REL_FOTOS=["inv","ronda","sla","manut","cal","amb"];
+const ETAPA_F={abertura:"Abertura",antes:"Antes",durante:"Durante",depois:"Depois"};
+async function gruposFotos(k,per){const G=[];
+  if(k=="inv"||k=="amb"){let bens=E.bens.filter(uniOk);if(k=="inv")bens=bens.filter(b=>sitOk(b,E.rSit||"")&&(!E.rEmp||b.empresa_id==E.rEmp));
+    bens.forEach(b=>{const fs=(b.fotos&&b.fotos.length?b.fotos:b.foto_path?[b.foto_path]:[]);G.push({t:[b.patrimonio,b.nome].filter(Boolean).join(" · "),d:[[nomeAmbi(b.ambiente_id),nomeUni(b.estabelecimento_id)].join(" · "),[sitN(sitK(b)),empDoBem(b),"estado: "+(b.estado||"")].filter(Boolean).join(" · "),[b.marca,b.modelo,b.numero_serie?"série "+b.numero_serie:""].filter(Boolean).join(" · ")].filter(Boolean),f:fs.map((x,i)=>({p:x,r:i==0?"Capa":"Foto "+(i+1)}))})});return G}
+  if(k=="ronda"){const R=(E.rondas||[]).filter(r=>uniOk(r)&&per.ok(r.iniciada_em)).slice(0,60);
+    for(const r of R){let reg=[],med=[];try{[reg,med]=await Promise.all([DB.rondaRegistros(r.id),DB.rondaMedicoes(r.id)])}catch(e){}
+      const oc=reg.filter(x=>x.resultado=="ocorrencia");
+      G.push({t:`Ronda de ${dh(r.iniciada_em)} · ${nomeUni(r.estabelecimento_id)}`,d:[`Feita por: ${r.quem||"—"} · ${r.concluida_em?"concluída "+dh(r.concluida_em):"em andamento"} · tempo: ${r.concluida_em?fh((Date.parse(r.concluida_em)-Date.parse(r.iniciada_em))/36e5):"—"}`,`${reg.length} item(ns) conferido(s) · ${oc.length} ocorrência(s)`,...oc.slice(0,12).map(x=>`Ocorrência · ${nomeAmbi(x.ambiente_id)} · ${x.item}${x.descricao?": "+x.descricao:""}`)],
+        f:[...reg.filter(x=>x.foto_path).map(x=>({p:x.foto_path,r:`${x.resultado=="ocorrencia"?"Ocorrência":"Normal"} · ${x.item}`})),...med.filter(x=>x.foto_path).map(x=>({p:x.foto_path,r:`Medição · ${x.grupo} ${x.chave}`}))]})}return G}
+  const C=(E.ch||[]).filter(c=>uniOk(c)&&(k=="cal"?per.ok(c.concluido_em):per.ok(c.aberto_em))).slice(0,80);
+  for(const c of C){let fo=[],ev=[],as=[];try{[fo,ev]=await Promise.all([DB.fotosCh(c.id),DB.eventos(c.id)])}catch(e){}try{as=await DB.assinaturasOS(c.id)}catch(e){}
+    const dur=hRep(c);G.push({t:`Chamado ${c.numero||""} · ${nomeAmbi(c.ambiente_id)}${c.bem_id&&bemDe(c.bem_id).nome?" · "+bemDe(c.bem_id).nome:""}`,
+      d:[`Descrição: ${c.descricao||"—"}`,`Prioridade: ${PRI[c.prioridade]||c.prioridade||"—"} · Situação: ${SIT[c.situacao]||c.situacao} · Aberto ${dh(c.aberto_em)} por ${c.solicitante_nome||"—"}`,`Responsável: ${c.responsavel_id?nomeMembro(c.responsavel_id):"—"} · Até o atendimento: ${fh(hAt(c))} · Execução: ${fh(dur)} · SLA: ${noPrazo(c)?"no prazo":"fora do prazo"}${c.custo?" · Custo: "+brl(c.custo):""}`,
+        ...ev.filter(e=>e.nota).slice(0,8).map(e=>`${dh(e.em)} · ${e.quem||""}: ${e.nota}`),...(as||[]).map(a=>`Assinado por ${a.nome||""}${a.funcao?" ("+a.funcao+")":""} em ${dh(a.assinado_em||a.em)}`)],
+      f:fo.sort((a,b)=>["abertura","antes","durante","depois"].indexOf(a.etapa)-["abertura","antes","durante","depois"].indexOf(b.etapa)).map(x=>({p:x.path,r:(ETAPA_F[x.etapa]||x.etapa)+(x.tirada_em?" · "+dh(x.tirada_em):"")}))})}
+  return G}
+async function fotoParaPDF(path){try{const u=await DB.urlFoto(path);if(!u)return null;const im=await new Promise((ok,er)=>{const i=new Image();if(/^https?:/.test(u))i.crossOrigin="anonymous";i.onload=()=>ok(i);i.onerror=er;i.src=u});const s=Math.min(1,640/Math.max(im.width,im.height));const cv=document.createElement("canvas");cv.width=Math.round(im.width*s);cv.height=Math.round(im.height*s);cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);return {d:cv.toDataURL("image/jpeg",.7),w:cv.width,h:cv.height}}catch(e){return null}}
+async function pdfFotos(doc,P,per){const {W,M,quebra}=P;toast("Juntando as fotos…");const G=await gruposFotos(E.rk,per);const comF=G.filter(g=>g.f.length),total=comF.reduce((s,g)=>s+Math.min(8,g.f.length),0);let feitas=0;
+  doc.addPage();P.topo();let y=P.gy();doc.setFont("helvetica","bold");doc.setFontSize(13);doc.text("Registro fotográfico",M,y);y+=5;doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.setTextColor(90,94,102);doc.text(`${comF.length} registro(s) com foto · ${total} foto(s)${G.length>comF.length?` · ${G.length-comF.length} registro(s) sem foto (listados nas tabelas)`:""}`,M,y);doc.setTextColor(29,31,35);y+=7;P.sy(y);
+  if(!comF.length){doc.text("Nenhum registro deste relatório tem foto.",M,y);P.sy(y+6);return}
+  const por=W>250?5:4,gap=4,bw=(W-2*M-gap*(por-1))/por,bh=bw*.75;
+  for(const g of comF){const dl=g.d.flatMap(x=>doc.splitTextToSize(x,W-2*M));y=P.gy();if(P.quebra(10+dl.length*3.6+bh+8))y=P.gy();
+    doc.setFillColor(238,236,232);doc.rect(M,y-4,W-2*M,6,"F");doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.text(doc.splitTextToSize(g.t,W-2*M-2)[0],M+1.5,y);y+=5;doc.setFont("helvetica","normal");doc.setFontSize(8);dl.forEach(l=>{doc.text(l,M+1.5,y);y+=3.6});y+=1.5;P.sy(y);
+    const fs=g.f.slice(0,8);for(let i=0;i<fs.length;i++){if(i%por==0&&i){y=P.gy()+bh+7;P.sy(y)}if(i%por==0&&P.quebra(bh+8))y=P.gy();y=P.gy();
+      const x=M+(i%por)*(bw+gap),im=await fotoParaPDF(fs[i].p);feitas++;if(feitas%5==0)toast(`Fotos: ${feitas} de ${total}…`);
+      doc.setDrawColor(220,218,214);doc.rect(x,y,bw,bh);if(im){const r=Math.min(bw/im.w,bh/im.h),w=im.w*r,h=im.h*r;doc.addImage(im.d,"JPEG",x+(bw-w)/2,y+(bh-h)/2,w,h)}else{doc.setFontSize(7.5);doc.setTextColor(150,150,150);doc.text("foto indisponível",x+bw/2,y+bh/2,{align:"center"});doc.setTextColor(29,31,35)}
+      doc.setFontSize(7);doc.text(doc.splitTextToSize(fs[i].r,bw)[0],x,y+bh+3.2)}
+    if(g.f.length>8){doc.setFontSize(7.5);doc.text(`+ ${g.f.length-8} foto(s) no sistema`,M,P.gy()+bh+7)}
+    P.sy(P.gy()+bh+(g.f.length>8?11:8))}}
+async function relPDF(comFotos){const per=relPeriodo(),R=montarRel(E.rk,per);try{
   if(!window.jspdf)await addScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
   const larga=R.secoes.some(s=>s.cols.length>7),doc=new window.jspdf.jsPDF({unit:"mm",format:"a4",orientation:larga?"landscape":"portrait"}),W=larga?297:210,H=larga?210:297,M=12;let y=0;
   const topo=()=>{doc.setFillColor(29,31,35);doc.rect(0,0,W,18,"F");doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text(E.v.contratantes.nome,M,8);doc.setFont("helvetica","normal");doc.setFontSize(8);doc.text("Atalaia System · Sistema de Gestão de Patrimônio e Manutenção",M,13.5);doc.text("Emitido em "+new Date().toLocaleString("pt-BR"),W-M,13.5,{align:"right"});doc.setTextColor(29,31,35);y=26};
@@ -1213,8 +1244,9 @@ async function relPDF(){const per=relPeriodo(),R=montarRel(E.rk,per);try{
     doc.setFontSize(7.8);const comp=sc.cols.map((c,i)=>Math.min(60,Math.max(String(c).length,...sc.linhas.slice(0,200).map(l=>String(l[i]??"").length))));const tot=comp.reduce((s,x)=>s+x,0),ws=comp.map(x=>Math.max(12,(W-2*M)*x/tot));const f=(W-2*M)/ws.reduce((s,x)=>s+x,0);for(let i=0;i<ws.length;i++)ws[i]*=f;
     const cab=()=>{doc.setFillColor(238,236,232);doc.rect(M,y-3.6,W-2*M,5.4,"F");doc.setFont("helvetica","bold");let x=M;sc.cols.forEach((c,i)=>{doc.text(doc.splitTextToSize(String(c),ws[i]-2)[0],x+1,y);x+=ws[i]});y+=5;doc.setFont("helvetica","normal")};cab();
     for(const l of sc.linhas){const cel=l.map((v,i)=>doc.splitTextToSize(String(typeof v=="number"?num(v):v??""),ws[i]-2).slice(0,6)),h=Math.max(...cel.map(c=>c.length))*3.4+1.4;if(quebra(h)){cab()}let x=M;cel.forEach((c,i)=>{doc.text(c,x+1,y);x+=ws[i]});doc.setDrawColor(230,228,224);doc.line(M,y+h-3.2,W-M,y+h-3.2);y+=h}y+=5}
+  if(comFotos)await pdfFotos(doc,{W,H,M,topo,quebra,gy:()=>y,sy:v=>{y=v}},per);
   const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFontSize(7.5);doc.setTextColor(107,112,120);doc.text("Atalaia System · os horários vêm do servidor e não podem ser alterados",M,H-6);doc.text(`Página ${i} de ${n}`,W-M,H-6,{align:"right"})}
-  baixarArq(doc.output("blob"),`relatorio_${E.rk}_${per.de}_${per.ate}.pdf`);DB.registrar(E.v.contratante_id,"baixou relatório pdf",R.titulo);toast("Relatório PDF baixado.")}catch(e){toast(e.message||"Não foi possível gerar o PDF.")}}
+  baixarArq(doc.output("blob"),`relatorio_${E.rk}${comFotos?"_com_fotos":""}_${per.de}_${per.ate}.pdf`);DB.registrar(E.v.contratante_id,"baixou relatório pdf",R.titulo+(comFotos?" (com fotos)":""));toast("Relatório PDF baixado.")}catch(e){toast(e.message||"Não foi possível gerar o PDF.")}}
 function baixarArq(blob,nome){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=nome;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
 function crc32(u){let t=crc32.t;if(!t){t=crc32.t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}}let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=t[(c^u[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0}
 function zipArquivos(arqs,tipo){const en=new TextEncoder(),partes=[],central=[];let off=0;

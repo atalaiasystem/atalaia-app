@@ -85,7 +85,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.1.8",
+  versao:"0.1.9",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -269,15 +269,16 @@ function telaApp(){
 }
 function uso(n,lim,neutro){const p=Math.min(100,n/lim*100);return `<div class="bar"><i style="width:${p}%;background:${neutro?"var(--ink)":p>=100?"var(--bad)":p>=75?"var(--warn)":"var(--ink)"}"></i></div>`}
 function abaBens(p){
-  const q=E.busca.toLowerCase();const L=E.bens.filter(b=>sitOk(b,E.fSit)&&(!q||(b.nome+" "+(b.patrimonio||"")+" "+(b.numero_serie||"")+" "+(b.marca||"")+" "+empDoBem(b)).toLowerCase().includes(q)));
+  const q=E.busca.toLowerCase();const L=E.bens.filter(b=>sitOk(b,E.fSit)&&(!E.fUni||uniDoBem(b)==E.fUni)&&(!q||(b.nome+" "+(b.patrimonio||"")+" "+(b.numero_serie||"")+" "+(b.marca||"")+" "+empDoBem(b)).toLowerCase().includes(q)));
   const cheio=E.bens.length>=p.bens;
   return `<h1>Bens</h1><p class="sub">${E.bens.length} de ${p.bens} bens cadastrados</p>${uso(E.bens.length,p.bens)}
   <div style="display:flex;gap:8px;margin:14px 0"><button class="btn amb" style="flex:1" ${cheio?"disabled":""} onclick="abrirBem()">+ Cadastrar bem</button><button class="btn ghost" onclick="exportar()" title="Baixar em Excel ou PDF">⬇ Baixar</button></div>
   ${E.desfazer&&Date.now()<E.desfazer.ate?`<div class="msg ok" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span>Excluído: <b>${esc(E.desfazer.nome)}</b></span><button class="btn ghost sm" onclick="desfazer()">↶ Desfazer</button></div>`:""}
   ${cheio?`<div class="msg info">Limite do plano ${esc(p.nome)} atingido. Para cadastrar mais bens, conheça os planos pagos na aba Plano.</div>`:""}
   <input placeholder="Buscar por nome${temPat()?", patrimônio":""}, série ou marca" value="${esc(E.busca)}" oninput="E.busca=this.value;render();const i=document.querySelector('input[placeholder^=Buscar]');i.focus();i.setSelectionRange(i.value.length,i.value.length)" style="margin-bottom:8px">
+  ${variasUnis()?`<select onchange="E.fUni=this.value;render()" style="margin-bottom:8px" aria-label="Unidade"><option value="">Todas as unidades</option>${E.unis.map(u=>`<option value="${u.id}" ${E.fUni==u.id?"selected":""}>${esc(u.nome)}</option>`).join("")}</select>`:""}
   <select onchange="E.fSit=this.value;render()" style="margin-bottom:12px" aria-label="Situação"><option value="">Todas as situações</option><option value="p" ${E.fSit=="p"?"selected":""}>Só bens próprios</option><option value="t" ${E.fSit=="t"?"selected":""}>Só bens de terceiros</option>${sitOpts(E.fSit)}</select>
-  <div class="card" style="padding:4px 16px">${L.map(b=>`<div class="bem" onclick="abrirBem('${b.id}')"><div class="ft" data-foto="${esc(b.foto_path||"")}">${b.foto_path?"…":"sem foto"}</div><div><b>${esc(b.nome)}</b>${b.patrimonio?`<span class="pat">${esc(b.patrimonio)}</span>`:""} <span class="muted">· ${esc(nomeAmb(b.ambiente_id))}</span>${terc(sitK(b))||sitK(b)!="proprio"?`<div class="muted" style="font-size:.8rem">${esc(sitN(sitK(b)))}${empDoBem(b)?" · "+esc(empDoBem(b)):""}${b.posse_ate?" · até "+esc(b.posse_ate.split("-").reverse().join("/")):""}</div>`:""}</div><span class="tag">${esc(b.estado)}</span></div>`).join("")||`<p class="muted" style="padding:14px 0">${E.bens.length?"Nenhum bem encontrado na busca.":"Nenhum bem cadastrado ainda. Toque em “Cadastrar bem” para começar."}</p>`}</div>`;
+  <div class="card" style="padding:4px 16px">${L.map(b=>`<div class="bem" onclick="abrirBem('${b.id}')"><div class="ft" data-foto="${esc(b.foto_path||"")}">${b.foto_path?"…":"sem foto"}</div><div><b>${esc(b.nome)}</b>${b.patrimonio?`<span class="pat">${esc(b.patrimonio)}</span>`:""} <span class="muted">· ${esc(nomeAmb(b.ambiente_id))}${variasUnis()?" · "+esc(nomeUni(uniDoBem(b))):""}</span>${terc(sitK(b))||sitK(b)!="proprio"?`<div class="muted" style="font-size:.8rem">${esc(sitN(sitK(b)))}${empDoBem(b)?" · "+esc(empDoBem(b)):""}${b.posse_ate?" · até "+esc(b.posse_ate.split("-").reverse().join("/")):""}</div>`:""}</div><span class="tag">${esc(b.estado)}</span></div>`).join("")||`<p class="muted" style="padding:14px 0">${E.bens.length?"Nenhum bem encontrado na busca.":"Nenhum bem cadastrado ainda. Toque em “Cadastrar bem” para começar."}</p>`}</div>`;
 }
 function abaAmb(p){
   const pode=["gestor","administrador"].includes(E.v.perfil);
@@ -335,6 +336,7 @@ const empAchar=n=>(E.emps||[]).find(x=>x.nome.trim().toLowerCase()==String(n||""
 async function empresaPorNome(nome,k,amb,gest){const n=String(nome||"").trim().replace(/\s+/g," ");if(!n)return null;const e=empAchar(n);if(e)return e.id;
   const u=gest?null:((E.amb||[]).find(a=>a.id==amb)||{}).estabelecimento_id||null;const r=await DB.addEmpresa({contratante_id:E.v.contratante_id,nome:n,tipo:TIPO_SIT[k]||"outro",estabelecimento_id:u});(E.emps=E.emps||[]).push(r);return r.id}
 function empDica(inp){const d=document.getElementById(inp.id+"_dica");if(d)d.textContent=inp.value.trim()&&!empAchar(inp.value)?"Empresa nova: será cadastrada ao salvar (complete os dados depois em Empresas locadoras).":""}
+const uniDoBem=b=>b.estabelecimento_id||((E.amb||[]).find(a=>a.id==b.ambiente_id)||{}).estabelecimento_id;
 const SIT_PRAZO=["leasing","locado","cessao","emprestimo","demonstracao"];
 const sitK=b=>(b&&b.propriedade)||"proprio",sitN=k=>(SITB.find(x=>x[0]==k)||[0,"Próprio · compra"])[1],terc=k=>(SITB.find(x=>x[0]==(k||"proprio"))||[0,0,"p"])[2]=="t",sitEmp=k=>!["proprio","doacao"].includes(k||"proprio");
 const empDoBem=b=>sitK(b)=="doacao"?(b.doador||""):sitEmp(sitK(b))?(((E.emps||[]).find(e=>e.id==b.empresa_id)||{}).nome||""):"";

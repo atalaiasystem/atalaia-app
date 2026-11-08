@@ -86,7 +86,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.3"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.4"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -122,7 +122,7 @@ function realDB(){
     alterarPlano:(s,p)=>rpc("matriz_alterar_plano",{p_sigla:s,p_plano:p}),
     alterarSituacao:(s,v)=>rpc("matriz_alterar_situacao",{p_sigla:s,p_situacao:v}),
     exigir2:(s,v)=>rpc("matriz_exigir_2_etapas",{p_sigla:s,p_exigir:v}),
-    criar:(d)=>rpc("matriz_criar_contratante",{p_nome:d.nome,p_sigla:d.sigla,p_plano:d.plano,p_segmento:d.segmento||null,p_cnpj:d.cnpj||null,p_ambiente:d.ambiente||"Ambiente principal"}),
+    criar:(d)=>rpc("matriz_criar_contratante",{p_nome:d.nome,p_sigla:d.sigla,p_plano:d.plano,p_segmento:d.segmento||null,p_cnpj:d.cnpj||null,p_ambiente:d.ambiente||""}),
     vincular:(e,s,n,p)=>rpc("matriz_vincular_usuario",{p_email:e,p_sigla:s,p_nome:n,p_perfil:p}),
     registrar:(a,d)=>rpc("matriz_registrar",{p_acao:a,p_detalhe:d||null}).catch(()=>{}),
     meusAcessos:()=>rpc("matriz_meus_acessos"),
@@ -456,7 +456,7 @@ function abaCadastrar(){return `<h1>Cadastrar empresa</h1><p class="sub">Duas pa
  <div class="g2"><form class="card" onsubmit="event.preventDefault();cadastrar()"><h2>1. Empresa</h2>
   <label>Nome da empresa *<input id="cn" required maxlength="120" oninput="sugerirSigla(this.value)"></label>
   <div class="row3"><label>Segmento<input id="cg" maxlength="60" placeholder="Ex.: Salão, Clínica, Hospital"></label><label>Sigla * <span class="muted" style="font-weight:400">(2 a 4 letras)</span><input id="cs" required maxlength="4" pattern="[A-Za-z]{2,4}" style="text-transform:uppercase"></label><label>CNPJ<input id="cj" maxlength="18" inputmode="numeric"></label></div>
-  <div class="row"><label>Plano *<select id="cp">${PLANOS.map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select></label><label>Primeiro ambiente *<input id="ca" required maxlength="80" value="Ambiente principal"></label></div>
+  <div class="row"><label>Plano *<select id="cp">${PLANOS.map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select></label><label>Primeiro ambiente (opcional)<input id="ca" maxlength="80" placeholder="Deixe vazio: o Gestor cria os ambientes depois"></label></div>
   <h2 style="margin-top:6px">2. Administrador da empresa</h2>
   <div class="msg info">Antes, crie o usuário no Supabase: <b>Authentication › Users › Add user › Create new user</b>, com senha provisória e <b>Auto Confirm User</b> marcado. No primeiro acesso, o sistema obriga a pessoa a criar a senha dela.</div>
   <div class="row"><label>E-mail do gestor *<input id="ue" type="email" required></label><label>Nome do gestor *<input id="un" required maxlength="80"></label></div>
@@ -499,7 +499,7 @@ async function cadastrar(){
   const email=$("#ue").value.trim(),nome=$("#un").value.trim();
   if(!/^[A-Z]{2,4}$/.test(d.sigla)){E.msg=["err","A sigla precisa ter de 2 a 4 letras, sem acentos."];render();return}
   try{await DB.criar(d)}catch(e){E.msg=["err",e.message];render();return}
-  try{await DB.vincular(email,d.sigla,nome,"gestor");DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["ok",`Empresa ${d.nome} (${d.sigla}) cadastrada no plano ${d.plano} e ${email} ligado como administrador. Envie a ela o link do aplicativo e a senha provisória (em mensagens separadas).`]}
+  try{await DB.vincular(email,d.sigla,nome,"gestor");DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["ok",`Empresa ${d.nome} (${d.sigla}) cadastrada no plano ${d.plano} e ${email} ligado como Gestor. Envie a ela o link do aplicativo e a senha provisória (em mensagens separadas).`]}
   catch(e){DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["info",`A empresa ${d.sigla} foi criada, mas o usuário não foi ligado: ${e.message} Crie o usuário no Supabase e use “Adicionar usuário a uma empresa existente”.`]}
   await recarregar();}
 async function vincularExtra(){const s=$("#vs").value;try{const r=await DB.vincular($("#ve").value.trim(),s,$("#vn").value.trim(),$("#vp").value);DB.registrar("adicionou usuário",s);E.msg=["ok",r];await recarregar()}catch(e){E.msg=["err",e.message];render()}}
