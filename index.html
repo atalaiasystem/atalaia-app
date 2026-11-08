@@ -95,7 +95,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.2",
+  versao:"0.3.3",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -524,7 +524,7 @@ function abrirNivel(){try{if(!(history.state&&history.state.atalaia))history.pus
 function fecharNivel(){
   if(E.modal){E.modal=null;render();return true}
   if(E.tela=="senha"&&E.modoSenha=="trocar"){E.tela="app";E.msg=null;render();return true}
-  if(E.tela=="app"&&E.aba=="man"&&E.mt&&E.mt!="home"){if(typeof pararCam=="function")pararCam();E.mt=["lista","amb","bem"].includes(E.mtPrev)&&E.mtPrev!=E.mt?E.mtPrev:"home";E.mtPrev="home";render();scrollTo(0,0);return true}
+  if(E.tela=="app"&&E.aba=="man"&&E.mt&&E.mt!="home"){if(typeof pararCam=="function")pararCam();const P=E.mtPilha||[];let nx=P.pop();while(nx&&(nx==E.mt||nx=="qr"))nx=P.pop();E.mt=nx||"home";E.mtPilha=P;E.mtPrev=P[P.length-1]||"home";render();scrollTo(0,0);if(E.mt!="home")abrirNivel();if(E.mt=="item"&&typeof carregarItem=="function")carregarItem();return true}
   if(E.tela=="app"&&E.aba=="ron"&&E.rt&&E.rt!="home"){E.rt="home";render();scrollTo(0,0);return true}
   if(E.tela=="app"&&E.aba!=abaRaiz()){E.aba=abaRaiz();render();scrollTo(0,0);return true}
   return false}
@@ -676,14 +676,14 @@ if(DEMO&&DEMO_COL){const mv=DB.meuVinculo,ma=DB.ambientes,mu=DB.unidades;
   DB.meuVinculo=async()=>{const v=await mv();v.perfil="colaborador";v.nome="Carlos Manutenção";v.user_id="u-demo";v.estabelecimento_id="e1";v.contratantes={...v.contratantes,nome:"Hospital Exemplo (demonstração)",planos:{...v.contratantes.planos,id:"atalaia",nome:"Atalaia",ambientes:50,bens:1000,usuarios:10,funcoes:["bens","chamados","etiquetas","auditoria","calibracoes","rondas","relatorios","termos","avalie"]}};return v};
   DB.ambientes=async()=>[{id:"a1",nome:"Recepção",estabelecimento_id:"e1",ativo:true},{id:"a2",nome:"UTI adulto",estabelecimento_id:"e1",ativo:true,tipo_ronda:"ambiente",qr_token:"demotk2"},{id:"a3",nome:"Central de gases",estabelecimento_id:"e1",ativo:true,tipo_ronda:"gases"}];
   DB.unidades=async()=>[{id:"e1",nome:"Hospital A",tipo:"empresa"}]}
-async function carregarMan(){if(!temMan())return;const c=E.v.contratante_id;[E.chs,E.mems]=await Promise.all([DB.chs(c).catch(()=>[]),DB.mems(c).catch(()=>[])])}
+async function carregarMan(){if(!temMan())return;const c=E.v.contratante_id;[E.chs,E.mems]=await Promise.all([DB.chs(c).catch(()=>[]),DB.mems(c).catch(()=>[]),typeof carregarMan4=="function"?carregarMan4().catch(()=>{}):null])}
 const meusChs=()=>(E.chs||[]).filter(c=>souAdm()||!E.v.estabelecimento_id||c.estabelecimento_id==E.v.estabelecimento_id);
 
 /* ---- navegação interna ---- */
-function irMan(t,id){E.mtPrev=E.mt;E.mt=t;if(id!==undefined)E.chSel=id;E.mf=E.mf||{};abrirNivel();render();scrollTo(0,0);if(t=="item")carregarItem()}
+function irMan(t,id){if(t!=E.mt)(E.mtPilha=E.mtPilha||[]).push(E.mt||"home");E.mtPrev=E.mt;E.mt=t;if(id!==undefined)E.chSel=id;E.mf=E.mf||{};abrirNivel();render();scrollTo(0,0);if(t=="item")carregarItem()}
 function bigBtn(ic,t,s,act,tag){return `<button class="big" ${act?`onclick="${act}"`:"disabled"}><span class="ico">${ic}</span><span class="tx"><b>${t}</b><span>${s}</span></span>${tag?`<span class="tagp">${tag}</span>`:""}</button>`}
 function abaMan(){if(!temMan())return `<h1>Manutenção</h1><div class="msg info">Chamados e manutenção estão nos planos pagos.</div>`;
-  const t=E.mt||"home";return t=="lista"?manLista():t=="item"?manItem():t=="nahora"?manNaHora():t=="ajuda"?manAjuda():t=="qr"?manQR():t=="amb"?manAmb():t=="bem"?manBem():t=="novoch"?manNovoCh():manHome()}
+  const t=E.mt||"home";return t=="lista"?manLista():t=="item"?manItem():t=="nahora"?manNaHora():t=="ajuda"?manAjuda():t=="qr"?manQR():t=="amb"?manAmb():t=="bem"?manBem():t=="novoch"?manNovoCh():t=="prog"?manProg():t=="servico"?manServico():t=="anexo"?manAnexo():t=="troca"?manTroca():t=="trocas"?manTrocas():t=="aud"?manAud():t=="resp"?manResp():t=="etqamb"?manEtqAmb():(E.mtPilha=[],manHome())}
 function manHome(){const L=meusChs(),novos=L.filter(c=>c.situacao=="aberto"),comigo=L.filter(c=>emAberto(c)&&souRespCh(c)),ag=L.filter(c=>c.situacao=="concluido");
   const pri={urgente:0,alta:1,media:2,baixa:3};novos.sort((a,b)=>pri[a.prioridade]-pri[b.prioridade]);
   return `<h1>${souAdm()?"Área do administrador":"Área de "+esc((E.v.nome||"").split(" ")[0])}</h1><p class="sub">${esc(E.v.contratantes.nome)}${E.v.estabelecimento_id&&nomeUni(E.v.estabelecimento_id)?" · "+esc(nomeUni(E.v.estabelecimento_id)):""}</p>
@@ -692,10 +692,10 @@ function manHome(){const L=meusChs(),novos=L.filter(c=>c.situacao=="aberto"),com
    ${bigBtn(`<b>${L.filter(emAberto).length}</b>`,"Painel de manutenções",`Chamados e manutenções feitas na hora${comigo.length?` · ${comigo.length} com você`:""}${ag.length?` · ${ag.length} aguardando confirmação`:""}`,"E.mf={};irMan('lista')")}
    ${bigBtn("⚒","Realizar manutenção","Serviço identificado e feito na hora, com foto","irMan('nahora')")}
    ${bigBtn("R","Rondas","Ambientes, central de gases, geradores, caixa d'água e usina",typeof abaRon=="function"&&temF("rondas")?"irAba('ron')":"",typeof abaRon=="function"?"":"próxima etapa")}
-   ${bigBtn("M","Manutenções programadas","Preventivas e calibrações agendadas","","próxima etapa")}
+   ${bigBtn("M","Manutenções programadas","Preventivas e calibrações agendadas, com laudo",typeof abrirProg=="function"&&temProg()?"abrirProg()":"",typeof abrirProg=="function"?"":"próxima etapa")}
    ${bigBtn("▣","Ler QR Code","Abre o ambiente ou o bem pela etiqueta","E.camErro=null;irMan('qr')")}
-   ${bigBtn("A","Auditoria do ambiente","Conferir os bens com a câmera","","próxima etapa")}
-   ${souAdm()?bigBtn("⇄","Trocas de equipamento","Números informados diferentes do cadastro","","próxima etapa"):""}
+   ${bigBtn("A","Auditoria do ambiente","Conferir os bens com a câmera",typeof abrirAud=="function"&&temAud()?"abrirAud()":"",typeof abrirAud!="function"?"próxima etapa":temAud()?"":temF("auditoria")?"administrador":"planos pagos")}
+   ${souAdm()?bigBtn(typeof trocasPend=="function"&&trocasPend().length?`<b>${trocasPend().length}</b>`:"⇄","Trocas de equipamento","Números informados diferentes do cadastro",typeof abrirTrocas=="function"?"abrirTrocas()":"",typeof abrirTrocas=="function"?"":"próxima etapa"):""}
    ${bigBtn("?","Como usar","Passo a passo de cada função","irMan('ajuda')")}
   </div>
   ${E.v.perfil=="colaborador"?`<p class="muted" style="font-size:.85rem">Cadastros, relatórios, etiquetas e configurações ficam com o Gestor e o Administrador.</p>`:`<p class="muted" style="font-size:.85rem">No computador (ou no botão 🖥 Painel), o administrador tem o painel completo.</p>`}`}
@@ -897,7 +897,7 @@ function manQR(){return `<button class="voltar" onclick="pararCam();voltar()">�
 async function abrirCam(){E.camErro=null;try{if(!("BarcodeDetector" in window))await carregarJsQR();camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"},audio:false});E.camOn=true;render();
   const v=$("#camv");v.srcObject=camStream;await v.play();const det="BarcodeDetector" in window?new BarcodeDetector({formats:["qr_code","code_128","ean_13","code_39"]}):null;const cv=document.createElement("canvas"),x=cv.getContext("2d",{willReadFrequently:true});
   const passo=async()=>{if(!camStream)return;try{let txt=null;if(det){const r=await det.detect(v);if(r.length)txt=r[0].rawValue}else if(v.videoWidth){cv.width=v.videoWidth;cv.height=v.videoHeight;x.drawImage(v,0,0);const d=x.getImageData(0,0,cv.width,cv.height),q=window.jsQR(d.data,d.width,d.height);if(q)txt=q.data}
-    if(txt){if(navigator.vibrate)navigator.vibrate(80);pararCam();lerCodigo(txt);return}}catch(e){}camLoop=setTimeout(passo,250)};passo()}
+    if(txt&&E.mt=="aud"&&typeof lerAudC=="function"){if(txt!=E.audUlt||Date.now()-(E.audT||0)>3000){E.audUlt=txt;E.audT=Date.now();lerAudC(txt)}}else if(txt){if(navigator.vibrate)navigator.vibrate(80);pararCam();lerCodigo(txt);return}}catch(e){}camLoop=setTimeout(passo,250)};passo()}
   catch(e){pararCam();E.camErro=/Permission|NotAllowed/i.test(e.name+e.message)?"A câmera foi bloqueada. Libere a câmera para este site nas configurações do navegador.":"Não foi possível abrir a câmera neste aparelho. Digite o número abaixo.";render()}}
 function pararCam(){clearTimeout(camLoop);if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}E.camOn=false}
 function lerCodigo(txt){txt=String(txt||"").trim();if(!txt)return;const m=txt.match(/[?&]t=([A-Za-z0-9_-]+)/);
@@ -908,24 +908,312 @@ function manAmb(){const a=(E.amb||[]).find(x=>x.id==E.ambSel);if(!a)return `<but
   const B=(E.bens||[]).filter(b=>b.ambiente_id==a.id),C=(E.chs||[]).filter(c=>c.ambiente_id==a.id&&emAberto(c)),tp=a.tipo_ronda||"ambiente";
   return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>${esc(a.nome)}</h1><p class="sub">${esc(nomeUni(a.estabelecimento_id)||"")}${a.grupo?" · "+esc(a.grupo):""} · ${esc((typeof TRC!="undefined"&&TRC[tp])||"Ambiente")}</p>
   <div class="bigs">${bigBtn("+","Abrir chamado aqui","Registrar um problema neste ambiente",`E.ncA='${a.id}';E.ncB='';irMan('novoch')`)}
-  ${typeof abaRon=="function"&&tp!="fora"?bigBtn("R","Vistoriar este ambiente",MEDT.includes(tp)?"Medições do ambiente":"Ronda item por item",`vistDoAmb('${a.id}')`):""}</div>
+  ${typeof abaRon=="function"&&tp!="fora"?bigBtn("R","Vistoriar este ambiente",MEDT.includes(tp)?"Medições do ambiente":"Ronda item por item",`vistDoAmb('${a.id}')`):""}
+  ${typeof temAud=="function"&&temAud()?bigBtn("A","Auditar este ambiente","Conferir os bens com a câmera",`abrirAud('${a.id}')`):""}${typeof abrirEtqAmb=="function"&&souAdm()?bigBtn("▣","Etiqueta do QR","Prévia com a logo e impressão",`abrirEtqAmb()`):""}</div>
+  ${typeof respAmbHTML=="function"?respAmbHTML(a):""}
   <div class="card"><b>Chamados em aberto (${C.length})</b>${C.map(linhaCh).join("")||`<p class="muted">Nenhum chamado em aberto aqui.</p>`}</div>
-  <div class="card"><b>Bens do ambiente (${B.length})</b>${B.map(b=>`<button class="rowch" onclick="E.bemSel='${b.id}';irMan('bem')" style="--pc:${b.estado=="em reparo"||b.estado=="ruim"?"#c8372d":"#1f9a55"}"><span class="dot"></span><span class="tx"><b>${esc(b.nome)}</b><span>${esc(b.patrimonio||"sem patrimônio")}${b.numero_serie?" · série "+esc(b.numero_serie):""}${b.posicao?" · "+esc(b.posicao):""}</span></span></button>`).join("")||`<p class="muted">Nenhum bem cadastrado neste ambiente.</p>`}</div>`}
+  <div class="card"><b>Bens do ambiente (${B.length})</b>${B.map(b=>`<button class="rowch" onclick="E.bemSel='${b.id}';irMan('bem')" style="--pc:${["em reparo","em manutenção","ruim"].includes(b.estado)?"#c8372d":"#1f9a55"}"><span class="dot"></span><span class="tx"><b>${esc(b.nome)}</b><span>${esc(b.patrimonio||"sem patrimônio")}${b.numero_serie?" · série "+esc(b.numero_serie):""}${b.posicao?" · "+esc(b.posicao):""}</span></span></button>`).join("")||`<p class="muted">Nenhum bem cadastrado neste ambiente.</p>`}</div>`}
 function manBem(){const b=(E.bens||[]).find(x=>x.id==E.bemSel);if(!b)return `<button class="voltar" onclick="voltar()">← Voltar</button><p class="muted">Bem não encontrado.</p>`;
   const C=(E.chs||[]).filter(c=>c.bem_id==b.id).slice(0,20);
   return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>${esc(b.nome)}</h1><p class="sub">${esc(b.patrimonio||"sem patrimônio")} · ${esc(nomeAmbC(b.ambiente_id))}${nomeUni(b.estabelecimento_id||"")?" · "+esc(nomeUni(b.estabelecimento_id)):""}</p>
   <div class="card"><dl class="dl"><dt>Categoria</dt><dd>${esc(b.categoria||"—")}</dd><dt>Marca / modelo</dt><dd>${esc([b.marca,b.modelo].filter(Boolean).join(" · ")||"—")}</dd><dt>Nº de série</dt><dd>${esc(b.numero_serie||"—")}</dd><dt>Estado</dt><dd>${esc(b.estado||"—")}</dd>${typeof sitN=="function"?`<dt>Situação</dt><dd>${esc(sitN(sitK(b)))}${empDoBem(b)?" · "+esc(empDoBem(b)):""}</dd>`:""}${b.posicao?`<dt>Posição</dt><dd>${esc(b.posicao)}</dd>`:""}</dl></div>
   <div class="bigs">${bigBtn("+","Abrir chamado deste bem","Registrar defeito ou problema",`E.ncA='${b.ambiente_id}';E.ncB='${b.id}';irMan('novoch')`)}${bigBtn("▦","Ver o cadastro completo","Fotos e todos os dados",`abrirBem('${b.id}')`)}</div>
+  ${typeof fichaHTML=="function"?fichaHTML(b):""}
   <div class="card"><b>Histórico de chamados (${C.length})</b>${C.map(linhaCh).join("")||`<p class="muted">Nenhum chamado deste bem.</p>`}</div>`}
 function manNovoCh(){const a=(E.amb||[]).find(x=>x.id==E.ncA),B=(E.bens||[]).filter(b=>b.ambiente_id==E.ncA);
   return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Abrir chamado</h1><p class="sub">${esc(a?a.nome:"")}</p><div class="card">
   <label>Qual bem? (opcional)<select id="ncb"><option value="">Não sei / é do ambiente</option>${B.map(b=>`<option value="${b.id}" ${E.ncB==b.id?"selected":""}>${esc((b.patrimonio?b.patrimonio+" · ":"")+b.nome)}</option>`).join("")}</select></label>
-  <label>O que está acontecendo? *<textarea id="ncd" rows="3" maxlength="500" placeholder="Ex.: monitor apitando sem parar"></textarea></label>
+  <label>O que está acontecendo? *<textarea id="ncd" rows="3" maxlength="500" placeholder="Ex.: monitor apitando sem parar">${esc(E.ncTxt||"")}</textarea></label>
   <label>Prioridade<select id="ncp"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></label>
   <button class="btn amb full" onclick="salvarNovoCh()">Abrir chamado</button></div>`}
 async function salvarNovoCh(){const d=($("#ncd").value||"").trim();if(d.length<5){toast("Descreva o problema (pelo menos 5 letras).");return}
-  try{const c=await DB.abrirChM(E.ncA,d,$("#ncp").value,$("#ncb").value||null,"app");E.chs=[c,...(E.chs||[])];toast(`Chamado nº ${c.numero} aberto.`);E.mt="item";E.chSel=c.id;carregarItem()}catch(e){toast(e.message)}}
+  try{const c=await DB.abrirChM(E.ncA,d,$("#ncp").value,$("#ncb").value||null,"app");E.chs=[c,...(E.chs||[])];E.ncTxt="";toast(`Chamado nº ${c.numero} aberto.`);E.mt="item";E.chSel=c.id;carregarItem()}catch(e){toast(e.message)}}
 async function vistDoAmb(id){const a=(E.amb||[]).find(x=>x.id==id);E.aba="ron";if(!E.ron||E.ron.carregando)await carregarRon();if(MEDT.includes(a.tipo_ronda))abrirMedC(id);else abrirVistC(id)}
+
+/* ======================= APP DO COLABORADOR · ETAPA 4 =======================
+   Manutenções programadas (preventivas e calibrações), registro de serviço com
+   laudo, ficha de vida do bem (serviços, calibrações, documentos e anexos),
+   trocas de equipamento, auditoria do ambiente pela câmera, responsável pelo
+   ambiente e etiqueta do QR do ambiente. */
+const TIPO_SV={calibracao:"Calibração",preventiva:"Preventiva",corretiva:"Corretiva",qualificacao:"Qualificação",inspecao:"Inspeção"};
+const RES_SV={aprovado:["Aprovado","#1f9a55"],aprovado_com_ajuste:["Aprovado com ajuste","#b7791f"],reprovado:["Reprovado","#c8372d"]};
+const SIT_AG={vencida:["Vencida","#c8372d"],vence_30_dias:["Vence em até 30 dias","#b7791f"],em_dia:["Em dia","#1f9a55"]};
+const TIPO_DOC=[["laudo","Laudo de calibração"],["certificado","Certificado"],["laudo","Teste de segurança elétrica"],["manual","Manual do fabricante"],["nota_fiscal","Nota fiscal"],["contrato","Contrato"],["foto","Foto do equipamento"],["outro","Outro"]];
+const NOME_DOC={manual:"Manual",laudo:"Laudo",certificado:"Certificado",nota_fiscal:"Nota fiscal",contrato:"Contrato",foto:"Foto",outro:"Outro"};
+let DEMO_EXTRA=[];
+const RES_AUD={localizado:["Localizado","#1f9a55"],outro_ambiente:["Cadastrado em outro ambiente","#b7791f"],sem_cadastro:["Sem cadastro","#c8372d"],repetido:["Já lido","#7a8794"]};
+const QRGEN={src:"https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js",sri:"sha384-8FWZA6BGMXhsfO+BLtrJK0We6gg5o1JyO8xQm6peWDEUs17ACA5ziE/NIAkl9z2k"};
+const linkQRAmb=a=>`https://app.atalaiasystem.com.br/qr/?t=${encodeURIComponent(a.qr_token||"")}`;
+const dBR=d=>d?new Date(String(d).length==10?d+"T12:00:00":d).toLocaleDateString("pt-BR"):"—";
+const hojeISO=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const nomeEmp=id=>((E.emps||[]).find(x=>x.id==id)||{}).nome||"";
+const temProg=()=>temF("calibracoes")||temMan();
+const temAud=()=>souAdm()&&temF("auditoria");
+const trocasPend=()=>(E.trocas||[]).filter(t=>t.situacao=="pendente");
+function diasTxt(n){return n==null?"":n<0?`vencida há ${-n} dia(s)`:n==0?"vence hoje":`vence em ${n} dia(s)`}
+
+/* ---- dados ---- */
+function realMan4(){const chk=({data,error})=>{if(error)throw new Error(traduz(error.message));return data};return {
+  async agendaMan(c,u,dias){return chk(await sb.rpc("agenda_manutencao",{p_c:c,p_unidade:u||null,p_dias:dias||365}))},
+  async progBem(bem){try{return chk(await sb.from("servicos_programados").select("*").eq("bem_id",bem).is("excluido_em",null).order("proxima"))}catch(e){return []}},
+  async realizadosBem(bem){try{return chk(await sb.from("servicos_realizados").select("*").eq("bem_id",bem).order("realizado_em",{ascending:false}).limit(100))}catch(e){return []}},
+  async addRealizado(d){return chk(await sb.from("servicos_realizados").insert(d).select().single())},
+  async docsBem(bem){try{return chk(await sb.from("documentos").select("*").eq("bem_id",bem).order("enviado_em",{ascending:false}))}catch(e){return []}},
+  async addDoc(d){return chk(await sb.from("documentos").insert(d).select().single())},
+  async arquivo(c,blob,nome){const p=`${c}/docs/${crypto.randomUUID()}-${String(nome||"arquivo").replace(/[^a-zA-Z0-9._-]/g,"_").slice(-80)}`;chk(await sb.storage.from("fotos-bens").upload(p,blob,{contentType:blob.type||"application/octet-stream"}));return p},
+  async trocas(c){try{return chk(await sb.from("trocas_equipamento").select("*").eq("contratante_id",c).order("informado_em",{ascending:false}).limit(200))}catch(e){return []}},
+  async informarTroca(bem,p,s,m,origem,obs){return chk(await sb.rpc("informar_troca",{p_bem:bem,p_patrimonio:p||null,p_serie:s||null,p_modelo:m||null,p_origem:origem||"app",p_obs:obs||null}))},
+  async decidirTroca(id,ok,motivo){return chk(await sb.rpc("decidir_troca",{p_troca:id,p_confirmar:ok,p_motivo:motivo||null}))},
+  async auditoriasAmb(a){try{return chk(await sb.from("auditorias").select("id,auditor,iniciada_em,finalizada_em,resumo").eq("ambiente_id",a).order("iniciada_em",{ascending:false}).limit(5))}catch(e){return []}},
+  async iniAud(a,nome){return chk(await sb.rpc("iniciar_auditoria",{p_ambiente:a,p_auditor:nome}))},
+  async lerAud(id,cod){return chk(await sb.rpc("ler_auditoria",{p_auditoria:id,p_codigo:cod}))},
+  async fimAud(id){return chk(await sb.rpc("finalizar_auditoria",{p_auditoria:id}))},
+  async salvarResp(id,d){return chk(await sb.from("ambientes").update(d).eq("id",id).select().single())},
+  async gerarTermo(a,n,f,ct){return chk(await sb.rpc("gerar_termo",{p_ambiente:a,p_nome:n,p_funcao:f||null,p_contato:ct||null}))}
+}}
+function mockMan4(){const w=ms=>new Promise(r=>setTimeout(r,ms)),agora=()=>new Date().toISOString(),dia=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)};
+  const PG=[{id:"p1",bem_id:"bx1",tipo:"calibracao",periodicidade_meses:12,ultima:dia(-380),proxima:dia(-15),empresa_id:"m2"},
+   {id:"p2",bem_id:"bx1",tipo:"preventiva",periodicidade_meses:6,ultima:dia(-170),proxima:dia(12),empresa_id:"m2"},
+   {id:"p3",bem_id:"bx2",tipo:"calibracao",periodicidade_meses:12,ultima:dia(-200),proxima:dia(165),empresa_id:"m2"},
+   {id:"p4",bem_id:"bx3",tipo:"preventiva",periodicidade_meses:3,ultima:dia(-80),proxima:dia(10),empresa_id:null},
+   {id:"p5",bem_id:"bx5",tipo:"inspecao",periodicidade_meses:1,ultima:dia(-29),proxima:dia(1),empresa_id:null}];
+  const RS=[{id:"r1",bem_id:"bx1",tipo:"calibracao",realizado_em:dia(-380),resultado:"aprovado",empresa_id:"m2",laudo_path:"demo/laudo1",observacao:"Calibração anual",quem:"Assistência Técnica Exemplo"},
+   {id:"r2",bem_id:"bx1",tipo:"preventiva",realizado_em:dia(-170),resultado:"aprovado_com_ajuste",empresa_id:"m2",observacao:"Troca do cabo de ECG",quem:"Carlos Manutenção"}];
+  const DOCS=[{id:"d1",bem_id:"bx1",tipo:"manual",nome:"Manual do fabricante",path:"demo/manual1",enviado_em:dia(-400)+"T10:00:00",quem:"Bruno Administrador"},
+   {id:"d2",bem_id:"bx1",tipo:"laudo",nome:"Laudo de calibração",path:"demo/laudo1",validade:dia(-15),enviado_em:dia(-380)+"T10:00:00",quem:"Bruno Administrador"}];
+  const TR=[{id:"t1",bem_id:"bx2",ambiente_id:"a2",estabelecimento_id:"e1",posicao:"Leito 5",patrimonio_informado:"HTA-0042",serie_informada:"VP-55021",modelo_informado:"Vent Pro 2",origem:"Ficha do bem",situacao:"pendente",informado_em:new Date(Date.now()-36e5).toISOString(),informado_por:"Diego Manutenção"}];
+  const AUD={};let na=1;
+  const bemPor=id=>(E.bens||[]).find(b=>b.id==id)||{};
+  return {
+   async agendaMan(c,u,dias){await w(150);return PG.filter(p=>!dias||p.proxima<=dia(dias)).map(p=>{const b=bemPor(p.bem_id),n=Math.round((Date.parse(p.proxima+"T12:00:00")-Date.parse(dia(0)+"T12:00:00"))/864e5);return {id:p.id,bem_id:p.bem_id,bem:b.nome,patrimonio:b.patrimonio,ambiente:nomeAmbC(b.ambiente_id),unidade:"Hospital A",tipo:p.tipo,ultima:p.ultima,proxima:p.proxima,situacao:n<0?"vencida":n<=30?"vence_30_dias":"em_dia",dias:n,empresa:nomeEmp(p.empresa_id)||null,critico:!!b.critico}}).sort((a,b)=>a.proxima.localeCompare(b.proxima))},
+   async progBem(bem){return PG.filter(p=>p.bem_id==bem)},
+   async realizadosBem(bem){return RS.filter(r=>r.bem_id==bem).sort((a,b)=>b.realizado_em.localeCompare(a.realizado_em))},
+   async addRealizado(d){await w(200);const r={...d,id:"r"+Date.now(),registrado_em:agora(),quem:E.v.nome};RS.unshift(r);
+     if(d.tipo!="corretiva"){const p=PG.find(x=>x.bem_id==d.bem_id&&x.tipo==d.tipo);if(p){p.ultima=d.realizado_em;const x=new Date(d.realizado_em+"T12:00:00");x.setMonth(x.getMonth()+p.periodicidade_meses);p.proxima=x.toISOString().slice(0,10)}}return r},
+   async docsBem(bem){return DOCS.filter(x=>x.bem_id==bem)},
+   async addDoc(d){await w(150);const x={...d,id:"d"+Date.now(),enviado_em:agora(),quem:E.v.nome};DOCS.unshift(x);return x},
+   async arquivo(c,blob,nome){const p="demo/doc/"+Date.now()+Math.random();E.fotos[p]=URL.createObjectURL(blob);return p},
+   async trocas(){return TR},
+   async informarTroca(bem,p,s,m,origem,obs){await w(200);const b=bemPor(bem);if(!p&&!s)throw new Error("Informe o patrimônio ou o nº de série que está na etiqueta.");
+     if((p||"").toUpperCase()==(b.patrimonio||"").toUpperCase()&&(!s||s==b.numero_serie))throw new Error("Os números informados são iguais ao cadastro. Não há troca.");
+     const t={id:"t"+Date.now(),bem_id:bem,ambiente_id:b.ambiente_id,estabelecimento_id:"e1",posicao:b.posicao||null,patrimonio_informado:(p||"").toUpperCase()||null,serie_informada:s||null,modelo_informado:m||null,origem:origem||"app",observacao:obs||null,situacao:"pendente",informado_em:agora(),informado_por:E.v.nome};TR.unshift(t);return t},
+   async decidirTroca(id,ok,motivo){await w(200);const t=TR.find(x=>x.id==id);if(t.situacao!="pendente")throw new Error("Esta troca já foi decidida.");
+     if(!ok){if((motivo||"").trim().length<3)throw new Error("Escreva o motivo para descartar.");Object.assign(t,{situacao:"descartada",decidido_em:agora(),decidido_por:E.v.nome,motivo});return {situacao:"descartada"}}
+     const velho=bemPor(t.bem_id);let novo=(E.bens||[]).find(b=>b.id!=velho.id&&t.patrimonio_informado&&(b.patrimonio||"").toUpperCase()==t.patrimonio_informado),criado=false;
+     if(novo){Object.assign(novo,{ambiente_id:velho.ambiente_id,posicao:velho.posicao,estado:"bom"},t.serie_informada?{numero_serie:t.serie_informada}:{},t.modelo_informado?{modelo:t.modelo_informado}:{})}
+     else{novo={...velho,id:"bn"+Date.now(),patrimonio:t.patrimonio_informado,numero_serie:t.serie_informada,modelo:t.modelo_informado||velho.modelo,estado:"bom"};E.bens.push(novo);DEMO_EXTRA.push(novo);criado=true}
+     PG.filter(p=>p.bem_id==velho.id).forEach(p=>{if(!PG.some(q=>q.bem_id==novo.id&&q.tipo==p.tipo))PG.push({...p,id:"p"+Date.now()+p.tipo,bem_id:novo.id,ultima:null,proxima:dia(0)})});
+     velho.estado="em manutenção";velho.posicao=null;Object.assign(t,{situacao:"confirmada",decidido_em:agora(),decidido_por:E.v.nome,bem_novo_id:novo.id});
+     return {situacao:"confirmada",novo_id:novo.id,novo_patrimonio:novo.patrimonio,velho_patrimonio:velho.patrimonio,cadastrado_agora:criado}},
+   async auditoriasAmb(a){return Object.values(AUD).filter(x=>x.ambiente_id==a).reverse()},
+   async iniAud(a,nome){if((nome||"").trim().length<3)throw new Error("Informe o nome do auditor.");const id="au"+na++;AUD[id]={id,ambiente_id:a,auditor:nome,iniciada_em:agora(),lidos:[]};return id},
+   async lerAud(id,cod){await w(80);const au=AUD[id],v=String(cod||"").trim().toUpperCase();if(!v)throw new Error("Leitura vazia.");
+     const b=(E.bens||[]).find(x=>(x.patrimonio||"").toUpperCase()==v||(x.numero_serie||"").toUpperCase()==v);
+     const r=!b?"sem_cadastro":au.lidos.includes(b.id)?"repetido":b.ambiente_id==au.ambiente_id?"localizado":"outro_ambiente";if(b&&r!="repetido")au.lidos.push(b.id);
+     return {resultado:r,bem:b?b.nome:null,patrimonio:b?b.patrimonio:null,ambiente_cadastro:b?nomeAmbC(b.ambiente_id):null}},
+   async fimAud(id){const au=AUD[id],B=(E.bens||[]).filter(b=>b.ambiente_id==au.ambiente_id),L=E.aud?E.aud.L:[];
+     const nl=B.filter(b=>!au.lidos.includes(b.id)).map(b=>({id:b.id,patrimonio:b.patrimonio,nome:b.nome}));
+     const r={esperados:B.length,localizados:L.filter(x=>x.resultado=="localizado").length,outro_ambiente:L.filter(x=>x.resultado=="outro_ambiente").length,sem_cadastro:L.filter(x=>x.resultado=="sem_cadastro").length,nao_localizados:nl,qtd_nao_localizados:nl.length};
+     au.finalizada_em=agora();au.resumo=r;return r},
+   async salvarResp(id,d){await w(150);const a=(E.amb||[]).find(x=>x.id==id);return {...a,...d}},
+   async gerarTermo(a,n){await w(150);return {numero:7,responsavel_nome:n}}}}
+Object.assign(DB,DEMO?mockMan4():realMan4());
+if(DEMO&&DEMO_COL){const mb=DB.bens,ma2=DB.ambientes,me=DB.empresas;
+  DEMO_EXTRA.push({id:"bx1",ambiente_id:"a2",estabelecimento_id:"e1",nome:"Monitor multiparamétrico",categoria:"Equipamento",marca:"Exemplo",modelo:"MX-12",numero_serie:"MN-7781",patrimonio:"HTA-0001",estado:"bom",posicao:"Leito 3",critico:true,ativo:true,criado_em:"2026-01-10"},
+   {id:"bx2",ambiente_id:"a2",estabelecimento_id:"e1",nome:"Ventilador pulmonar",categoria:"Equipamento",marca:"Exemplo",modelo:"Vent Pro",numero_serie:"VP-10234",patrimonio:"HTA-0002",estado:"bom",posicao:"Leito 5",critico:true,propriedade:"locado",empresa_id:"m1",ativo:true,criado_em:"2026-01-10"},
+   {id:"bx3",ambiente_id:"a2",estabelecimento_id:"e1",nome:"Bomba de infusão",categoria:"Equipamento",marca:"Exemplo",modelo:"BI-3",numero_serie:"BI-5530",patrimonio:"HTA-0003",estado:"bom",posicao:"Leito 3",ativo:true,criado_em:"2026-01-10"},
+   {id:"bx4",ambiente_id:"a1",estabelecimento_id:"e1",nome:"Poltrona de espera",categoria:"Mobiliário",patrimonio:"HTA-0010",estado:"bom",ativo:true,criado_em:"2026-01-10"},
+   {id:"bx5",ambiente_id:"a3",estabelecimento_id:"e1",nome:"Central de oxigênio",categoria:"Equipamento",marca:"Exemplo",numero_serie:"CO-0081",patrimonio:"HTA-0020",estado:"bom",ativo:true,criado_em:"2026-01-10"},
+   {id:"bx6",ambiente_id:"a1",estabelecimento_id:"e1",nome:"Desfibrilador",categoria:"Equipamento",marca:"Exemplo",modelo:"DF-2",numero_serie:"DF-3301",patrimonio:"HTA-0004",estado:"bom",ativo:true,criado_em:"2026-01-10"});
+  DB.bens=async(...x)=>{const L=await mb(...x);return [...L,...DEMO_EXTRA.filter(e=>!L.some(b=>b.id==e.id))]};
+  DB.ambientes=async(...x)=>{const L=await ma2(...x);const R={a1:{responsavel_nome:"Ana Souza",responsavel_funcao:"Coordenadora da recepção",responsavel_contato:"(11) 90000-0000",responsavel_email:"recepcao@exemplo.com.br",substituto_nome:"Marcos Lima"}};return L.map(a=>({...a,...(R[a.id]||{}),qr_token:a.qr_token||"demotk"+a.id.slice(1)}))};
+  DB.empresas=async()=>[{id:"m1",nome:"Locadora Exemplo",tipo:"locadora"},{id:"m2",nome:"Assistência Técnica Exemplo",tipo:"assistencia"}];
+  if(new URLSearchParams(location.search).get("adm")!==null){const mv2=DB.meuVinculo;DB.meuVinculo=async()=>{const v=await mv2();v.perfil="administrador";v.nome="Bruno Administrador";return v}}}
+
+async function carregarMan4(){if(!E.v)return;const c=E.v.contratante_id;const tarefas=[];
+  if(!E.emps&&DB.empresas)tarefas.push(DB.empresas(c).then(r=>E.emps=r).catch(()=>{}));
+  if(souAdm())tarefas.push(DB.trocas(c).then(r=>E.trocas=r).catch(()=>{}));
+  await Promise.all(tarefas)}
+
+/* ---- manutenções programadas ---- */
+async function abrirProg(){E.pf=E.pf||{};irMan("prog");await carregarAgenda()}
+async function carregarAgenda(){E.agCarr=true;render();try{await carregarMan4();const u=souAdm()&&E.v.perfil=="gestor"?null:E.v.estabelecimento_id||null;E.agenda=await DB.agendaMan(E.v.contratante_id,u,E.pf&&E.pf.ano?730:365)}catch(e){E.agenda=[];toast(e.message)}E.agCarr=false;render()}
+function chip4(k,v,t){const on=((E.pf||{})[k]||"")==v;return `<button class="chp" aria-pressed="${on}" onclick="E.pf.${k}='${v}';render()">${t}</button>`}
+function manProg(){const f=E.pf||{},A=(E.agenda||[]).filter(x=>(!f.s||x.situacao==f.s||(f.s=="atencao"&&x.situacao!="em_dia"))&&(!f.t||x.tipo==f.t));
+  const venc=(E.agenda||[]).filter(x=>x.situacao=="vencida").length,v30=(E.agenda||[]).filter(x=>x.situacao=="vence_30_dias").length;
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Manutenções programadas</h1><p class="sub">Preventivas, calibrações, qualificações e inspeções agendadas${E.v.estabelecimento_id&&nomeUni(E.v.estabelecimento_id)?" · "+esc(nomeUni(E.v.estabelecimento_id)):""}. As vencidas aparecem primeiro.</p>
+  ${E.agCarr?`<div class="card"><p class="muted">Carregando a agenda…</p></div>`:`
+  ${venc||v30?`<div class="card" style="border-color:${venc?"#c8372d":"#b7791f"}"><b>${venc?`⚠ ${venc} vencida(s)`:""}${venc&&v30?" · ":""}${v30?`${v30} vence(m) em até 30 dias`:""}</b><p class="muted" style="margin:4px 0 0">Toque no item para registrar o serviço feito e anexar o laudo.</p></div>`:""}
+  <div class="card" style="display:grid;gap:8px"><div class="chps">${chip4("s","","Todas")}${chip4("s","atencao","Precisam de atenção")}${chip4("s","vencida","Vencidas")}${chip4("s","vence_30_dias","Até 30 dias")}</div>
+  <div class="chps">${chip4("t","","Todos os tipos")}${chip4("t","calibracao","Calibrações")}${chip4("t","preventiva","Preventivas")}${chip4("t","inspecao","Inspeções")}${chip4("t","qualificacao","Qualificações")}</div></div>
+  <div class="card"><b>${A.length} ite${A.length==1?"m":"ns"} na agenda</b>${A.map(x=>{const s=SIT_AG[x.situacao]||SIT_AG.em_dia;return `<button class="rowch" style="--pc:${s[1]}" onclick="E.bemSel='${x.bem_id}';E.svP='${x.id}';E.svTipo='${x.tipo}';E.svArq=null;irMan('servico')"><span class="dot"></span><span class="tx"><b>${esc(TIPO_SV[x.tipo]||x.tipo)} · ${esc(x.bem||"")}${x.critico?' <span class="pill" style="background:#fde2df">crítico</span>':""}</b><span>${esc(x.patrimonio||"sem patrimônio")}${x.ambiente?" · "+esc(x.ambiente):""}${x.empresa?" · "+esc(x.empresa):" · equipe interna"}</span><span style="color:${s[1]};font-weight:700">Próxima ${dBR(x.proxima)} · ${diasTxt(x.dias)}</span><span>Última: ${dBR(x.ultima)}</span></span></button>`}).join("")||`<p class="muted">Nada na agenda com esses filtros. A agenda é montada pelo Gestor ou Administrador no painel do computador (Manutenção › Plano de manutenção).</p>`}</div>
+  <button class="btn ghost full" onclick="E.pf.ano=!E.pf.ano;carregarAgenda()">${f.ano?"Mostrar só o próximo ano":"Mostrar os próximos 2 anos"}</button>`}`}
+
+/* ---- registrar serviço feito (com laudo) ---- */
+function manServico(){const b=(E.bens||[]).find(x=>x.id==E.bemSel);if(!b)return `<button class="voltar" onclick="voltar()">← Voltar</button><p class="muted">Bem não encontrado.</p>`;
+  const P=(E.fic&&E.fic.id==b.id?E.fic.prog:[])||[],p=E.svP?((E.agenda||[]).find(x=>x.id==E.svP)||P.find(x=>x.id==E.svP)):null,tp=E.svTipo||(p&&p.tipo)||"preventiva";
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Registrar serviço feito</h1><p class="sub">${esc(b.nome)} · ${esc(b.patrimonio||"sem patrimônio")}${b.posicao?" · "+esc(b.posicao):""}</p>
+  ${p?`<div class="card"><dl class="dl"><dt>Programado</dt><dd>${esc(TIPO_SV[p.tipo]||p.tipo)}</dd><dt>Próxima</dt><dd>${dBR(p.proxima)}</dd><dt>Última</dt><dd>${dBR(p.ultima)}</dd></dl></div>`:""}
+  <div class="card" style="display:grid;gap:4px">
+  <label>Tipo de serviço *<select id="svt" onchange="E.svTipo=this.value">${Object.entries(TIPO_SV).map(([k,t])=>`<option value="${k}" ${tp==k?"selected":""}>${t}</option>`).join("")}</select></label>
+  <label>Data em que foi feito *<input id="svd" type="date" value="${E.svForm?.d||hojeISO()}" max="${hojeISO()}"></label>
+  <label>Resultado *<select id="svr">${Object.entries(RES_SV).map(([k,[t]])=>`<option value="${k}" ${(E.svForm?.r||"aprovado")==k?"selected":""}>${t}</option>`).join("")}</select></label>
+  <label>Quem fez<select id="sve"><option value="">Equipe interna</option>${(E.emps||[]).map(m=>`<option value="${m.id}" ${(E.svForm?.e||"")==m.id?"selected":""}>${esc(m.nome)}</option>`).join("")}</select></label>
+  ${souAdm()?`<label>Custo (R$, opcional)<input id="svc" type="number" min="0" step="0.01" inputmode="decimal" value="${esc(E.svForm?.c||"")}"></label>`:""}
+  <label>Observação<textarea id="svo" rows="2" maxlength="500" placeholder="Ex.: troca do cabo de ECG, sem pendências">${esc(E.svForm?.o||"")}</textarea></label>
+  <div class="fpick ${E.svArq?"ok":""}"><b>Laudo ou certificado <span class="muted" style="font-weight:400">(opcional)</span></b>${E.svArq?`<span class="muted">✔ ${esc(E.svArq.nome)}</span>`:""}
+   <span style="display:flex;gap:6px;flex-wrap:wrap"><label class="btn amb sm" style="margin:0">📷 Foto do laudo<input type="file" accept="image/*" capture="environment" hidden onchange="pegarArqSv(this)"></label><label class="btn ghost sm" style="margin:0">📄 PDF ou imagem<input type="file" accept="application/pdf,image/*" hidden onchange="pegarArqSv(this)"></label></span></div>
+  <p class="muted" style="font-size:.8rem;margin:0">O registro não pode ser alterado nem apagado depois de salvo. A próxima data é recalculada sozinha pela periodicidade.</p>
+  <button class="btn amb full" onclick="salvarServico()">Salvar serviço</button></div>`}
+function guardarSv(){const g=id=>{const el=$("#"+id);return el?el.value:""};E.svTipo=g("svt")||E.svTipo;E.svForm={d:g("svd"),r:g("svr"),e:g("sve"),c:g("svc"),o:g("svo")}}
+async function pegarArqSv(inp){const f=inp.files[0];if(!f)return;guardarSv();if(f.size>15e6){toast("Arquivo muito grande (máximo 15 MB).");return}
+  try{const blob=f.type.startsWith("image/")?await comprimir(f):f;E.svArq={blob,nome:f.type.startsWith("image/")?(f.name||"laudo").replace(/\.[^.]+$/,"")+".jpg":f.name};render()}catch(e){toast("Não foi possível ler o arquivo.")}}
+async function salvarServico(){guardarSv();const b=(E.bens||[]).find(x=>x.id==E.bemSel),f=E.svForm;if(!f.d){toast("Informe a data do serviço.");return}if(f.d>hojeISO()){toast("A data não pode ser no futuro.");return}
+  const p=E.svP?((E.agenda||[]).find(x=>x.id==E.svP)||((E.fic&&E.fic.prog)||[]).find(x=>x.id==E.svP)):null;
+  try{let laudo=null;if(E.svArq)laudo=await DB.arquivo(E.v.contratante_id,E.svArq.blob,E.svArq.nome);
+    const r=await DB.addRealizado({contratante_id:E.v.contratante_id,estabelecimento_id:b.estabelecimento_id||E.v.estabelecimento_id||null,bem_id:b.id,programado_id:p&&p.tipo==E.svTipo?p.id:null,tipo:E.svTipo,realizado_em:f.d,resultado:f.r,empresa_id:f.e||null,custo:f.c===""||f.c==null?null:Number(f.c),laudo_path:laudo,observacao:(f.o||"").trim()||null});
+    if(laudo)try{await DB.addDoc({contratante_id:E.v.contratante_id,estabelecimento_id:b.estabelecimento_id||E.v.estabelecimento_id||null,bem_id:b.id,servico_id:r.id,empresa_id:f.e||null,tipo:E.svTipo=="calibracao"?"laudo":"laudo",nome:`Laudo · ${TIPO_SV[E.svTipo]} de ${dBR(f.d)}`,path:laudo})}catch(e){}
+    const rep=f.r=="reprovado";E.svArq=null;E.svForm=null;E.svP=null;E.fic=null;E.agenda=null;toast(rep?"Serviço salvo como reprovado. Abra um chamado para o conserto.":"Serviço registrado na ficha do bem.");
+    if(rep){E.ncA=b.ambiente_id;E.ncB=b.id;E.ncTxt=`${TIPO_SV[E.svTipo]} reprovada em ${dBR(f.d)}. `;E.mt="novoch"}else{E.mt="bem"}render();scrollTo(0,0)}catch(e){toast(e.message)}}
+
+/* ---- ficha de vida do bem ---- */
+async function carregarFicha(id){E.fic={id,carregando:true,prog:[],real:[],docs:[]};try{await carregarMan4();const [prog,real,docs]=await Promise.all([DB.progBem(id),DB.realizadosBem(id),souAdm()?DB.docsBem(id):Promise.resolve([])]);if(E.fic&&E.fic.id==id){E.fic={id,prog,real,docs};if(E.mt=="bem"||E.mt=="servico")render()}}catch(e){if(E.fic)E.fic.carregando=false}}
+function stProg(p){const n=p.proxima?Math.round((Date.parse(p.proxima+"T12:00:00")-Date.parse(hojeISO()+"T12:00:00"))/864e5):null;if(!p.ultima&&p.proxima_manual)return ["Sem laudo · conferir","#c8372d",n];return n==null?["Sem data","#7a8794",n]:n<0?[`Vencida há ${-n} dia(s)`,"#c8372d",n]:n<=30?[`Vence em ${n} dia(s)`,"#b7791f",n]:["Em dia","#1f9a55",n]}
+function fichaHTML(b){const F=E.fic&&E.fic.id==b.id?E.fic:null;if(!F){setTimeout(()=>carregarFicha(b.id),0);return `<div class="card"><p class="muted">Carregando a ficha de vida…</p></div>`}
+  if(F.carregando)return `<div class="card"><p class="muted">Carregando a ficha de vida…</p></div>`;
+  const tr=(E.trocas||[]).filter(t=>t.bem_id==b.id&&t.situacao=="pendente");
+  return `<div class="card"><b>Calibração e manutenção preventiva</b>${F.prog.length?F.prog.map(p=>{const s=stProg(p);return `<button class="rowch" style="--pc:${s[1]}" onclick="E.svP='${p.id}';E.svTipo='${p.tipo}';E.svArq=null;E.svForm=null;irMan('servico')"><span class="dot"></span><span class="tx"><b>${esc(TIPO_SV[p.tipo]||p.tipo)} · a cada ${p.periodicidade_meses} ${p.periodicidade_meses==1?"mês":"meses"}</b><span>Última ${dBR(p.ultima)} · próxima ${dBR(p.proxima)}${p.empresa_id&&nomeEmp(p.empresa_id)?" · "+esc(nomeEmp(p.empresa_id)):""}</span><span style="color:${s[1]};font-weight:700">${s[0]}</span></span></button>`}).join(""):`<p class="muted">Este bem não tem calibração ou preventiva agendada. ${souAdm()?"Monte a agenda no painel do computador (Manutenção › Plano de manutenção).":""}</p>`}
+   <button class="btn amb full" onclick="E.svP=null;E.svTipo=null;E.svArq=null;E.svForm=null;irMan('servico')">+ Registrar serviço feito</button></div>
+  <div class="card"><b>Histórico de serviços (${F.real.length})</b>${F.real.map(r=>{const s=RES_SV[r.resultado]||RES_SV.aprovado;return `<div class="rowch" style="--pc:${s[1]};cursor:default"><span class="dot"></span><span class="tx"><b>${esc(TIPO_SV[r.tipo]||r.tipo)} · ${dBR(r.realizado_em)}</b><span>${esc(s[0])}${r.empresa_id&&nomeEmp(r.empresa_id)?" · "+esc(nomeEmp(r.empresa_id)):" · equipe interna"}${r.quem?" · registrado por "+esc(r.quem):""}</span>${r.observacao?`<span>${esc(r.observacao)}</span>`:""}${r.laudo_path?(souAdm()?`<span><button class="btn ghost sm" style="margin:4px 0 0" onclick="abrirArq('${esc(r.laudo_path)}')">📎 Ver laudo</button></span>`:`<span>📎 laudo anexado</span>`):""}</span></div>`}).join("")||`<p class="muted">Nenhum serviço registrado ainda.</p>`}</div>
+  <div class="card"><b>Documentos e anexos${souAdm()?` (${F.docs.length})`:""}</b>${souAdm()?(F.docs.map(d=>{const venc=d.validade&&d.validade<hojeISO();return `<div class="rowch" style="--pc:${venc?"#c8372d":"#2f6fb5"};cursor:default"><span class="dot"></span><span class="tx"><b>${esc(d.nome)}</b><span>${esc(NOME_DOC[d.tipo]||d.tipo)} · ${dBR(d.enviado_em)}${d.quem?" · "+esc(d.quem):""}${d.validade?` · válido até ${dBR(d.validade)}${venc?" (vencido)":""}`:""}</span><span><button class="btn ghost sm" style="margin:4px 0 0" onclick="abrirArq('${esc(d.path)}')">Abrir</button></span></span></div>`}).join("")||`<p class="muted">Nenhum documento anexado.</p>`)+`<button class="btn ghost full" onclick="E.dcArq=null;irMan('anexo')">📎 Novo anexo</button>`:`<p class="muted">Laudos, certificados e manuais abrem só para o Gestor e o Administrador. Ao registrar um serviço você pode anexar o laudo.</p>`}</div>
+  <div class="card"><b>Etiqueta do equipamento</b><p class="muted" style="margin:4px 0 8px">O patrimônio ou o nº de série na etiqueta é diferente deste cadastro? Avise o administrador para conferir a troca.</p>${tr.length?`<div class="msg info">Troca informada em ${hm(tr[0].informado_em)} · aguardando o administrador.</div>`:""}<button class="btn ghost full" onclick="E.trForm=null;irMan('troca')">⇄ Os números da etiqueta são diferentes</button></div>`}
+async function abrirArq(p){try{const u=await DB.urlFoto(p);if(!u){toast("Arquivo indisponível.");return}window.open(u,"_blank","noopener")}catch(e){toast(e.message)}}
+
+/* ---- novo anexo (Gestor/Administrador) ---- */
+function manAnexo(){const b=(E.bens||[]).find(x=>x.id==E.bemSel);if(!b)return `<button class="voltar" onclick="voltar()">← Voltar</button>`;
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Novo anexo</h1><p class="sub">${esc(b.nome)} · ${esc(b.patrimonio||"sem patrimônio")}${b.numero_serie?" · série "+esc(b.numero_serie):""}</p>
+  <div class="card" style="display:grid;gap:4px"><label>Tipo de documento<select id="dct">${TIPO_DOC.map(([k,t],i)=>`<option value="${i}" ${(E.dcF?.t||"0")==String(i)?"selected":""}>${t}</option>`).join("")}</select></label>
+  <label>Válido até (opcional)<input id="dcv" type="date" value="${esc(E.dcF?.v||"")}"></label>
+  <div class="fpick ${E.dcArq?"ok":""}"><b>Arquivo *</b>${E.dcArq?`<span class="muted">✔ ${esc(E.dcArq.nome)}</span>`:""}<span style="display:flex;gap:6px;flex-wrap:wrap"><label class="btn amb sm" style="margin:0">📷 Tirar foto<input type="file" accept="image/*" capture="environment" hidden onchange="pegarArqDoc(this)"></label><label class="btn ghost sm" style="margin:0">📄 PDF ou imagem<input type="file" accept="application/pdf,image/*" hidden onchange="pegarArqDoc(this)"></label></span></div>
+  <p class="muted" style="font-size:.8rem;margin:0">Cada anexo fica com data e nome de quem anexou e não pode ser apagado. Fotos são comprimidas para economizar espaço.</p>
+  <button class="btn amb full" onclick="salvarAnexo()">Salvar anexo</button></div>`}
+async function pegarArqDoc(inp){const f=inp.files[0];if(!f)return;E.dcF={t:$("#dct").value,v:$("#dcv").value};if(f.size>15e6){toast("Arquivo muito grande (máximo 15 MB).");return}
+  try{const blob=f.type.startsWith("image/")?await comprimir(f):f;E.dcArq={blob,nome:f.type.startsWith("image/")?(f.name||"foto").replace(/\.[^.]+$/,"")+".jpg":f.name};render()}catch(e){toast("Não foi possível ler o arquivo.")}}
+async function salvarAnexo(){const b=(E.bens||[]).find(x=>x.id==E.bemSel);E.dcF={t:$("#dct").value,v:$("#dcv").value};if(!E.dcArq){toast("Escolha o arquivo ou tire a foto.");return}
+  const [tipo,rot]=TIPO_DOC[Number(E.dcF.t)]||TIPO_DOC[7];
+  try{const p=await DB.arquivo(E.v.contratante_id,E.dcArq.blob,E.dcArq.nome);await DB.addDoc({contratante_id:E.v.contratante_id,estabelecimento_id:b.estabelecimento_id||E.v.estabelecimento_id||null,bem_id:b.id,tipo,nome:rot,path:p,validade:E.dcF.v||null});
+    E.dcArq=null;E.dcF=null;E.fic=null;toast(`${rot} anexado.`);E.mt="bem";render();scrollTo(0,0)}catch(e){toast(e.message)}}
+
+/* ---- informar troca (qualquer pessoa da equipe) ---- */
+function manTroca(){const b=(E.bens||[]).find(x=>x.id==E.bemSel);if(!b)return `<button class="voltar" onclick="voltar()">← Voltar</button>`;const f=E.trForm||{};
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Números da etiqueta diferentes</h1><p class="sub">${esc(b.nome)}${b.posicao?" · "+esc(b.posicao):""} · ${esc(nomeAmbC(b.ambiente_id))}</p>
+  <div class="card"><dl class="dl"><dt>No cadastro</dt><dd>Patr. ${esc(b.patrimonio||"—")}${b.numero_serie?" · série "+esc(b.numero_serie):""}${b.modelo?" · "+esc(b.modelo):""}</dd></dl></div>
+  <div class="card" style="display:grid;gap:4px"><b>O que está na etiqueta do equipamento</b>
+  <label>Nº de patrimônio na etiqueta<input id="trp" autocomplete="off" value="${esc(f.p||"")}" placeholder="Ex.: HTA-0042"></label>
+  <label>Nº de série na etiqueta<input id="trs" autocomplete="off" value="${esc(f.s||"")}" placeholder="Ex.: VP-55021"></label>
+  <label>Modelo (se for diferente)<input id="trm" autocomplete="off" value="${esc(f.m||"")}"></label>
+  <label>Observação (opcional)<textarea id="tro" rows="2" maxlength="300" placeholder="Ex.: equipamento trocado pela locadora ontem">${esc(f.o||"")}</textarea></label>
+  <p class="muted" style="font-size:.8rem;margin:0">O administrador recebe o aviso. Ao confirmar, o equipamento novo passa para esta posição e o que saiu fica “em manutenção”. A calibração acompanha cada equipamento.</p>
+  <button class="btn amb full" onclick="enviarTroca()">Enviar ao administrador</button></div>`}
+async function enviarTroca(){const g=id=>($("#"+id).value||"").trim();E.trForm={p:g("trp"),s:g("trs"),m:g("trm"),o:g("tro")};const f=E.trForm;if(!f.p&&!f.s){toast("Informe o patrimônio ou o nº de série da etiqueta.");return}
+  try{const t=await DB.informarTroca(E.bemSel,f.p,f.s,f.m,"Ficha do bem no app",f.o);E.trocas=[t,...(E.trocas||[]).filter(x=>x.id!=t.id)];E.trForm=null;toast(`Enviado ao administrador para confirmar a troca${f.p?` (patr. ${f.p.toUpperCase()})`:""}.`);E.mt="bem";render();scrollTo(0,0)}catch(e){toast(e.message)}}
+
+/* ---- trocas de equipamento (Gestor/Administrador) ---- */
+async function abrirTrocas(){irMan("trocas");try{E.trocas=await DB.trocas(E.v.contratante_id)}catch(e){}render()}
+function manTrocas(){const T=(E.trocas||[]).filter(t=>souAdm()&&(E.v.perfil=="gestor"||!E.v.estabelecimento_id||t.estabelecimento_id==E.v.estabelecimento_id));const P=T.filter(t=>t.situacao=="pendente"),D=T.filter(t=>t.situacao!="pendente").slice(0,30);
+  const bn=id=>(E.bens||[]).find(b=>b.id==id)||{};
+  const card=t=>{const b=bn(t.bem_id);return `<div class="card"><b>${esc(b.nome||"Equipamento")}${t.posicao?" · "+esc(t.posicao):""}</b><p class="muted" style="margin:2px 0 6px">${esc(nomeAmbC(t.ambiente_id)||"")}</p>
+   <dl class="dl"><dt>No cadastro</dt><dd>Patr. ${esc(b.patrimonio||"—")}${b.numero_serie?" · série "+esc(b.numero_serie):""}</dd><dt>Na etiqueta</dt><dd>${t.patrimonio_informado?`Patr. <b>${esc(t.patrimonio_informado)}</b>`:""}${t.serie_informada?` · série ${esc(t.serie_informada)}`:""}${t.modelo_informado?` · ${esc(t.modelo_informado)}`:""}</dd><dt>Informado</dt><dd>${esc(t.informado_por||"")} · ${hm(t.informado_em)}${t.origem?" · "+esc(t.origem):""}</dd>${t.observacao?`<dt>Obs.</dt><dd>${esc(t.observacao)}</dd>`:""}${t.situacao!="pendente"?`<dt>Decisão</dt><dd>${t.situacao=="confirmada"?"Troca confirmada":"Descartada"} por ${esc(t.decidido_por||"")} · ${hm(t.decidido_em)}${t.motivo?" · "+esc(t.motivo):""}</dd>`:""}</dl>
+   ${t.situacao=="pendente"?`<div style="display:grid;gap:6px;margin-top:8px"><button class="btn amb" onclick="decidirTrocaC('${t.id}',true)">✔ Confirmar troca</button><label style="margin:0">Motivo para descartar<input id="trm_${t.id}" placeholder="Ex.: leitura errada da etiqueta"></label><button class="btn ghost" onclick="decidirTrocaC('${t.id}',false)">Descartar</button></div>`:""}</div>`};
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Trocas de equipamento</h1><p class="sub">Quando alguém informa que os números na etiqueta são diferentes do cadastro, o aviso chega aqui. Ao confirmar, o equipamento novo passa para a posição e o que saiu fica “em manutenção”. A calibração acompanha cada equipamento.</p>
+  <h2 style="font-size:1rem">Aguardando decisão (${P.length})</h2>${P.map(card).join("")||`<div class="card"><p class="muted">Nenhuma troca pendente. Para informar uma, abra a ficha do equipamento e toque em “Os números da etiqueta são diferentes”.</p></div>`}
+  ${D.length?`<h2 style="font-size:1rem">Já decididas</h2>${D.map(card).join("")}`:""}`}
+async function decidirTrocaC(id,ok){const mo=ok?"":(($("#trm_"+id)||{}).value||"").trim();if(!ok&&mo.length<3){toast("Escreva o motivo para descartar.");return}
+  if(ok&&!confirm("Confirmar a troca? O equipamento novo passa para a posição e o antigo fica em manutenção."))return;
+  try{const r=await DB.decidirTroca(id,ok,mo);toast(ok?`Troca confirmada${r.novo_patrimonio?`: patr. ${r.novo_patrimonio} na posição`:""}${r.velho_patrimonio?`; patr. ${r.velho_patrimonio} em manutenção`:""}.${r.cadastrado_agora?" O equipamento novo foi cadastrado.":""}`:"Troca descartada.");
+    const c=E.v.contratante_id;[E.trocas,E.bens]=await Promise.all([DB.trocas(c),DB.bens(c).catch(()=>E.bens)]);E.fic=null;render()}catch(e){toast(e.message)}}
+
+/* ---- auditoria do ambiente pela câmera (Gestor/Administrador) ---- */
+function abrirAud(amb){E.aud=null;E.audRes=null;E.audAmb=amb||E.audAmb||"";irMan("aud")}
+function manAud(){if(!temAud())return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Auditoria do ambiente</h1><div class="msg info">${!temF("auditoria")?"A auditoria está nos planos pagos.":"A auditoria é feita pelo Gestor ou pelo Administrador da unidade. Se encontrar um bem fora do lugar, abra um chamado ou avise o administrador."}</div>`;
+  if(E.audRes)return audResumoHTML();
+  if(!E.aud){const A=(E.amb||[]).filter(a=>E.v.perfil=="gestor"||!E.v.estabelecimento_id||a.estabelecimento_id==E.v.estabelecimento_id);
+    return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Auditoria do ambiente</h1><p class="sub">Confira os bens com a câmera: leia a etiqueta de patrimônio (QR ou código de barras) de cada item. No fim, o sistema mostra o que foi localizado, o que está em outro ambiente, o que não tem cadastro e o que não foi encontrado.</p>
+    <div class="card" style="display:grid;gap:4px"><label>Ambiente *<select id="audA"><option value="">Escolha…</option>${A.map(a=>`<option value="${a.id}" ${E.audAmb==a.id?"selected":""}>${esc(a.nome)}${nomeUni(a.estabelecimento_id)?" · "+esc(nomeUni(a.estabelecimento_id)):""} (${(E.bens||[]).filter(b=>b.ambiente_id==a.id).length} bens)</option>`).join("")}</select></label>
+    <label>Nome do auditor *<input id="audN" value="${esc(E.v.nome||"")}" maxlength="80"></label>
+    <button class="btn amb full" onclick="iniciarAudC()">Iniciar auditoria</button></div>`}
+  const a=(E.amb||[]).find(x=>x.id==E.aud.amb)||{};
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Auditoria · ${esc(a.nome||"")}</h1><p class="sub">Auditor: ${esc(E.aud.nome)} · iniciada ${hm(E.aud.ini)}</p>
+  <div class="card" id="audprog">${audProgHTML()}</div>
+  <div class="card" style="display:grid;gap:10px">${E.camOn?`<video id="camv" playsinline muted style="width:100%;border-radius:12px;background:#000;aspect-ratio:4/3;object-fit:cover"></video><p class="muted" style="margin:0;font-size:.82rem">Aponte para cada etiqueta. A câmera continua aberta: leia um item atrás do outro.</p><button class="btn ghost" onclick="pararCam();render()">Fechar câmera</button>`:`<button class="btn amb full" onclick="abrirCam()">📷 Ler com a câmera</button>`}
+  ${E.camErro?`<div class="msg err">${esc(E.camErro)}</div>`:""}
+  <label style="margin:0">Ou digite o patrimônio / nº de série (ou use o leitor Bluetooth)<input id="audman" autocomplete="off" placeholder="Ex.: HTA-0001" onkeydown="if(event.key=='Enter'){lerAudC(this.value);this.value=''}"></label><button class="btn ghost" onclick="lerAudC($('#audman').value);$('#audman').value=''">Registrar leitura</button></div>
+  <div class="card"><b>Leituras</b><div id="audres">${audListaHTML()}</div></div>
+  <button class="btn amb full" onclick="finalizarAudC()">Finalizar auditoria</button>`}
+function audProgHTML(){const L=E.aud.L,B=(E.bens||[]).filter(b=>b.ambiente_id==E.aud.amb),loc=L.filter(x=>x.resultado=="localizado").length,pc=B.length?Math.round(loc*100/B.length):0;
+  return `<b>${loc} de ${B.length} bens localizados</b><div style="height:10px;background:var(--soft);border-radius:99px;margin:8px 0;overflow:hidden"><div style="height:100%;width:${pc}%;background:#1f9a55"></div></div><span class="muted" style="font-size:.84rem">${L.filter(x=>x.resultado=="outro_ambiente").length} de outro ambiente · ${L.filter(x=>x.resultado=="sem_cadastro").length} sem cadastro · ${L.length} leitura(s)</span>`}
+function audListaHTML(){return E.aud.L.map(x=>{const s=RES_AUD[x.resultado]||RES_AUD.sem_cadastro;return `<div class="rowch" style="--pc:${s[1]};cursor:default"><span class="dot"></span><span class="tx"><b>${esc(x.patrimonio||x.codigo)}${x.bem?" · "+esc(x.bem):""}</b><span style="color:${s[1]};font-weight:700">${s[0]}${x.resultado=="outro_ambiente"&&x.ambiente_cadastro?": "+esc(x.ambiente_cadastro):""}</span></span></div>`}).join("")||`<p class="muted">Nenhuma leitura ainda.</p>`}
+async function iniciarAudC(){const a=$("#audA").value,n=($("#audN").value||"").trim();if(!a){toast("Escolha o ambiente.");return}if(n.length<3){toast("Informe o nome do auditor.");return}
+  try{const id=await DB.iniAud(a,n);E.aud={id,amb:a,nome:n,ini:new Date().toISOString(),L:[]};E.audAmb=a;E.camErro=null;render();scrollTo(0,0)}catch(e){toast(e.message)}}
+let audFila=Promise.resolve();
+function lerAudC(txt){txt=String(txt||"").trim();if(!txt||!E.aud)return;
+  if(/[?&]t=[A-Za-z0-9_-]+/.test(txt)){toast("Este é o QR do ambiente. Leia a etiqueta de patrimônio do bem.");return}
+  const m=txt.match(/[?&](?:p|patrimonio|b)=([^&#]+)/i);if(m)txt=decodeURIComponent(m[1]);
+  audFila=audFila.then(async()=>{try{const r=await DB.lerAud(E.aud.id,txt);E.aud.L.unshift({codigo:txt.toUpperCase(),...r});if(navigator.vibrate)navigator.vibrate(r.resultado=="localizado"?60:[60,60,60]);
+    const el=$("#audres"),pg=$("#audprog");if(el&&pg){el.innerHTML=audListaHTML();pg.innerHTML=audProgHTML()}else render();
+    toast(`${r.patrimonio||txt.toUpperCase()}: ${(RES_AUD[r.resultado]||[""])[0]}`)}catch(e){toast(e.message)}})}
+async function finalizarAudC(){if(!confirm("Finalizar a auditoria? Depois de finalizada, não dá para incluir leituras."))return;pararCam();
+  try{const r=await DB.fimAud(E.aud.id);E.audRes={...r,amb:E.aud.amb,nome:E.aud.nome};E.aud=null;render();scrollTo(0,0)}catch(e){toast(e.message)}}
+function audResumoHTML(){const r=E.audRes,a=(E.amb||[]).find(x=>x.id==r.amb)||{},NL=r.nao_localizados||[];
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Auditoria finalizada</h1><p class="sub">${esc(a.nome||"")} · auditor ${esc(r.nome||"")}</p>
+  <div class="card"><dl class="dl"><dt>Bens esperados</dt><dd><b>${r.esperados}</b></dd><dt>Localizados</dt><dd style="color:#1f9a55"><b>${r.localizados}</b></dd><dt>De outro ambiente</dt><dd style="color:#b7791f"><b>${r.outro_ambiente}</b></dd><dt>Sem cadastro</dt><dd style="color:#c8372d"><b>${r.sem_cadastro}</b></dd><dt>Não localizados</dt><dd style="color:#c8372d"><b>${r.qtd_nao_localizados??NL.length}</b></dd></dl></div>
+  ${NL.length?`<div class="card"><b>Não localizados (${NL.length})</b>${NL.map(b=>`<button class="rowch" style="--pc:#c8372d" onclick="E.bemSel='${b.id}';irMan('bem')"><span class="dot"></span><span class="tx"><b>${esc(b.nome)}</b><span>${esc(b.patrimonio||"sem patrimônio")}</span></span></button>`).join("")}</div>`:`<div class="msg info">Todos os bens do ambiente foram localizados.</div>`}
+  <p class="muted" style="font-size:.84rem">O resultado fica guardado e aparece no relatório de auditoria do painel do computador.</p>
+  <button class="btn amb full" onclick="E.audRes=null;E.aud=null;render()">Nova auditoria</button>`}
+
+/* ---- responsável pelo ambiente ---- */
+function respAmbHTML(a){const tem=a.responsavel_nome;
+  return `<div class="card"><b>Responsável pelo ambiente</b>${tem?`<dl class="dl" style="margin-top:6px"><dt>Nome</dt><dd>${esc(a.responsavel_nome)}${a.responsavel_funcao?" · "+esc(a.responsavel_funcao):""}</dd>${a.responsavel_contato?`<dt>WhatsApp</dt><dd><a href="https://wa.me/55${esc(String(a.responsavel_contato).replace(/\D/g,"").replace(/^55/,""))}" target="_blank" rel="noopener">${esc(a.responsavel_contato)}</a></dd>`:""}${a.responsavel_email?`<dt>E-mail</dt><dd><a href="mailto:${esc(a.responsavel_email)}">${esc(a.responsavel_email)}</a></dd>`:""}${a.substituto_nome?`<dt>Substituto</dt><dd>${esc(a.substituto_nome)}</dd>`:""}</dl>`:`<p class="muted" style="margin:4px 0">Sem responsável definido. Quem confirma os serviços é quem abriu o chamado ou o administrador.</p>`}
+  ${souAdm()?`<button class="btn ghost full" onclick="E.raF=null;irMan('resp')">${tem?"Editar responsável":"Definir responsável"}</button>`:""}</div>`}
+function manResp(){const a=(E.amb||[]).find(x=>x.id==E.ambSel);if(!a||!souAdm())return `<button class="voltar" onclick="voltar()">← Voltar</button><p class="muted">Só o Gestor ou o Administrador define o responsável.</p>`;const f=E.raF||{};const v=(k,c)=>esc(f[k]??a[c]??"");
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Responsável pelo ambiente</h1><p class="sub">${esc(a.nome)}</p><div class="card" style="display:grid;gap:4px">
+  <label>Nome *<input id="ran" value="${v("n","responsavel_nome")}" maxlength="80"></label><label>Função<input id="raf" value="${v("f","responsavel_funcao")}" maxlength="80" placeholder="Ex.: Coordenadora de Enfermagem"></label>
+  <label>WhatsApp<input id="raw" type="tel" value="${v("w","responsavel_contato")}" maxlength="30" placeholder="(11) 90000-0000"></label><label>E-mail corporativo<input id="rae" type="email" value="${v("e","responsavel_email")}" maxlength="120"></label>
+  <label>Substituto (folgas e férias)<input id="ras" value="${v("s","substituto_nome")}" maxlength="80"></label>
+  ${temF("termos")?`<label class="chk" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="rat" ${f.t===false?"":"checked"}> Gerar o termo de responsabilidade com a lista de bens do ambiente</label>`:""}
+  <button class="btn amb full" onclick="salvarRespC()">Salvar responsável</button></div>
+  <div class="card"><b>Como funciona a confirmação</b><p class="muted">Quando um serviço é concluído, o responsável recebe as fotos de antes e depois e responde “confirmo” ou “não ficou bom”. Sem resposta, o sistema lembra depois de 24 horas. Depois de 72 horas, o chamado fecha como “concluído sem confirmação”, e isso aparece no relatório.</p>
+  <p class="muted">Se o ambiente não tiver responsável, confirma quem abriu o chamado (se deixou contato); se não deixou, o administrador confere pela foto do depois.</p>
+  <p class="muted">Ao definir o responsável, o sistema gera o termo de responsabilidade com a lista de bens do ambiente. A assinatura é feita pelo link do termo no painel do computador.</p></div>`}
+async function salvarRespC(){const g=id=>(($("#"+id)||{}).value||"").trim();E.raF={n:g("ran"),f:g("raf"),w:g("raw"),e:g("rae"),s:g("ras"),t:$("#rat")?$("#rat").checked:false};const f=E.raF;
+  if(f.n.length<3){toast("Informe o nome do responsável.");return}if(f.e&&!/^\S+@\S+\.\S+$/.test(f.e)){toast("Confira o e-mail.");return}
+  try{const r=await DB.salvarResp(E.ambSel,{responsavel_nome:f.n,responsavel_funcao:f.f||null,responsavel_contato:f.w||null,responsavel_email:f.e||null,substituto_nome:f.s||null});
+    E.amb=(E.amb||[]).map(a=>a.id==E.ambSel?{...a,...r}:a);let msg="Responsável salvo.";
+    if(f.t&&temF("termos")){try{const t=await DB.gerarTermo(E.ambSel,f.n,f.f,f.w||f.e);msg=`Responsável salvo. Termo nº ${t.numero} gerado para assinatura (painel do computador › Termos).`}catch(e){msg="Responsável salvo, mas o termo não foi gerado: "+e.message}}
+    E.raF=null;toast(msg);E.mt="amb";render();scrollTo(0,0)}catch(e){toast(e.message)}}
+
+/* ---- etiqueta do QR do ambiente ---- */
+function carregarQRGen(){if(window.qrcode)return Promise.resolve();return new Promise((ok,er)=>{const s=document.createElement("script");s.src=QRGEN.src;s.integrity=QRGEN.sri;s.crossOrigin="anonymous";s.onload=ok;s.onerror=()=>er(new Error("Não foi possível gerar o QR agora. Confira a internet."));document.head.appendChild(s)})}
+async function abrirEtqAmb(){E.etqPos=E.etqPos||"topo";irMan("etqamb");try{await carregarQRGen();render()}catch(e){toast(e.message)}}
+function qrAmbSVG(a,meio){if(!window.qrcode||!a.qr_token)return "";const q=qrcode(0,meio?"H":"M");q.addData(linkQRAmb(a));q.make();return q.createSvgTag({cellSize:4,margin:2,scalable:true})}
+function etqAmbHTML(a){const L=E.logoUrl,top=E.etqPos!="meio"&&L,mid=E.etqPos!="topo"&&L;
+  return `<div class="etqamb" style="width:7.5cm;max-width:100%;margin:0 auto;border:3px solid var(--amb,#e8b33a);border-radius:14px;padding:10px;background:#fff;color:#111;text-align:center;font-family:Arial,sans-serif">
+   ${top?`<img src="${esc(L)}" alt="Logo" style="max-height:1.3cm;max-width:70%;object-fit:contain;display:block;margin:0 auto 6px">`:""}
+   <div style="position:relative;width:100%;aspect-ratio:1">${qrAmbSVG(a,mid)}${mid?`<img src="${esc(L)}" alt="" style="position:absolute;left:50%;top:50%;width:18%;height:18%;transform:translate(-50%,-50%);object-fit:contain;background:#fff;padding:2px;border-radius:6px">`:""}</div>
+   <div style="background:var(--amb,#e8b33a);color:#111;font-weight:700;border-radius:8px;padding:6px;margin-top:6px;font-size:15px">${esc(a.nome)}</div>
+   <div style="font-size:11px;margin-top:4px">${esc(nomeUni(a.estabelecimento_id)||E.v.contratantes.nome||"")} · Aponte a câmera para abrir um chamado</div></div>`}
+function manEtqAmb(){const a=(E.amb||[]).find(x=>x.id==E.ambSel);if(!a)return `<button class="voltar" onclick="voltar()">← Voltar</button>`;
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Etiqueta do QR</h1><p class="sub">${esc(a.nome)} · a logo da empresa vem do design cadastrado no painel.</p>
+  ${!a.qr_token?`<div class="msg err">Este ambiente ainda não tem QR Code. Gere pelo painel do computador (Ambientes › QR Code).</div>`:!window.qrcode?`<div class="card"><p class="muted">Gerando o QR…</p></div>`:`
+  ${E.logoUrl?`<div class="card"><b>Posição da logo</b><div class="chps" style="margin-top:6px">${[["topo","Em cima"],["meio","No meio do QR"],["ambos","As duas"]].map(([k,t])=>`<button class="chp" aria-pressed="${E.etqPos==k}" onclick="E.etqPos='${k}';render()">${t}</button>`).join("")}</div></div>`:`<div class="msg info">Sem logo cadastrada: a etiqueta sai só com o QR e o nome do ambiente.</div>`}
+  <div class="card" id="etqprint">${etqAmbHTML(a)}</div>
+  <p class="muted" style="font-size:.82rem">Com a logo no meio, o QR usa correção de erros nível H e a logo cobre menos de 10% do código, para continuar lendo. O código fica escuro sobre fundo branco; a cor da empresa vai na moldura e na faixa do nome.</p>
+  <div style="display:grid;gap:8px"><button class="btn amb full" onclick="imprimirEtqAmb()">🖨 Imprimir etiqueta</button><button class="btn ghost full" onclick="copiarLinkAmb()">Copiar o link do QR</button></div>`}`}
+function imprimirEtqAmb(){const el=$("#etqprint");if(!el)return;const w=window.open("","_blank");if(!w){toast("Libere as janelas pop-up para imprimir.");return}
+  const cor=getComputedStyle(document.documentElement).getPropertyValue("--amb")||"#e8b33a";
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>Etiqueta do QR</title><style>:root{--amb:${cor}}body{margin:0;display:grid;place-items:center;min-height:95vh;font-family:Arial}svg{width:100%;height:100%;display:block}@page{margin:10mm}</style>${el.innerHTML}`);w.document.close();w.focus();setTimeout(()=>w.print(),400);
+  try{DB.registrar&&DB.registrar(E.v.contratante_id,"imprimiu QR Code",((E.amb||[]).find(x=>x.id==E.ambSel)||{}).nome||"")}catch(e){}}
+async function copiarLinkAmb(){const a=(E.amb||[]).find(x=>x.id==E.ambSel);try{await navigator.clipboard.writeText(linkQRAmb(a));toast("Link copiado.")}catch(e){toast(linkQRAmb(a))}}
 
 iniciar();
 
