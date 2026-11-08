@@ -86,7 +86,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.4"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.5"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -199,11 +199,11 @@ function telaPainel(){
   const ab=E.tks.filter(t=>t.situacao!="resolvido").length;
   const T={visao:abaVisao,empresas:abaEmpresas,saude:abaSaude,fin:abaFin,uso:abaUso,funil:abaFunil,atend:abaAtend,infra:abaInfra,ind:abaInd,cadastrar:abaCadastrar,acessos:abaAcessos,planos:abaPlanos,mods:abaMods,design:abaDesign,ficha:abaFicha};
   const it=MENU.find(m=>m[0]==E.aba),corpo=T[E.aba]?T[E.aba]():emBreve(it);
-  return `<div class="shell"><aside class="side"><div class="sbrand"><div class="lg">${LOGO}</div><div><b>Painel da Matriz</b><small>Atalaia System</small></div></div>
+  return `<div class="shell"><aside class="side"><div class="sbrand"><div class="lg">${LOGO}</div><div><b>Painel da Matriz</b><small>Atalaia System · versão ${CONFIG.versao}</small></div></div>
   <nav class="smenu">${MENU.map(m=>m[0]=="grp"?`<div class="grp">${m[1]}</div>`:`<button aria-current="${E.aba==m[0]||(E.aba=="ficha"&&m[0]=="empresas")}" onclick="irAba('${m[0]}')">${m[1]}${m[0]=="atend"&&ab?`<span class="bdg">${ab}</span>`:""}${m[2]?`<span class="soon">parte ${m[2]}</span>`:""}</button>`).join("")}</nav>
   <div style="border-top:1px solid var(--line);margin-top:10px;padding:10px 8px 0" class="muted">${esc(E.email)}<br><button class="btn ghost sm" style="margin-top:6px" onclick="sair()">Sair</button> <button class="btn ghost sm" style="margin-top:6px;color:var(--bad)" onclick="sairTodos()" title="Encerra o acesso em todos os computadores e celulares">Sair de todos os aparelhos</button></div></aside>
   <main class="mn"><div class="wrap">${E.hist.length?`<button class="btn ghost sm" style="margin-bottom:10px" onclick="voltar()">← Voltar</button>`:""}${msgH()}${corpo}
-  <p class="lgpd">A Matriz vê apenas quantidades de uso. Os dados cadastrados pelos clientes (bens, fotos, valores e pessoas) pertencem a eles e não aparecem neste painel (LGPD: cliente controlador, Atalaia System operadora).</p></div></main></div>${E.det?detalheHTML():""}`;
+  <p class="lgpd">A Matriz vê apenas quantidades de uso. Os dados cadastrados pelos clientes (bens, fotos, valores e pessoas) pertencem a eles e não aparecem neste painel (LGPD: cliente controlador, Atalaia System operadora).</p><p class="muted" style="text-align:center;margin-top:10px">Atalaia System · Painel da Matriz ${CONFIG.versao}</p></div></main></div>${E.det?detalheHTML():""}`;
 }
 function emBreve(it){const D={fat:["Cobrança","Faturas mensais de cada contratante, vencimentos, pagamentos e atrasos. Após 15 dias de atraso, o contratante passa para somente leitura, sem perder dados."],sup:["Acessos de suporte","Quando um cliente pede ajuda, ele autoriza um acesso temporário da equipe, com prazo, motivo e registro de tudo o que foi visto."],com:["Comunicados","Avisos da equipe para os clientes (novidades, manutenções programadas), que aparecem no aplicativo e no Painel do Gestor."],seg:["Segurança e LGPD","Resumo das proteções, termos de tratamento de dados, pedidos de titulares e registro de incidentes."],ajuda:["Como usar","Guia rápido de cada tela do Painel da Matriz."]}[it?.[0]]||["Em implantação",""];
  return `<h1>${D[0]}</h1><p class="sub">${D[1]}</p><div class="msg info">Esta tela entra na parte ${it?.[2]||""} da atualização do Painel da Matriz, igual ao protótipo.</div>`}
