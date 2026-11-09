@@ -1,1 +1,1 @@
-{"app": "0.3.6", "gestor": "0.8.7", "matriz": "0.3.5", "novidade": "Valores dos bens guardados numa área só do Gestor (trava no servidor)."}
+{"app": "0.3.7", "gestor": "0.8.9", "matriz": "0.3.5", "novidade": "Sem internet: no app, auditoria, trocas e responsável também funcionam; o painel do Gestor abre só para consulta. Trocas de equipamento no painel."}

@@ -96,7 +96,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.6",
+  versao:"0.3.7",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -1236,7 +1236,7 @@ let audFila=Promise.resolve();
 function lerAudC(txt){txt=String(txt||"").trim();if(!txt||!E.aud)return;
   if(/[?&]t=[A-Za-z0-9_-]+/.test(txt)){toast("Este é o QR do ambiente. Leia a etiqueta de patrimônio do bem.");return}
   const m=txt.match(/[?&](?:p|patrimonio|b)=([^&#]+)/i);if(m)txt=decodeURIComponent(m[1]);
-  audFila=audFila.then(async()=>{try{const r=await DB.lerAud(E.aud.id,txt);E.aud.L.unshift({codigo:txt.toUpperCase(),...r});if(navigator.vibrate)navigator.vibrate(r.resultado=="localizado"?60:[60,60,60]);
+  audFila=audFila.then(async()=>{try{const r=await DB.lerAud(E.aud.id,txt);E.aud.L.unshift({codigo:txt.toUpperCase(),...r,_bid:r._bid||((E.bens||[]).find(b=>b.patrimonio&&b.patrimonio==r.patrimonio)||{}).id||null});if(navigator.vibrate)navigator.vibrate(r.resultado=="localizado"?60:[60,60,60]);
     const el=$("#audres"),pg=$("#audprog");if(el&&pg){el.innerHTML=audListaHTML();pg.innerHTML=audProgHTML()}else render();
     toast(`${r.patrimonio||txt.toUpperCase()}: ${(RES_AUD[r.resultado]||[""])[0]}`)}catch(e){toast(e.message)}})}
 async function finalizarAudC(){if(!confirm("Finalizar a auditoria? Depois de finalizada, não dá para incluir leituras."))return;pararCam();
@@ -1266,7 +1266,7 @@ async function salvarRespC(){const g=id=>(($("#"+id)||{}).value||"").trim();E.ra
   if(f.n.length<3){toast("Informe o nome do responsável.");return}if(f.e&&!/^\S+@\S+\.\S+$/.test(f.e)){toast("Confira o e-mail.");return}
   try{const r=await DB.salvarResp(E.ambSel,{responsavel_nome:f.n,responsavel_funcao:f.f||null,responsavel_contato:f.w||null,responsavel_email:f.e||null,substituto_nome:f.s||null});
     E.amb=(E.amb||[]).map(a=>a.id==E.ambSel?{...a,...r}:a);let msg="Responsável salvo.";
-    if(f.t&&temF("termos")){try{const t=await DB.gerarTermo(E.ambSel,f.n,f.f,f.w||f.e);msg=`Responsável salvo. Termo nº ${t.numero} gerado para assinatura (painel do computador › Termos).`}catch(e){msg="Responsável salvo, mas o termo não foi gerado: "+e.message}}
+    if(f.t&&temF("termos")){try{const t=await DB.gerarTermo(E.ambSel,f.n,f.f,f.w||f.e);msg=t._off?"Responsável salvo. O termo será gerado quando a internet voltar.":`Responsável salvo. Termo nº ${t.numero} gerado para assinatura (painel do computador › Termos).`}catch(e){msg="Responsável salvo, mas o termo não foi gerado: "+e.message}}
     E.raF=null;toast(msg);E.mt="amb";render();scrollTo(0,0)}catch(e){toast(e.message)}}
 
 /* ---- etiqueta do QR do ambiente ---- */
@@ -1302,10 +1302,10 @@ const OFF_LER=["usuario","nivel","fatores","chamados","ultimosAcessos","meuVincu
   "chs","mems","eventosCh","fotosCh","ajudantes","assinaturas","rcfgC","rondasDia","regsRonda","medsRonda",
   "agendaMan","progBem","realizadosBem","docsBem","trocas","auditoriasAmb"];
 const OFF_FILA=["abrirChM","acaoCh","ajudar","subirFotoCh","regFoto","assinarOS","iniRonda","regAmb","regMed","fimRonda","subirFotoRonda",
-  "addRealizado","arquivo","addDoc","informarTroca"];
+  "addRealizado","arquivo","addDoc","informarTroca","iniAud","lerAud","fimAud","decidirTroca","salvarResp","gerarTermo"];
 const OFF_DESC={abrirChM:"Abrir chamado",acaoCh:"Ação no chamado",ajudar:"Entrar como ajudante",subirFotoCh:"Foto do chamado",regFoto:"Registro da foto",
   assinarOS:"Assinatura da OS",iniRonda:"Início da ronda",regAmb:"Ambiente da ronda",regMed:"Medições da ronda",fimRonda:"Conclusão da ronda",subirFotoRonda:"Foto da ronda",
-  addRealizado:"Serviço realizado",arquivo:"Arquivo (laudo/anexo)",addDoc:"Documento do bem",informarTroca:"Troca de equipamento"};
+  addRealizado:"Serviço realizado",arquivo:"Arquivo (laudo/anexo)",addDoc:"Documento do bem",informarTroca:"Troca de equipamento",iniAud:"Início da auditoria",lerAud:"Leitura da auditoria",fimAud:"Fim da auditoria",decidirTroca:"Decisão da troca",salvarResp:"Responsável do ambiente",gerarTermo:"Termo de responsabilidade"};
 const OFF_VAZIO=["eventosCh","fotosCh","ajudantes","assinaturas","regsRonda","medsRonda","progBem","realizadosBem","docsBem","trocas","auditoriasAmb","mems","empresas","rondasDia","chs","agendaMan"];
 const OFF_PODE_ESVAZIAR={chs:1,rondasDia:1,agendaMan:1,bens:1,ambientes:1};
 const OFF={uid:"anon",fila:[],mapa:{},mem:{},enviando:false,erros:[],aberto:false,ultimo:0};
@@ -1352,7 +1352,20 @@ const OFF_OTM={
   arquivo:(c,blob)=>{const p="off/"+crypto.randomUUID();try{E.fotos[p]=URL.createObjectURL(blob)}catch(e){}return p},
   addDoc:d=>({...d,id:offTmp(),enviado_em:new Date().toISOString(),quem:E.v.nome,_off:true}),
   informarTroca:(bem,p,s,m,origem,obs)=>{const b=(E.bens||[]).find(x=>x.id==bem)||{};if(!p&&!s)throw new Error("Informe o patrimônio ou o nº de série que está na etiqueta.");
-    return {id:offTmp(),contratante_id:E.v.contratante_id,bem_id:bem,ambiente_id:b.ambiente_id,estabelecimento_id:b.estabelecimento_id,posicao:b.posicao||null,patrimonio_informado:(p||"").toUpperCase()||null,serie_informada:s||null,modelo_informado:m||null,origem:origem||"app",observacao:obs||null,situacao:"pendente",informado_em:new Date().toISOString(),informado_por:E.v.nome,_off:true}}};
+    return {id:offTmp(),contratante_id:E.v.contratante_id,bem_id:bem,ambiente_id:b.ambiente_id,estabelecimento_id:b.estabelecimento_id,posicao:b.posicao||null,patrimonio_informado:(p||"").toUpperCase()||null,serie_informada:s||null,modelo_informado:m||null,origem:origem||"app",observacao:obs||null,situacao:"pendente",informado_em:new Date().toISOString(),informado_por:E.v.nome,_off:true}},
+  iniAud:(a,nome)=>{if((nome||"").trim().length<3)throw new Error("Informe o nome do auditor.");return offTmp()},
+  lerAud:(id,cod)=>{const v=String(cod||"").trim().toUpperCase();if(!v)throw new Error("Leitura vazia.");const amb=E.aud&&E.aud.amb;
+    const b=(E.bens||[]).find(x=>(x.patrimonio||"").toUpperCase()==v||(x.numero_serie||"").toUpperCase()==v);
+    const lidos=((E.aud&&E.aud.L)||[]).filter(x=>x.resultado!="repetido"&&x._bid).map(x=>x._bid);
+    const r=!b?"sem_cadastro":lidos.includes(b.id)?"repetido":b.ambiente_id==amb?"localizado":"outro_ambiente";
+    return {resultado:r,bem:b?b.nome:null,patrimonio:b?b.patrimonio:null,ambiente_cadastro:b?nomeAmbC(b.ambiente_id):null,_bid:b?b.id:null,_off:true}},
+  fimAud:id=>{const amb=E.aud&&E.aud.amb,L=(E.aud&&E.aud.L)||[],B=(E.bens||[]).filter(b=>b.ambiente_id==amb&&b.ativo!==false),lid=L.map(x=>x._bid).filter(Boolean);
+    const nl=B.filter(b=>!lid.includes(b.id)&&!L.some(x=>x.patrimonio&&x.patrimonio==b.patrimonio&&x.resultado=="localizado")).map(b=>({id:b.id,patrimonio:b.patrimonio,nome:b.nome}));
+    return {esperados:B.length,localizados:L.filter(x=>x.resultado=="localizado").length,outro_ambiente:L.filter(x=>x.resultado=="outro_ambiente").length,sem_cadastro:L.filter(x=>x.resultado=="sem_cadastro").length,nao_localizados:nl,qtd_nao_localizados:nl.length,_off:true}},
+  decidirTroca:(id,ok,motivo)=>{const t=(E.trocas||[]).find(x=>x.id==id)||{},b=(E.bens||[]).find(x=>x.id==t.bem_id)||{};if(!ok&&(motivo||"").trim().length<3)throw new Error("Escreva o motivo para descartar.");
+    if(t.situacao&&t.situacao!="pendente")throw new Error("Esta troca já foi decidida.");return {situacao:ok?"confirmada":"descartada",novo_patrimonio:t.patrimonio_informado||null,velho_patrimonio:b.patrimonio||null,_off:true}},
+  salvarResp:(id,d)=>({...((E.amb||[]).find(a=>a.id==id)||{id}),...d,_off:true}),
+  gerarTermo:()=>({numero:"(sai quando a internet voltar)",_off:true})};
 /* o que muda nos dados guardados, para a tela mostrar o que foi feito sem internet */
 async function offAplicar(k,a,r){const c=E.v&&E.v.contratante_id,ag=new Date().toISOString();
   if(k=="abrirChM")await cachePatch(ck("chs",[c]),L=>[r,...L]);
@@ -1365,7 +1378,9 @@ async function offAplicar(k,a,r){const c=E.v&&E.v.contratante_id,ag=new Date().t
   if(k=="fimRonda"){for(const key of Object.keys(OFF.mem).filter(x=>x.startsWith(OFF.uid+"|rondasDia|")))await cachePatch(key,L=>L.map(x=>x.id==a[0]?{...x,concluida_em:ag}:x))}
   if(k=="addRealizado")await cachePatch(ck("realizadosBem",[r.bem_id]),L=>[r,...L]);
   if(k=="addDoc")await cachePatch(ck("docsBem",[r.bem_id]),L=>[r,...L]);
-  if(k=="informarTroca")await cachePatch(ck("trocas",[c]),L=>[r,...L])}
+  if(k=="informarTroca")await cachePatch(ck("trocas",[c]),L=>[r,...L]);
+  if(k=="decidirTroca"){const up=L=>L.map(x=>x.id==a[0]?{...x,situacao:r.situacao,decidido_em:ag,decidido_por:E.v.nome,motivo:a[2]||null}:x);await cachePatch(ck("trocas",[c]),up);E.trocas=up(E.trocas||[])}
+  if(k=="salvarResp"){for(const key of Object.keys(OFF.mem).filter(x=>x.startsWith(OFF.uid+"|ambientes|")))await cachePatch(key,L=>Array.isArray(L)?L.map(x=>x.id==a[0]?{...x,...a[1]}:x):L)}}
 
 /* ---- embrulha os métodos do DB ---- */
 function offEmbrulhar(){
