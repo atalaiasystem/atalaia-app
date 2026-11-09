@@ -96,7 +96,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.5",
+  versao:"0.3.6",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -155,9 +155,9 @@ function realDB(){
     async addEmpresa(d){return chk(await sb.from("empresas").insert(d).select("id,nome,tipo").single())},
     async empresas(c){try{return chk(await sb.from("empresas").select("id,nome,tipo").eq("contratante_id",c).is("excluido_em",null).order("nome"))}catch(e){return []}},
     async renAmbiente(id,nome){return chk(await sb.from("ambientes").update({nome}).eq("id",id).select().single())},
-    async bens(c){return chk(await sb.from("bens").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em",{ascending:false}))},
-    async addBem(b){return chk(await sb.from("bens").insert(b).select().single())},
-    async updBem(id,b){return chk(await sb.from("bens").update(b).eq("id",id).select().single())},
+    async bens(c){const [L,V]=await Promise.all([sb.from("bens").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em",{ascending:false}),E.v&&E.v.perfil=="gestor"?sb.from("bens_valores").select("bem_id,valor").eq("contratante_id",c):Promise.resolve({data:[]})]);const B=chk(L);const M={};(V&&!V.error&&V.data||[]).forEach(x=>M[x.bem_id]=x.valor);if(V&&V.error&&!/bens_valores/.test(V.error.message||""))console.warn(V.error.message);return B.map(b=>b.id in M?{...b,valor:M[b.id]}:b)},
+    async addBem(b){const {valor,...d}=b;const r=chk(await sb.from("bens").insert(d).select().single());if(valor!=null&&valor!==""&&E.v&&E.v.perfil=="gestor"){const {error}=await sb.rpc("salvar_valor_bem",{p_bem:r.id,p_valor:Number(valor),p_origem:"cadastro"});if(error&&/salvar_valor_bem|schema cache|does not exist/i.test(error.message))await sb.from("bens").update({valor:Number(valor)}).eq("id",r.id);r.valor=Number(valor)}return r},
+    async updBem(id,b){const {valor,...d}=b;const tem="valor" in b&&E.v&&E.v.perfil=="gestor";const r=Object.keys(d).length?chk(await sb.from("bens").update(d).eq("id",id).select().single()):{id};if(tem){const {error}=await sb.rpc("salvar_valor_bem",{p_bem:id,p_valor:valor===""||valor==null?null:Number(valor),p_origem:"edição"});if(error){if(/salvar_valor_bem|schema cache|does not exist/i.test(error.message))chk(await sb.from("bens").update({valor:valor===""||valor==null?null:Number(valor)}).eq("id",id));else throw new Error(traduz(error.message))}r.valor=valor===""?null:valor}return r},
     async enviarFoto(c,blob){const p=`${c}/${crypto.randomUUID()}.jpg`;chk(await sb.storage.from("fotos-bens").upload(p,blob,{contentType:"image/jpeg"}));return p},
     async urlFoto(p){if(!p)return null;const r=await sb.storage.from("fotos-bens").createSignedUrl(p,3600);return r.data?.signedUrl||null},
     async excluir(t,id,motivo){return chk(await sb.rpc("excluir_item",{p_tabela:t,p_id:id,p_motivo:motivo}))},

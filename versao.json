@@ -1,1 +1,1 @@
-{"app": "0.3.5", "gestor": "0.8.6", "matriz": "0.3.5", "novidade": "Cadastro de bens: número de patrimônio pelo app, leitura da etiqueta do fabricante (nº de série e modelo) e cadastro em sequência no mesmo ambiente. Valores dos bens só para o Gestor."}
+{"app": "0.3.6", "gestor": "0.8.7", "matriz": "0.3.5", "novidade": "Valores dos bens guardados numa área só do Gestor (trava no servidor)."}
