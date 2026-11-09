@@ -96,7 +96,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.7",
+  versao:"0.3.8",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -1387,17 +1387,17 @@ function offEmbrulhar(){
   OFF_LER.forEach(k=>{const f=DB[k];if(typeof f!="function"||f._off)return;const g=async(...a)=>{a=offTrocar(a);const key=ck(k,a);
     if(temTmp(a)){const v=await cacheGet(key);return v!==undefined?v:[]}
     if(semRede()){const v=await cacheGet(key);if(v!==undefined)return v;if(OFF_VAZIO.includes(k))return [];throw new Error("Sem internet e sem dados guardados desta tela. Abra-a uma vez com internet.")}
-    try{const r=await f(...a);if(Array.isArray(r)&&!r.length){const v=await cacheGet(key);if(Array.isArray(v)&&v.length&&!(k in OFF_PODE_ESVAZIAR))return v}if(r!==undefined)cachePut(key,r);return r}catch(e){if(erroRede(e)){const v=await cacheGet(key);if(v!==undefined)return v;if(OFF_VAZIO.includes(k))return []}throw e}};g._off=1;DB[k]=g});
+    try{const r=await f.apply(DB,a);if(Array.isArray(r)&&!r.length){const v=await cacheGet(key);if(Array.isArray(v)&&v.length&&!(k in OFF_PODE_ESVAZIAR))return v}if(r!==undefined)cachePut(key,r);return r}catch(e){if(erroRede(e)){const v=await cacheGet(key);if(v!==undefined)return v;if(OFF_VAZIO.includes(k))return []}throw e}};g._off=1;DB[k]=g});
   OFF_FILA.forEach(k=>{const f=DB[k];if(typeof f!="function"||f._off)return;OFF[k]=f;const g=async(...a)=>{a=offTrocar(a);
-    if(!semRede()&&!temTmp(a)&&!OFF.fila.length){try{return await f(...a)}catch(e){if(!erroRede(e))throw e}}
+    if(!semRede()&&!temTmp(a)&&!OFF.fila.length){try{return await f.apply(DB,a)}catch(e){if(!erroRede(e))throw e}}
     return offGuardar(k,a)};g._off=1;DB[k]=g});
   if(DB.carimbo&&!DB.carimbo._off){const f=DB.carimbo;const loc=id=>{const c=chLocal(id)||{};return {numero:c.numero||"(sem internet)",unidade:nomeUni(c.estabelecimento_id)||"",ambiente:nomeAmbC(c.ambiente_id),empresa:E.v.contratantes.nome,agora:new Date().toLocaleString("pt-BR")+" (hora do aparelho)"}};
-    DB.carimbo=async id=>{id=offTrocar(id);if(semRede()||temTmp([id]))return loc(id);try{return await f(id)}catch(e){if(erroRede(e))return loc(id);throw e}};DB.carimbo._off=1}
-  if(DB.urlFoto&&!DB.urlFoto._off){const f=DB.urlFoto;DB.urlFoto=async p=>{if(!p||semRede()||String(p).startsWith("off/"))return E.fotos[p]||null;try{return await f(p)}catch(e){return null}};DB.urlFoto._off=1}
-  if(DB.registrar&&!DB.registrar._off){const f=DB.registrar;DB.registrar=async(...a)=>{if(semRede())return null;try{return await f(...a)}catch(e){return null}};DB.registrar._off=1}
-  if(DB.sessao&&!DB.sessao._off){const f=DB.sessao;DB.sessao=async()=>{const s=await f();if(s&&s.user)OFF.uid=s.user.id||s.user.email||"anon";return s};DB.sessao._off=1}
-  if(DB.entrar&&!DB.entrar._off){const f=DB.entrar;DB.entrar=async(...a)=>{const r=await f(...a);try{await DB.sessao()}catch(e){}return r};DB.entrar._off=1}
-  if(DB.sair&&!DB.sair._off){const f=DB.sair;DB.sair=async(...a)=>{if(OFF.fila.length&&!confirm(`Há ${OFF.fila.length} registro(s) feitos sem internet que ainda não foram enviados. Se sair agora, eles serão perdidos. Sair mesmo assim?`))throw new Error("Saída cancelada. Conecte-se à internet para enviar os registros.");await offLimparTudo();return f(...a)};DB.sair._off=1}}
+    DB.carimbo=async id=>{id=offTrocar(id);if(semRede()||temTmp([id]))return loc(id);try{return await f.call(DB,id)}catch(e){if(erroRede(e))return loc(id);throw e}};DB.carimbo._off=1}
+  if(DB.urlFoto&&!DB.urlFoto._off){const f=DB.urlFoto;DB.urlFoto=async p=>{if(!p||semRede()||String(p).startsWith("off/"))return E.fotos[p]||null;try{return await f.call(DB,p)}catch(e){return null}};DB.urlFoto._off=1}
+  if(DB.registrar&&!DB.registrar._off){const f=DB.registrar;DB.registrar=async(...a)=>{if(semRede())return null;try{return await f.apply(DB,a)}catch(e){return null}};DB.registrar._off=1}
+  if(DB.sessao&&!DB.sessao._off){const f=DB.sessao;DB.sessao=async()=>{const s=await f.call(DB);if(s&&s.user)OFF.uid=s.user.id||s.user.email||"anon";return s};DB.sessao._off=1}
+  if(DB.entrar&&!DB.entrar._off){const f=DB.entrar;DB.entrar=async(...a)=>{const r=await f.apply(DB,a);try{await DB.sessao()}catch(e){}return r};DB.entrar._off=1}
+  if(DB.sair&&!DB.sair._off){const f=DB.sair;DB.sair=async(...a)=>{if(OFF.fila.length&&!confirm(`Há ${OFF.fila.length} registro(s) feitos sem internet que ainda não foram enviados. Se sair agora, eles serão perdidos. Sair mesmo assim?`))throw new Error("Saída cancelada. Conecte-se à internet para enviar os registros.");await offLimparTudo();return f.apply(DB,a)};DB.sair._off=1}}
 
 async function offGuardar(k,a){const opt=OFF_OTM[k](...a);const it={k,args:a,opt,desc:OFF_DESC[k]||k,em:new Date().toISOString(),quem:E.v&&E.v.nome};
   try{it.seq=await offTx("fila","readwrite",s=>s.add(it))}catch(e){it.seq=Date.now()+Math.random()}OFF.fila.push(it);
@@ -1408,7 +1408,7 @@ function offMarcar(){OFF.ultimo=Date.now()}
 async function offEnviar(manual){if(OFF.enviando||!OFF.fila.length)return;if(semRede()){if(manual)toast("Ainda sem internet. Os registros continuam guardados no aparelho.");return}
   OFF.enviando=true;updOffBar();let ok=0,parou=false;
   while(OFF.fila.length){const it=OFF.fila[0];const f=OFF[it.k];let args=offTrocar(it.args);
-    try{if(temTmp(args))throw new Error("Depende de um registro que o servidor recusou.");const r=await f(...args);
+    try{if(temTmp(args))throw new Error("Depende de um registro que o servidor recusou.");const r=await f.apply(DB,args);
       if(typeof it.opt=="string"&&typeof r=="string"&&it.opt!==r)OFF.mapa[it.opt]=r;
       else if(it.opt&&typeof it.opt=="object"&&it.opt.id&&r&&typeof r=="object"&&r.id)OFF.mapa[it.opt.id]=r.id;
       try{for(const [kk,vv] of Object.entries(OFF.mapa))await offTx("mapa","readwrite",s=>s.put(vv,kk))}catch(e){}

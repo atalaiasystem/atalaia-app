@@ -93,7 +93,7 @@ label.f{display:grid;gap:5px;font-weight:600;font-size:.85rem;margin-bottom:10px
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.8.9"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.0"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1873,12 +1873,12 @@ async function gLer(k){const x=await gGet(k);if(x&&typeof x=="object"&&"em" in x
 const gck=(k,a)=>GOFF.uid+"|"+k+"|"+JSON.stringify(a);
 function gEmbrulhar(){Object.keys(DB).forEach(k=>{const f=DB[k];if(typeof f!="function"||f._g)return;let g;
   if(GOFF_LER.includes(k))g=async(...a)=>{const key=gck(k,a);if(gSemRede()){const v=await gLer(key);if(v!==undefined){gBarra();return v}throw new Error("Sem internet e sem dados guardados desta parte. Abra com internet uma vez.")}
-    try{const r=await f(...a);if(r!==undefined)gPut(key,r);return r}catch(e){if(gErroRede(e)){const v=await gLer(key);if(v!==undefined){gBarra(true);return v}}throw e}};
-  else if(k=="sessao")g=async(...a)=>{const s=await f(...a);if(s&&s.user)GOFF.uid=s.user.id||s.user.email||"anon";return s};
-  else if(k=="entrar")g=async(...a)=>{const r=await f(...a);try{const s=await DB.sessao();if(s&&s.user)GOFF.uid=s.user.id||s.user.email}catch(e){}return r};
-  else if(k=="sair"||k=="sairTodos")g=async(...a)=>{GOFF.mem={};try{await gTx("readwrite",s=>s.clear())}catch(e){}return f(...a)};
-  else if(GOFF_LIVRE.includes(k))g=async(...a)=>{if(gSemRede()&&(k=="registrar"||k=="lerAviso"))return null;if(gSemRede()&&k=="urlFoto")return null;return f(...a)};
-  else g=async(...a)=>{if(gSemRede())throw new Error("Sem internet: o painel está só para consulta. Para alterar, conecte-se à internet.");try{return await f(...a)}catch(e){if(gErroRede(e))throw new Error("Sem internet: o painel está só para consulta. Para alterar, conecte-se à internet.");throw e}};
+    try{const r=await f.apply(DB,a);if(r!==undefined)gPut(key,r);return r}catch(e){if(gErroRede(e)){const v=await gLer(key);if(v!==undefined){gBarra(true);return v}}throw e}};
+  else if(k=="sessao")g=async(...a)=>{const s=await f.apply(DB,a);if(s&&s.user)GOFF.uid=s.user.id||s.user.email||"anon";return s};
+  else if(k=="entrar")g=async(...a)=>{const r=await f.apply(DB,a);try{const s=await DB.sessao();if(s&&s.user)GOFF.uid=s.user.id||s.user.email}catch(e){}return r};
+  else if(k=="sair"||k=="sairTodos")g=async(...a)=>{GOFF.mem={};try{await gTx("readwrite",s=>s.clear())}catch(e){}return f.apply(DB,a)};
+  else if(GOFF_LIVRE.includes(k))g=async(...a)=>{if(gSemRede()&&(k=="registrar"||k=="lerAviso"))return null;if(gSemRede()&&k=="urlFoto")return null;return f.apply(DB,a)};
+  else g=async(...a)=>{if(gSemRede())throw new Error("Sem internet: o painel está só para consulta. Para alterar, conecte-se à internet.");try{return await f.apply(DB,a)}catch(e){if(gErroRede(e))throw new Error("Sem internet: o painel está só para consulta. Para alterar, conecte-se à internet.");throw e}};
   g._g=1;DB[k]=g})}
 function gBarra(forcar){let el=document.getElementById("gofbar");const off=gSemRede()||forcar===true;
   if(!el){el=document.createElement("div");el.id="gofbar";el.setAttribute("role","status");document.body.appendChild(el)}
