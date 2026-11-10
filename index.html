@@ -81,6 +81,18 @@ nav.tabs svg{width:22px;height:22px}
 .dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:.9rem}.dl dt{color:var(--mut)}.dl dd{margin:0;min-width:0}
 .fotos-ch{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:8px}.fotos-ch figure{margin:0}.fotos-ch img,.fotos-ch .ph{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;background:var(--soft);display:block}.fotos-ch figcaption{font-size:.78rem;color:var(--mut);margin-top:3px}
 .fpick{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border:1.5px dashed var(--line);border-radius:12px;padding:10px 12px}.fpick.ok{border-style:solid;border-color:#1f9a55}
+
+/* paletas de cores (escolhidas no painel › Configurações › Design) */
+:root[data-pal]:not([data-pal="classico"]){--bg:var(--p-bg);--line:var(--p-line);--soft:var(--p-soft)}
+:root[data-pal]:not([data-pal="classico"]) header{background:linear-gradient(110deg,var(--p-h1),var(--p-h2));color:var(--p-hink)}:root[data-pal]:not([data-pal="classico"]) header small{color:inherit;opacity:.75}
+:root[data-pal]:not([data-pal="classico"]) header svg path[stroke="#fff"]{stroke:var(--p-hink)}
+:root[data-pal]:not([data-pal="classico"]) .btn:not(.amb):not(.ghost){background:var(--p-pri);color:#fff}
+:root[data-pal]:not([data-pal="classico"]) .big .ico,:root[data-pal]:not([data-pal="classico"]) .ico{background:linear-gradient(135deg,var(--p-pri),var(--p-k2))}
+:root[data-pal]:not([data-pal="classico"]) .bigs>.big:nth-child(4n+2) .ico{background:linear-gradient(135deg,var(--p-k2),var(--p-pri))}:root[data-pal]:not([data-pal="classico"]) .bigs>.big:nth-child(4n+3) .ico{background:linear-gradient(135deg,var(--p-k3),var(--p-acc))}:root[data-pal]:not([data-pal="classico"]) .bigs>.big:nth-child(4n+4) .ico{background:linear-gradient(135deg,var(--p-k4),var(--p-k3))}
+:root[data-pal]:not([data-pal="classico"]) nav.tabs button[aria-current=true]{color:var(--p-pri)}
+:root[data-pal]:not([data-pal="classico"]) .chp[aria-pressed=true]{background:var(--p-pri);border-color:var(--p-pri)}
+:root[data-pal]:not([data-pal="classico"]) .card{border-color:transparent;box-shadow:0 1px 2px rgba(16,24,40,.05),0 4px 14px rgba(16,24,40,.06)}
+:root[data-pal]:not([data-pal="classico"]) h1{color:var(--p-tit)}
 </style>
 </head>
 <body>
@@ -96,7 +108,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.8",
+  versao:"0.3.9",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -454,6 +466,7 @@ async function desativar2(){if(!confirm("Desativar a verificação em duas etapa
 async function abrirApp(registrar){
   E.v=await DB.meuVinculo();
   if(!E.v){E.tela="semacesso";render();return}
+  aplicarPaletaApp();
   E.fatores=await DB.fatores();
   const exige=tem2()&&E.v.contratantes.exige_2_etapas&&["gestor","administrador"].includes(E.v.perfil);
   if(exige&&!E.fatores.some(f=>f.status=="verified")){E.obrig=true;await ativar2();return}
@@ -626,6 +639,9 @@ async function baixarPDF(){
   if(bt){bt.disabled=false;bt.querySelector("b").textContent="📄 Relatório PDF com fotos"}
 }
 
+const PALS={"classico": ["Clássico Atalaia", "Escuras", {"bg": "#f5f3ef", "line": "#e3e0da", "soft": "#efece6", "pri": "#1d1f23", "pris": "#ecebe8", "acc": "#f2a33a", "s1": "#ffffff", "s2": "#ffffff", "sink": "#1d1f23", "smut": "#6b7078", "sact": "#ecebe8", "icon": "#6b7078", "tit": "#1d1f23", "k1": "#1d1f23", "k2": "#1d1f23", "k3": "#1d1f23", "k4": "#1d1f23", "h1": "#1d1f23", "h2": "#1d1f23", "hink": "#ffffff", "str": "#f2a33a"}], "oceano": ["Oceano", "Escuras", {"bg": "#f2f6f9", "line": "#dfe7ee", "soft": "#e8eff5", "pri": "#0f7c8c", "pris": "#dff1f3", "acc": "#f2a33a", "s1": "#0d2b3e", "s2": "#123b52", "sink": "#ffffff", "smut": "#a9c3d1", "sact": "rgba(255,255,255,.14)", "icon": "#7fc8d3", "tit": "#0d2b3e", "k1": "#0f7c8c", "k2": "#2f6fd6", "k3": "#d9821a", "k4": "#d9534f", "h1": "#0d2b3e", "h2": "#0f7c8c", "hink": "#ffffff", "str": "#f2a33a"}], "floresta": ["Floresta", "Escuras", {"bg": "#f3f6f2", "line": "#dde6dc", "soft": "#e9f0e7", "pri": "#1f8a6e", "pris": "#ddf1ea", "acc": "#f2b13a", "s1": "#123a33", "s2": "#1a4c42", "sink": "#ffffff", "smut": "#a7c9bd", "sact": "rgba(255,255,255,.14)", "icon": "#8fd1b9", "tit": "#123a33", "k1": "#1f8a6e", "k2": "#3c7dd9", "k3": "#d98b1f", "k4": "#c2504a", "h1": "#123a33", "h2": "#1f8a6e", "hink": "#ffffff", "str": "#f2b13a"}], "aurora": ["Aurora", "Escuras", {"bg": "#f5f5fb", "line": "#e3e3f1", "soft": "#ececf8", "pri": "#5b5bd6", "pris": "#e7e7fb", "acc": "#f6a23c", "s1": "#1d1b45", "s2": "#2a2766", "sink": "#ffffff", "smut": "#b4b5e6", "sact": "rgba(255,255,255,.14)", "icon": "#a5a8f5", "tit": "#1d1b45", "k1": "#5b5bd6", "k2": "#0ea5a4", "k3": "#f08a24", "k4": "#e2557a", "h1": "#2a2766", "h2": "#5b5bd6", "hink": "#ffffff", "str": "#f6a23c"}], "ceu": ["Céu", "Claras", {"bg": "#f4f9fd", "line": "#d9e9f5", "soft": "#e8f3fb", "pri": "#2a86d1", "pris": "#dcefff", "acc": "#f2a33a", "s1": "#e9f5fe", "s2": "#d6ebfb", "sink": "#15324b", "smut": "#4f6f88", "sact": "#c4e2fa", "icon": "#2a86d1", "tit": "#15324b", "k1": "#2a86d1", "k2": "#17a2b8", "k3": "#e59a2f", "k4": "#e0607e", "h1": "#d8edfd", "h2": "#a8d5f6", "hink": "#12304a", "str": "#2a86d1"}], "menta": ["Menta", "Claras", {"bg": "#f3faf7", "line": "#d6ece3", "soft": "#e6f5ee", "pri": "#159a78", "pris": "#d3f2e6", "acc": "#f2a33a", "s1": "#e8f7f0", "s2": "#d3efe3", "sink": "#123d31", "smut": "#4b7466", "sact": "#bfe8d6", "icon": "#159a78", "tit": "#123d31", "k1": "#159a78", "k2": "#2f86d6", "k3": "#e3962c", "k4": "#df5f6b", "h1": "#d9f3e8", "h2": "#a9e1cb", "hink": "#0f3a2e", "str": "#159a78"}], "lavanda": ["Lavanda", "Claras", {"bg": "#f7f6fd", "line": "#e4e1f6", "soft": "#efedfb", "pri": "#6c5ce7", "pris": "#e9e5ff", "acc": "#f2a33a", "s1": "#f1effe", "s2": "#e4e0fb", "sink": "#2b2560", "smut": "#6a6597", "sact": "#d7d1fb", "icon": "#6c5ce7", "tit": "#2b2560", "k1": "#6c5ce7", "k2": "#14a3a1", "k3": "#ec9a2d", "k4": "#e45d8c", "h1": "#e7e3fd", "h2": "#c9c0f8", "hink": "#241e57", "str": "#6c5ce7"}], "pessego": ["Pêssego", "Claras", {"bg": "#fdf8f4", "line": "#f1e2d6", "soft": "#faefe6", "pri": "#dd7a3c", "pris": "#fde6d6", "acc": "#2a86d1", "s1": "#fff3ea", "s2": "#fde6d6", "sink": "#4a2a16", "smut": "#8a6550", "sact": "#fad3b8", "icon": "#dd7a3c", "tit": "#4a2a16", "k1": "#dd7a3c", "k2": "#2a86d1", "k3": "#1f9a7a", "k4": "#d4507a", "h1": "#fde4d1", "h2": "#f8c3a0", "hink": "#43240f", "str": "#dd7a3c"}]};
+const PAL_PADRAO="ceu";
+function aplicarPaletaApp(){try{const d=(E.v&&E.v.contratantes&&E.v.contratantes.design)||{},r=document.documentElement,k=PALS[d.paleta]?d.paleta:PAL_PADRAO,p=PALS[k][2];r.dataset.pal=k;Object.entries(p).forEach(([n,v])=>r.style.setProperty("--p-"+n,v));if(/^#[0-9a-f]{6}$/i.test(d.cor||"")){r.style.setProperty("--p-pri",d.cor)}const m=document.querySelector("meta[name=theme-color]");if(m)m.content=k=="classico"?"#1d1f23":p.h2}catch(e){}}
 /* ---------------- Cadastro: valores restritos, leitor de código para campos, cadastrar em sequência ---------------- */
 const veValor=()=>!!(E.v&&E.v.perfil=="gestor");
 const comValor=()=>veValor()&&!!E.comValor;
