@@ -110,7 +110,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.11",
+  versao:"0.3.12",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -1018,12 +1018,13 @@ function manBem(){const b=(E.bens||[]).find(x=>x.id==E.bemSel);if(!b)return `<bu
   <div class="card"><b>Histórico de chamados (${C.length})</b>${C.map(linhaCh).join("")||`<p class="muted">Nenhum chamado deste bem.</p>`}</div>`}
 function manNovoCh(){const a=(E.amb||[]).find(x=>x.id==E.ncA),B=(E.bens||[]).filter(b=>b.ambiente_id==E.ncA);
   return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Abrir chamado</h1><p class="sub">${esc(a?a.nome:"")}</p><div class="card">
-  <label>Qual bem? (opcional)<select id="ncb"><option value="">Não sei / é do ambiente</option>${B.map(b=>`<option value="${b.id}" ${E.ncB==b.id?"selected":""}>${esc((b.patrimonio?b.patrimonio+" · ":"")+b.nome)}</option>`).join("")}</select></label>
+  <label>Qual bem? (opcional)<select id="ncb" onchange="E.ncB=this.value;const t=document.getElementById('ncterc'),bb=(E.bens||[]).find(x=>x.id==this.value);if(t)t.style.display=bb&&terc(sitK(bb))?'block':'none'"><option value="">Não sei / é do ambiente</option>${B.map(b=>`<option value="${b.id}" ${E.ncB==b.id?"selected":""}>${esc((b.patrimonio?b.patrimonio+" · ":"")+b.nome)}</option>`).join("")}</select></label>
+  <p id="ncterc" class="muted" style="display:${(B.find(b=>b.id==E.ncB)&&terc(sitK(B.find(b=>b.id==E.ncB))))?"block":"none"};margin:0 0 8px">🏢 Bem de terceiro: ao abrir, o representante da unidade recebe um e-mail automático com a sua descrição.</p>
   <label>O que está acontecendo? *<textarea id="ncd" rows="3" maxlength="500" placeholder="Ex.: monitor apitando sem parar">${esc(E.ncTxt||"")}</textarea></label>
   <label>Prioridade<select id="ncp"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select></label>
   <button class="btn amb full" onclick="salvarNovoCh()">Abrir chamado</button></div>`}
 async function salvarNovoCh(){const d=($("#ncd").value||"").trim();if(d.length<5){toast("Descreva o problema (pelo menos 5 letras).");return}
-  try{const c=await DB.abrirChM(E.ncA,d,$("#ncp").value,$("#ncb").value||null,"app");E.chs=[c,...(E.chs||[])];E.ncTxt="";toast(c.numero?`Chamado nº ${c.numero} aberto.`:"Chamado aberto.");E.mt="item";E.chSel=c.id;carregarItem()}catch(e){toast(e.message)}}
+  try{const c=await DB.abrirChM(E.ncA,d,$("#ncp").value,$("#ncb").value||null,"app");E.chs=[c,...(E.chs||[])];E.ncTxt="";const bt=(E.bens||[]).find(x=>x.id==c.bem_id||x.id==$("#ncb")?.value);toast((c.numero?`Chamado nº ${c.numero} aberto.`:"Chamado aberto.")+(bt&&typeof terc=="function"&&terc(sitK(bt))?" Bem de terceiro: o representante da unidade será avisado por e-mail.":""));E.mt="item";E.chSel=c.id;carregarItem()}catch(e){toast(e.message)}}
 async function vistDoAmb(id){const a=(E.amb||[]).find(x=>x.id==id);E.aba="ron";if(!E.ron||E.ron.carregando)await carregarRon();if(MEDT.includes(a.tipo_ronda))abrirMedC(id);else abrirVistC(id)}
 
 /* ======================= APP DO COLABORADOR · ETAPA 4 =======================
