@@ -1,1 +1,1 @@
-{"app": "0.3.9", "gestor": "0.9.3", "matriz": "0.3.6", "novidade": "Dashboard: relatório do mês em PDF e Excel (Gestor, Administrador e Matriz), saudação simplificada, paletas de cores também na Matriz."}
+{"app": "0.3.10", "gestor": "0.9.4", "matriz": "0.3.6", "novidade": "Equipe com Ativo e Inativo: inativar com motivo bloqueia o acesso sem perder o histórico; reativar; histórico da equipe."}
