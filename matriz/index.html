@@ -108,7 +108,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.7"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.8"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -146,6 +146,11 @@ function realDB(){
     exigir2:(s,v)=>rpc("matriz_exigir_2_etapas",{p_sigla:s,p_exigir:v}),
     criar:(d)=>rpc("matriz_criar_contratante",{p_nome:d.nome,p_sigla:d.sigla,p_plano:d.plano,p_segmento:d.segmento||null,p_cnpj:d.cnpj||null,p_ambiente:d.ambiente||""}),
     vincular:(e,s,n,p)=>rpc("matriz_vincular_usuario",{p_email:e,p_sigla:s,p_nome:n,p_perfil:p}),
+    dadosM:async()=>{const r=await sb.from("matriz_dados").select("*").eq("id",1).maybeSingle();return r.error?{}:(r.data||{})},
+    salvarDadosM:d=>rpc("matriz_salvar_dados",{p:d}),
+    equipeM:()=>rpc("matriz_equipe_lista"),souPrincipalM:()=>rpc("e_matriz_principal"),
+    addEquipeM:(e,n)=>rpc("matriz_adicionar_equipe",{p_email:e,p_nome:n}),
+    situacaoEquipeM:(u,a,m)=>rpc("matriz_situacao_equipe",{p_user:u,p_ativo:a,p_motivo:m||null}),
     trocarPrincipal:(s,e,n,m,i)=>rpc("matriz_trocar_principal",{p_sigla:s,p_email:e,p_nome:n,p_motivo:m,p_inativar_antigo:i}),
     registrar:(a,d)=>rpc("matriz_registrar",{p_acao:a,p_detalhe:d||null}).catch(()=>{}),
     meusAcessos:()=>rpc("matriz_meus_acessos"),
@@ -185,6 +190,12 @@ function mockDB(){
     async alterarSituacao(s,v){C.find(x=>x.sigla==s).situacao=v},async exigir2(s,v){C.find(x=>x.sigla==s).exige_2_etapas=v},
     async criar(d){if(C.some(c=>c.sigla==d.sigla))throw new Error("Já existe uma empresa com esta sigla.");C.unshift(mk(d.nome,d.sigla,d.plano,"teste",0,1,0,0,0,0,0))},
     async vincular(e,s){const c=C.find(x=>x.sigla==s);c.usuarios++;return "Usuário "+e+" vinculado."},
+    async dadosM(){return window.__DM||(window.__DM={nome:"Atalaia System",email_contato:"atalaiasystem@gmail.com",site:"https://app.atalaiasystem.com.br"})},
+    async equipeM(){return window.__EQM||(window.__EQM=[{user_id:"m1",nome:"Titular (você)",email:"atalaiasystem@gmail.com",principal:true,ativo:true,criado_em:"2026-11-01"},{user_id:"m2",nome:"Sócio exemplo",email:"socio@exemplo.com",principal:false,ativo:true,criado_em:"2026-11-10"}])},
+    async souPrincipalM(){return true},
+    async addEquipeM(e,n){if((n||"").trim().length<3)throw new Error("Informe o nome.");(await this.equipeM()).push({user_id:"m"+Date.now(),nome:n,email:e,principal:false,ativo:true,criado_em:new Date().toISOString()});return e+" agora faz parte da equipe da Matriz (demonstração)."},
+    async situacaoEquipeM(u,a,m){if(!a&&(m||"").trim().length<5)throw new Error("Escreva o motivo (pelo menos 5 letras).");const x=(await this.equipeM()).find(y=>y.user_id==u);Object.assign(x,{ativo:a,inativado_em:a?null:new Date().toISOString(),motivo_inativacao:a?null:m});return x.nome+(a?" foi reativado(a).":" foi inativado(a).")},
+    async salvarDadosM(d){window.__DM={...window.__DM,...d};return "Dados da Matriz salvos (demonstração)."},
     async trocarPrincipal(s,e,n,m){if((m||"").trim().length<10)throw new Error("Escreva o motivo e o pedido formal da empresa (ex.: ofício nº, e-mail da diretoria).");return "Gestor principal de "+s+" agora é "+e+" (demonstração)."},
     async registrar(){},async meusAcessos(){return [{criado_em:new Date().toISOString(),acao:"Matriz: entrou no painel",detalhe:null}]},
     async infra(){return {banco_mb:42.3,fotos_mb:C.reduce((s,c)=>s+c.fotos_mb,0),fotos_qtd:1830,contas:31,ativos_mes:25,chamados_abertos:T.filter(t=>t.situacao!="resolvido").length}},
@@ -217,11 +228,11 @@ function telaAtivar(){const i=E.insc;return `<div class="center wrap" style="max
 function telaNegado(){return `<div class="center wrap"><div class="card"><h2>Acesso não permitido</h2><p class="sub">Esta conta não faz parte da equipe da Matriz.</p><button class="btn ghost" onclick="sair()">Sair</button></div></div>`}
 const MENU=[["grp","Negócio"],["visao","Dashboard"],["fin","Receita e métricas"],["saude","Saúde dos clientes"],["uso","Uso e adoção"],["funil","Funil comercial"],
  ["grp","Clientes"],["empresas","Contratantes"],["cadastrar","Cadastrar empresa"],["planos","Planos e limites"],["mods","Adicionais de uso"],["fat","Cobrança","B"],["atend","Atendimento ao cliente"],["sup","Acessos de suporte","B"],["com","Comunicados","B"],
- ["grp","Operação"],["infra","Infraestrutura e versões"],["ind","Indicadores"],["acessos","Registro de acessos"],["seg","Segurança e LGPD","C"],
- ["grp","Painel"],["design","Design do painel"],["ajuda","Como usar","C"]];
+ ["grp","Operação"],["infra","Infraestrutura e versões"],["ind","Indicadores"],["acessos","Registro de acessos"],["equipem","Equipe da Matriz"],["seg","Segurança e LGPD","C"],
+ ["grp","Painel"],["dadosm","Dados da Matriz"],["design","Design do painel"],["ajuda","Como usar","C"]];
 function telaPainel(){
   const ab=E.tks.filter(t=>t.situacao!="resolvido").length;
-  const T={visao:abaVisao,empresas:abaEmpresas,saude:abaSaude,fin:abaFin,uso:abaUso,funil:abaFunil,atend:abaAtend,infra:abaInfra,ind:abaInd,cadastrar:abaCadastrar,acessos:abaAcessos,planos:abaPlanos,mods:abaMods,design:abaDesign,ficha:abaFicha};
+  const T={visao:abaVisao,empresas:abaEmpresas,saude:abaSaude,fin:abaFin,uso:abaUso,funil:abaFunil,atend:abaAtend,infra:abaInfra,ind:abaInd,cadastrar:abaCadastrar,acessos:abaAcessos,planos:abaPlanos,mods:abaMods,design:abaDesign,ficha:abaFicha,dadosm:abaDadosM,equipem:abaEquipeM};
   const it=MENU.find(m=>m[0]==E.aba),corpo=T[E.aba]?T[E.aba]():emBreve(it);
   return `<div class="shell"><aside class="side"><div class="sbrand"><div class="lg">${LOGO}</div><div><b>Painel da Matriz</b><small>Atalaia System · versão ${CONFIG.versao}</small></div></div>
   <nav class="smenu">${MENU.map(m=>m[0]=="grp"?`<div class="grp">${m[1]}</div>`:`<button aria-current="${E.aba==m[0]||(E.aba=="ficha"&&m[0]=="empresas")}" onclick="irAba('${m[0]}')">${m[1]}${m[0]=="atend"&&ab?`<span class="bdg">${ab}</span>`:""}${m[2]?`<span class="soon">parte ${m[2]}</span>`:""}</button>`).join("")}</nav>
@@ -503,6 +514,28 @@ function abaFicha(){const c=E.cts.find(x=>x.id==E.ficha);if(!c)return `<p class=
  <div class="g2"><div class="card"><h2>Chamados de suporte</h2>${tk.length?`<div class="tw"><table><tr><th>Nº</th><th>Assunto</th><th>Situação</th></tr>${tk.map(t=>`<tr><td>${t.id}</td><td><a href="#" onclick="event.preventDefault();E.tk=${t.id};irAba('atend')">${esc(t.assunto)}</a></td><td>${SITC[t.situacao]}</td></tr>`).join("")}</table></div>`:`<p class="muted">Nenhum chamado.</p>`}</div>
  <div class="card"><h2>Histórico de alterações</h2>${E.fichaHist.length?`<div class="tw"><table><tr><th>Data</th><th>Ação</th><th>Detalhe</th></tr>${E.fichaHist.map(r=>`<tr><td>${dh(r.criado_em)}</td><td>${esc(r.acao)}</td><td>${esc((r.detalhe||"").slice(0,60))}</td></tr>`).join("")}</table></div>`:`<p class="muted">Sem alterações registradas.</p>`}</div></div>`}
 async function trocarPrincipal(s){const e=$("#tpe").value.trim();if(!confirm("Confirmar a troca do Gestor principal de "+s+" para "+e+"?"))return;try{const r=await DB.trocarPrincipal(s,e,$("#tpn").value.trim(),$("#tpm").value.trim(),$("#tpi").checked);E.msg=["ok",r];await recarregar()}catch(er){E.msg=["err",er.message];render()}}
+function abaEquipeM(){if(!E.eqm){E.eqm=[];Promise.all([DB.equipeM(),DB.souPrincipalM()]).then(([l,p])=>{E.eqm=l||[];E.eqmP=!!p;render()}).catch(e=>{E.msg=["err",e.message];render()})}const P=E.eqmP;
+ return cab2("Equipe da Matriz","Pessoas que usam este painel: titular, sócio e ajudantes")+
+ `<div class="card"><h2>Pessoas</h2><p class="sub">O <b>titular (★ Matriz principal)</b> nunca é inativado e é o único que inclui, inativa e reativa pessoas. Os demais usam o painel normalmente (cadastrar empresas e gestores, planos, atendimento), sempre com verificação em duas etapas. Inativado perde o acesso na hora; o histórico fica.</p>
+  <div class="tw"><table><tr><th>Nome</th><th>E-mail</th><th>Situação</th><th>Desde</th><th></th></tr>${E.eqm.map(m=>`<tr><td><b>${esc(m.nome)}</b>${m.principal?` <span class="pill">★ Matriz principal</span>`:""}</td><td>${esc(m.email||"")}</td><td>${m.ativo?"Ativo":`Inativo${m.motivo_inativacao?`<div class="muted">${esc(m.motivo_inativacao)}</div>`:""}`}</td><td>${new Date(m.criado_em).toLocaleDateString("pt-BR")}</td>
+   <td style="white-space:nowrap">${P&&!m.principal?(m.ativo?`<button class="btn ghost sm" onclick="sitEquipeM('${m.user_id}',false)">Inativar</button>`:`<button class="btn sm" onclick="sitEquipeM('${m.user_id}',true)">Reativar</button>`):""}</td></tr>`).join("")||`<tr><td colspan="5" class="muted">Carregando…</td></tr>`}</table></div></div>
+ ${P?`<form class="card" onsubmit="event.preventDefault();addEquipeM()"><h2>Incluir pessoa na equipe da Matriz</h2>
+  <div class="msg info">Antes, crie o usuário no Supabase: <b>Authentication › Users › Add user › Create new user</b>, com senha provisória e <b>Auto Confirm User</b>. No primeiro acesso ao painel, a pessoa troca a senha e ativa a verificação em duas etapas.</div>
+  <div class="row"><label>E-mail *<input id="eqe" type="email" required></label><label>Nome *<input id="eqn" required maxlength="80"></label></div>
+  <button class="btn amb">Incluir na equipe</button></form>`:`<p class="muted">Só o titular inclui ou inativa pessoas da equipe.</p>`}`}
+async function addEquipeM(){try{E.msg=["ok",await DB.addEquipeM($("#eqe").value.trim(),$("#eqn").value.trim())];E.eqm=null;render()}catch(er){E.msg=["err",er.message];render()}}
+async function sitEquipeM(u,a){let m=null;if(!a){m=prompt("Motivo da inativação (ex.: saiu da sociedade):");if(m===null)return}try{E.msg=["ok",await DB.situacaoEquipeM(u,a,m)];E.eqm=null;render()}catch(er){E.msg=["err",er.message];render()}}
+function abaDadosM(){if(!E.dm){E.dm={};DB.dadosM().then(d=>{E.dm=d||{};render()}).catch(()=>{})}const d=E.dm,i=(k,t,m,x)=>`<label>${t}<input id="dm_${k}" maxlength="${m}" value="${esc(d[k]||"")}" ${x||""}></label>`;
+ return cab2("Dados da Matriz","A própria Atalaia System: usados depois em cobrança, contratos, comunicados e rodapés")+
+ `<form class="card" onsubmit="event.preventDefault();salvarDadosM()"><h2>Atalaia System</h2>
+  <div class="msg info">Estes dados podem aparecer para os clientes. <b>Não coloque CPF nem endereço residencial.</b> Enquanto não houver CNPJ, deixe o campo em branco: fica só o nome Atalaia System e o e-mail de contato.</div>
+  <div class="row">${i("nome","Nome",120)}${i("razao_social","Razão social (quando tiver empresa)",150)}</div>
+  <div class="row">${i("cnpj","CNPJ (quando tiver)",18,'placeholder="00.000.000/0000-00"')}${i("email_contato","E-mail de contato",120,'type="email"')}${i("telefone","Telefone / WhatsApp comercial",30)}</div>
+  ${i("site","Site",150)}
+  <div class="row">${i("cep","CEP",9)}${i("logradouro","Rua / avenida (comercial)",150)}${i("numero","Número",20)}</div>
+  <div class="row">${i("complemento","Complemento",80)}${i("bairro","Bairro",80)}${i("cidade","Cidade",80)}${i("uf","UF",2)}</div>
+  <button class="btn amb">Salvar dados da Matriz</button></form>`}
+async function salvarDadosM(){const d={};["nome","razao_social","cnpj","email_contato","telefone","site","cep","logradouro","numero","complemento","bairro","cidade","uf"].forEach(k=>{d[k]=$("#dm_"+k).value.trim()});try{E.msg=["ok",await DB.salvarDadosM(d)];E.dm=await DB.dadosM();render()}catch(er){E.msg=["err",er.message];render()}}
 async function salvarFicha(s){try{await DB.atualizarContratante(s,$("#fn").value,$("#fg").value,$("#fc").value);toast("Dados salvos.");await recarregar()}catch(e){E.msg=["err",e.message];render()}}
 
 /* ---------- planos e limites ---------- */
