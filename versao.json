@@ -1,1 +1,1 @@
-{"app": "0.3.12", "gestor": "0.9.6", "matriz": "0.3.6", "novidade": "Lista de bens com coluna e filtro de Unidade; abrir chamado escolhendo a unidade e avisando quando o bem é de terceiro."}
+{"app": "0.3.13", "gestor": "0.9.7", "matriz": "0.3.6", "novidade": "Segurança: quando o acesso de uma pessoa é desativado, o aparelho dela apaga as cópias guardadas para uso sem internet e encerra a sessão."}

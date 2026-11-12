@@ -136,7 +136,7 @@ label.f{display:grid;gap:5px;font-weight:600;font-size:.85rem;margin-bottom:10px
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.6"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.7"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -732,7 +732,7 @@ async function posLogin(novo){
   const u=await DB.usuario();E.uid=u?.id;
   if(!u?.user_metadata?.senha_definida){E.tela="negado";E.negMsg="Crie sua senha pessoal primeiro";E.negSub="No primeiro acesso, a senha provisória precisa ser trocada pelo aplicativo.";render();return}
   E.v=await DB.vinculo();
-  if(!E.v){const ina=await DB.acessoInativo();if(ina){E.tela="negado";E.negMsg="Seu acesso foi desativado";E.negSub=`A empresa ${ina.empresa||""} desativou o seu acesso${ina.inativado_em?" em "+new Date(ina.inativado_em).toLocaleDateString("pt-BR"):""}. Se for um engano, fale com o Gestor ou o Administrador da sua unidade.`;render();return}E.tela="negado";E.negMsg="Acesso ainda não liberado";E.negSub="Seu e-mail não está ligado a uma empresa.";render();return}
+  if(!E.v){const ina=await DB.acessoInativo();if(ina){apagarDadosLocais(DEMO?"atalaia-painel-demo":"atalaia-painel");E.tela="negado";E.negMsg="Seu acesso foi desativado";E.negSub=`A empresa ${ina.empresa||""} desativou o seu acesso${ina.inativado_em?" em "+new Date(ina.inativado_em).toLocaleDateString("pt-BR"):""}. Se for um engano, fale com o Gestor ou o Administrador da sua unidade.`;render();return}E.tela="negado";E.negMsg="Acesso ainda não liberado";E.negSub="Seu e-mail não está ligado a uma empresa.";render();return}
   if(!["administrador","gestor"].includes(E.v.perfil)){E.tela="negado";E.negMsg="O painel é para o Gestor e os Administradores";E.negSub="Colaboradores usam o aplicativo do celular no dia a dia.";render();return}
   aplicarDesign(E.v.contratantes.design);E.tela="painel";if(novo)DB.registrar(E.v.contratante_id,"entrou",null);await recarregar();
 }
@@ -990,6 +990,10 @@ async function acaoCh(a){const c=E.modal.c,o={};
 async function excluirCh(){const c=E.modal.c,mot=($("#xm").value||"").trim();if(mot.length<5){E.modal.erro="Escreva o motivo da exclusão (pelo menos 5 letras).";render();return}
   try{await DB.excluir("chamados",c.id,mot);E.desfazer={t:"chamados",id:c.id,nome:"Chamado nº "+c.numero,ate:Date.now()+115000};E.modal=null;toast("Chamado excluído. Pode desfazer por 2 minutos.");await recarregar()}catch(e){E.modal.erro=e.message;render()}}
 function novoChamado(){E.modal={tipo:"novoch"};render()}
+/* Acesso desativado: apaga do aparelho a cópia do painel guardada para consulta sem internet e encerra a sessão local */
+function apagarDadosLocais(banco){try{indexedDB.deleteDatabase(banco)}catch(e){}
+  try{Object.keys(localStorage).filter(k=>/^atalaia[._-]/i.test(k)&&!/tema|theme|pal/i.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}
+  try{if(typeof sb!="undefined"&&sb&&sb.auth)sb.auth.signOut({scope:"local"}).catch(()=>{})}catch(e){}}
 /* Bens de terceiros: aviso automático ao representante da unidade (SQL 35) */
 const AVT_SIT={pendente:"⏳ enviando",enviado:"✅ enviado",erro:"⚠️ não enviado",sem_email:"⚠️ sem e-mail do representante",nao_enviado:"ℹ️ não enviado"};
 function waNum(w){w=String(w||"").replace(/\D/g,"");if(!w)return "";return w.length<=11?"55"+w:w}

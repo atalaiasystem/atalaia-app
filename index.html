@@ -110,7 +110,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.12",
+  versao:"0.3.13",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -287,7 +287,13 @@ function telaAtivar(){
  <p style="margin-top:14px"><b>3.</b> Digite o código de 6 números que aparece no aplicativo.</p>
  <form onsubmit="event.preventDefault();confirmarAtivacao()"><label>Código<input id="otp" class="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button class="btn full" ${i?"":"disabled"}>Ativar</button></form>
  <p style="text-align:center;margin:12px 0 0">${E.obrig?`<button class="btn ghost sm" onclick="sair()">Sair</button>`:`<button class="btn ghost sm" onclick="E.tela='app';E.insc=null;E.msg=null;render()">Agora não</button>`}</p></div></div>`}
-function telaSemAcesso(){const ina=E.inativo;if(!ina&&!E.inaChk&&DB.acessoInativo){E.inaChk=1;DB.acessoInativo().then(r=>{if(r){E.inativo=r;render()}}).catch(()=>{})}return cab()+`<div class="wrap center"><div class="card">${ina?`<h2>Seu acesso foi desativado</h2><p class="sub">A empresa ${esc(ina.empresa||"")} desativou o seu acesso${ina.inativado_em?" em "+new Date(ina.inativado_em).toLocaleDateString("pt-BR"):""}. Se for um engano, fale com o Gestor ou o Administrador da sua unidade.</p>`:`<h2>Acesso ainda não liberado</h2><p class="sub">Seu e-mail entrou, mas ainda não está ligado a uma empresa. Peça à equipe do Atalaia System para concluir o cadastro.</p>`}<button class="btn ghost" onclick="sair()">Sair</button></div></div>`}
+/* Acesso desativado: apaga do aparelho as cópias guardadas para uso sem internet e encerra a sessão local */
+function apagarDadosLocais(banco){try{if(typeof OFF!="undefined"){OFF.mem={};OFF.fila=[];OFF.mapa={}}}catch(e){}
+  try{if(typeof offIdbP!="undefined"&&offIdbP){offIdbP.then(d=>{try{d.close()}catch(e){}}).catch(()=>{});offIdbP=null}}catch(e){}
+  try{indexedDB.deleteDatabase(banco)}catch(e){}
+  try{Object.keys(localStorage).filter(k=>/^atalaia[._-]/i.test(k)&&!/tema|theme|pal/i.test(k)).forEach(k=>localStorage.removeItem(k))}catch(e){}
+  try{if(typeof sb!="undefined"&&sb&&sb.auth)sb.auth.signOut({scope:"local"}).catch(()=>{})}catch(e){}}
+function telaSemAcesso(){const ina=E.inativo;if(!ina&&!E.inaChk&&DB.acessoInativo){E.inaChk=1;DB.acessoInativo().then(r=>{if(r){E.inativo=r;apagarDadosLocais("atalaia-off");render()}}).catch(()=>{})}return cab()+`<div class="wrap center"><div class="card">${ina?`<h2>Seu acesso foi desativado</h2><p class="sub">A empresa ${esc(ina.empresa||"")} desativou o seu acesso${ina.inativado_em?" em "+new Date(ina.inativado_em).toLocaleDateString("pt-BR"):""}. Se for um engano, fale com o Gestor ou o Administrador da sua unidade.</p>`:`<h2>Acesso ainda não liberado</h2><p class="sub">Seu e-mail entrou, mas ainda não está ligado a uma empresa. Peça à equipe do Atalaia System para concluir o cadastro.</p>`}<button class="btn ghost" onclick="sair()">Sair</button></div></div>`}
 function telaApp(){
   const c=E.v.contratantes,p=c.planos;
   const corpo=E.aba=="man"?abaMan():E.aba=="ron"&&typeof abaRon=="function"?abaRon():E.aba=="bens"?abaBens(p):E.aba=="amb"?abaAmb(p):abaPlano(p);
