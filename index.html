@@ -110,7 +110,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.13",
+  versao:"0.3.14",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -746,6 +746,7 @@ function realMan(){const chk=({data,error})=>{if(error)throw new Error(traduz(er
   async acaoCh(id,a,o){o=o||{};return chk(await sb.rpc("chamado_acao",{p_id:id,p_acao:a,p_nota:o.nota||null,p_responsavel:o.resp||null,p_solucao:o.solucao||null,p_custo:o.custo??null}))},
   async ajudar(id){return chk(await sb.rpc("entrar_ajudante",{p_chamado:id}))},
   async carimbo(id){return chk(await sb.rpc("carimbo_chamado",{p_id:id}))},
+  async horaLocal(e){return chk(await sb.rpc("hora_local",{p_estab:e||null}))},
   async subirFotoCh(c,id,blob,etapa){const p=`${c}/chamados/${id}/${etapa}_${crypto.randomUUID()}.jpg`;chk(await sb.storage.from("fotos-bens").upload(p,blob,{contentType:"image/jpeg"}));return p},
   async regFoto(id,p,etapa,tirada,g,carimbo){return chk(await sb.rpc("registrar_foto_chamado",{p_id:id,p_path:p,p_etapa:etapa,p_tirada_em:tirada,p_lat:g?g.lat:null,p_lng:g?g.lng:null,p_precisao:g?g.acc:null,p_carimbo:carimbo}))},
   async abrirChM(amb,desc,pri,bem,origem){return chk(await sb.rpc("abrir_chamado",{p_ambiente:amb,p_descricao:desc,p_prioridade:pri,p_bem:bem||null,p_origem:origem||"app"}))},
@@ -767,7 +768,8 @@ function mockMan(){const w=ms=>new Promise(r=>setTimeout(r,ms)),agora=()=>new Da
      else if(a=="confirmar"){Object.assign(c,{situacao:"confirmado",confirmado_em:agora()});ev("confirmado")}
      else if(a=="reabrir"){Object.assign(c,{situacao:"em_atendimento",concluido_em:null});ev("reaberto")}return c},
    async ajudar(id){(AJ[id]=AJ[id]||[]).push({user_id:meuId(),nome:E.v.nome,em:agora()});return "ok"},
-   async carimbo(id){const c=CH.find(x=>x.id==id);return {numero:c.numero,unidade:"Hospital A",ambiente:nomeAmbC(c.ambiente_id),empresa:E.v.contratantes.nome,agora:new Date().toLocaleString("pt-BR")}},
+   async carimbo(id){const c=CH.find(x=>x.id==id);return {numero:c.numero,unidade:"Hospital A",ambiente:nomeAmbC(c.ambiente_id),empresa:E.v.contratantes.nome,agora:new Date().toLocaleString("pt-BR")+" (hora do aparelho · demonstração)"}},
+   async horaLocal(){return {agora:new Date().toLocaleString("pt-BR"),rotulo:"horário do aparelho · demonstração"}},
    async subirFotoCh(ci,id,blob,etapa){const p="demo/ch/"+Date.now()+Math.random();E.fotos[p]=URL.createObjectURL(blob);return p},
    async regFoto(id,p,etapa,tirada,g,carimbo){(FO[id]=FO[id]||[]).push({path:p,etapa,tirada_em:tirada,na_hora:Date.now()-Date.parse(tirada)<6e5,carimbo});return {na_hora:true}},
    async abrirChM(amb,desc,pri,bem,origem){await w(200);const c={id:"k"+n,numero:n++,ambiente_id:amb,estabelecimento_id:"e1",descricao:desc,prioridade:pri,situacao:"aberto",origem,aberto_em:agora(),bem_id:bem,prazo_resolver:h(-24)};CH.unshift(c);return c},
@@ -861,10 +863,12 @@ async function concluirMan(){const sol=($("#msol").value||"").trim(),mat=($("#mm
   try{const r=await DB.acaoCh(E.chSel,"concluir",{solucao:txt,custo:cus===""?null:Number(cus)});const i=(E.chs||[]).findIndex(x=>x.id==E.chSel);if(i>=0)E.chs[i]={...E.chs[i],...r};E.mcd={};toast("Chamado concluído. Aguardando a confirmação.");carregarItem()}catch(e){toast(e.message)}}
 
 /* ---- foto com carimbo ---- */
+/* hora do servidor no fuso da unidade; sem internet, hora do aparelho (marcada) */
+async function horaFoto(estab){try{if(typeof semRede=="function"&&semRede())throw 0;const h=await DB.horaLocal(estab);return `${h.agora} (${h.rotulo}${/demonstra/.test(h.rotulo)?"":", hora do servidor"})`}catch(e){return new Date().toLocaleString("pt-BR")+" (hora do aparelho)"}}
 function pegarGPS(){return new Promise(ok=>{if(!navigator.geolocation)return ok(null);navigator.geolocation.getCurrentPosition(p=>ok({lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6),acc:Math.round(p.coords.accuracy)}),()=>ok(null),{enableHighAccuracy:true,timeout:7000,maximumAge:60000})})}
 async function fotoCh(inp,etapa){const f=inp.files&&inp.files[0];if(!f)return;const c=(E.chs||[]).find(x=>x.id==E.chSel);toast("Preparando a foto com carimbo…");
   try{const [cb,g]=await Promise.all([DB.carimbo(c.id),pegarGPS()]);
-    const L=[`Chamado nº ${cb.numero} · ${ETAPAS_F[etapa]||etapa}`,[cb.unidade,cb.ambiente].filter(Boolean).join(" · "),`${cb.agora} (horário do servidor)`,g?`GPS ${g.lat}, ${g.lng} (±${g.acc} m)`:"Localização não autorizada",`Atalaia System · ${E.v.nome||""}`];
+    const L=[`Chamado nº ${cb.numero} · ${ETAPAS_F[etapa]||etapa}`,[cb.unidade,cb.ambiente].filter(Boolean).join(" · "),(cb.rotulo?`${cb.agora} (${cb.rotulo}, hora do servidor)`:cb.agora),g?`GPS ${g.lat}, ${g.lng} (±${g.acc} m)`:"Localização não autorizada",`Atalaia System · ${E.v.nome||""}`];
     const blob=await carimbar(f,L);const p=await DB.subirFotoCh(E.v.contratante_id,c.id,blob,etapa);
     const r=await DB.regFoto(c.id,p,etapa,new Date(f.lastModified||Date.now()).toISOString(),g,L.join(" | "));
     toast(r&&r.na_hora===false?"Foto enviada, mas marcada como “não tirada na hora”.":`Foto ${ETAPAS_F[etapa].toLowerCase()} enviada.`);carregarItem()}catch(e){toast(e.message||"Não foi possível enviar a foto.")}inp.value=""}
@@ -954,7 +958,7 @@ function ronVistoria(){const a=(E.amb||[]).find(x=>x.id==E.rv.a),I=itensDeC(a),m
    ${m.res[i]=="ocorrencia"?`<input id="rvd${i}" placeholder="O que encontrou?" value="${esc(m.desc[i]||"")}" maxlength="300"><div class="fpick ${m.foto[i]?"ok":""}"><span>${m.foto[i]?"✔ foto anexada":"Foto da ocorrência (opcional)"}</span><label class="btn ghost sm" style="margin:0">📷 ${m.foto[i]?"Trocar":"Tirar foto"}<input type="file" accept="image/*" capture="environment" hidden onchange="fotoRonda(this,${i})"></label></div>`:""}</div>`).join("")}</div>
   <button class="btn full" ${n<I.length?"disabled":""} onclick="fecharAmbC()">Fechar ambiente (${n}/${I.length})</button>`}
 async function fotoRonda(inp,i){const f=inp.files&&inp.files[0];if(!f)return;guardaDescC();const a=(E.amb||[]).find(x=>x.id==E.rv.a),I=itensDeC(a);toast("Preparando a foto…");
-  try{const g=await pegarGPS();const L=[`Ronda · ${a.nome}`,`${nomeUni(a.estabelecimento_id)||""}${nomeUni(a.estabelecimento_id)?" · ":""}${I[i]}`,`${new Date().toLocaleString("pt-BR")} (horário do aparelho)`,g?`GPS ${g.lat}, ${g.lng} (±${g.acc} m)`:"Localização não autorizada",`Atalaia System · ${E.v.nome||""}`];
+  try{const g=await pegarGPS();const L=[`Ronda · ${a.nome}`,`${nomeUni(a.estabelecimento_id)||""}${nomeUni(a.estabelecimento_id)?" · ":""}${I[i]}`,await horaFoto(a.estabelecimento_id),g?`GPS ${g.lat}, ${g.lng} (±${g.acc} m)`:"Localização não autorizada",`Atalaia System · ${E.v.nome||""}`];
     const blob=await carimbar(f,L);E.rv.foto[i]=await DB.subirFotoRonda(E.v.contratante_id,blob);toast("Foto anexada.");render()}catch(e){toast(e.message||"Não foi possível enviar a foto.")}inp.value=""}
 async function rondaParaC(t){const u=minhaUniC();if(t=="ambientes"&&E.ron.aberta)return E.ron.aberta;const id=await DB.iniRonda(u,t);if(t=="ambientes")E.ron.aberta=id;return id}
 async function fecharAmbC(){guardaDescC();const m=E.rv,a=(E.amb||[]).find(x=>x.id==m.a),I=itensDeC(a);const itens=I.map((t,i)=>({item:t,resultado:m.res[i],descricao:m.res[i]=="ocorrencia"?(m.desc[i]||"").trim():null,foto:m.res[i]=="ocorrencia"?(m.foto[i]||null):null}));

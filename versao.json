@@ -1,1 +1,1 @@
-{"app": "0.3.13", "gestor": "0.9.8", "matriz": "0.3.7", "novidade": "Gestor principal da empresa (não pode ser inativado; só ele cria e inativa Gestores) e segurança ao inativar pessoas."}
+{"app": "0.3.14", "gestor": "0.9.10", "matriz": "0.3.7", "novidade": "Fuso horário por unidade: carimbo das fotos (chamado e ronda) com a hora do servidor no horário da unidade; datas do painel no horário local."}
