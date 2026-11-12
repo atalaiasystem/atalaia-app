@@ -108,7 +108,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.9"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.10"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -149,6 +149,8 @@ function realDB(){
     dadosM:async()=>{const r=await sb.from("matriz_dados").select("*").eq("id",1).maybeSingle();return r.error?{}:(r.data||{})},
     salvarDadosM:d=>rpc("matriz_salvar_dados",{p:d}),
     async convidarM(email,nome,destino){const {data,error}=await sb.functions.invoke("convidar-matriz",{body:{email,nome,destino}});if(error){let m=null,st=error.context&&error.context.status;try{m=(await error.context.json()).erro}catch(x){}if(!m&&(st==404||/Failed to send|not found|FunctionsFetchError|FunctionsRelayError/i.test(error.name+" "+error.message))){const e=new Error("sem_funcao");e.semFuncao=true;throw e}throw new Error(m||error.message)}if(data&&data.erro)throw new Error(data.erro);return data},
+    avisosCad:async()=>{const r=await sb.from("avisos_cadastro").select("*").order("criado_em",{ascending:false}).limit(100);return r.error?[]:(r.data||[])},
+    avisosTit:async()=>{const r=await sb.from("avisos_titular").select("*").order("criado_em",{ascending:false}).limit(100);return r.error?[]:(r.data||[])},
     titularVer:()=>rpc("matriz_titular_ver"),salvarTitular:d=>rpc("matriz_titular_salvar",{p:d}),
     equipeM:()=>rpc("matriz_equipe_lista"),souPrincipalM:()=>rpc("e_matriz_principal"),
     addEquipeM:(e,n)=>rpc("matriz_adicionar_equipe",{p_email:e,p_nome:n}),
@@ -198,6 +200,8 @@ function mockDB(){
     async addEquipeM(e,n){if((n||"").trim().length<3)throw new Error("Informe o nome.");(await this.equipeM()).push({user_id:"m"+Date.now(),nome:n,email:e,principal:false,ativo:true,criado_em:new Date().toISOString()});return e+" agora faz parte da equipe da Matriz (demonstração)."},
     async situacaoEquipeM(u,a,m){if(!a&&(m||"").trim().length<5)throw new Error("Escreva o motivo (pelo menos 5 letras).");const x=(await this.equipeM()).find(y=>y.user_id==u);Object.assign(x,{ativo:a,inativado_em:a?null:new Date().toISOString(),motivo_inativacao:a?null:m});return x.nome+(a?" foi reativado(a).":" foi inativado(a).")},
     async convidarM(e,n){if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e||""))throw new Error("E-mail inválido.");return {ok:true,mensagem:"Convite enviado (demonstração): a pessoa recebe um e-mail do Atalaia System para criar a senha."}},
+    async avisosCad(){const h=Date.now();return [{id:1,para:"matriz",empresa:"Hospital Teste",unidade:"Hospital B",perfil_novo:"colaborador",por_perfil:"administrador",criado_em:new Date(h-3600e3).toISOString()},{id:2,para:"matriz_principal",empresa:"Atalaia System (equipe da Matriz)",perfil_novo:"matriz",nome_novo:"Ajudante Exemplo",por_perfil:"matriz",por_nome:"Sócio exemplo",criado_em:new Date(h-7200e3).toISOString()}]},
+    async avisosTit(){return [{id:1,quem:"Sócio exemplo",acao:"alterou situação",detalhe:"HTA · leitura",empresa:"Hospital Teste",importante:true,criado_em:new Date(Date.now()-5400e3).toISOString()}]},
     async titularVer(){return window.__TIT||(window.__TIT={nome_completo:"",cpf:"",inicio_sistema:"2026-10-24"})},
     async salvarTitular(d){if(!d.nome_completo||d.nome_completo.trim().indexOf(" ")<0)throw new Error("Escreva o nome completo.");window.__TIT={...window.__TIT,...d};return "Dados do titular salvos (demonstração)."},
     async salvarDadosM(d){window.__DM={...window.__DM,...d};return "Dados da Matriz salvos (demonstração)."},
@@ -233,14 +237,14 @@ function telaAtivar(){const i=E.insc;return `<div class="center wrap" style="max
 function telaNegado(){return `<div class="center wrap"><div class="card"><h2>Acesso não permitido</h2><p class="sub">Esta conta não faz parte da equipe da Matriz.</p><button class="btn ghost" onclick="sair()">Sair</button></div></div>`}
 const MENU=[["grp","Negócio"],["visao","Dashboard"],["fin","Receita e métricas"],["saude","Saúde dos clientes"],["uso","Uso e adoção"],["funil","Funil comercial"],
  ["grp","Clientes"],["empresas","Contratantes"],["cadastrar","Cadastrar empresa"],["planos","Planos e limites"],["mods","Adicionais de uso"],["fat","Cobrança","B"],["atend","Atendimento ao cliente"],["sup","Acessos de suporte","B"],["com","Comunicados","B"],
- ["grp","Operação"],["infra","Infraestrutura e versões"],["ind","Indicadores"],["acessos","Registro de acessos"],["equipem","Equipe da Matriz"],["seg","Segurança e LGPD","C"],
+ ["grp","Operação"],["infra","Infraestrutura e versões"],["ind","Indicadores"],["acessos","Registro de acessos"],["avisos","Avisos 🔔"],["equipem","Equipe da Matriz"],["seg","Segurança e LGPD","C"],
  ["grp","Painel"],["dadosm","Dados da Matriz"],["titular","Titular do sistema 🔒"],["design","Design do painel"],["ajuda","Como usar","C"]];
 function telaPainel(){
   const ab=E.tks.filter(t=>t.situacao!="resolvido").length;
-  const T={visao:abaVisao,empresas:abaEmpresas,saude:abaSaude,fin:abaFin,uso:abaUso,funil:abaFunil,atend:abaAtend,infra:abaInfra,ind:abaInd,cadastrar:abaCadastrar,acessos:abaAcessos,planos:abaPlanos,mods:abaMods,design:abaDesign,ficha:abaFicha,dadosm:abaDadosM,equipem:abaEquipeM,titular:abaTitular};
+  const T={visao:abaVisao,empresas:abaEmpresas,saude:abaSaude,fin:abaFin,uso:abaUso,funil:abaFunil,atend:abaAtend,infra:abaInfra,ind:abaInd,cadastrar:abaCadastrar,acessos:abaAcessos,planos:abaPlanos,mods:abaMods,design:abaDesign,ficha:abaFicha,dadosm:abaDadosM,equipem:abaEquipeM,titular:abaTitular,avisos:abaAvisosM};
   const it=MENU.find(m=>m[0]==E.aba),corpo=T[E.aba]?T[E.aba]():emBreve(it);
   return `<div class="shell"><aside class="side"><div class="sbrand"><div class="lg">${LOGO}</div><div><b>Painel da Matriz</b><small>Atalaia System · versão ${CONFIG.versao}</small></div></div>
-  <nav class="smenu">${MENU.filter(m=>m[0]!="titular"||E.souP).map(m=>m[0]=="grp"?`<div class="grp">${m[1]}</div>`:`<button aria-current="${E.aba==m[0]||(E.aba=="ficha"&&m[0]=="empresas")}" onclick="irAba('${m[0]}')">${m[1]}${m[0]=="atend"&&ab?`<span class="bdg">${ab}</span>`:""}${m[2]?`<span class="soon">parte ${m[2]}</span>`:""}</button>`).join("")}</nav>
+  <nav class="smenu">${MENU.filter(m=>m[0]!="titular"||E.souP).map(m=>m[0]=="grp"?`<div class="grp">${m[1]}</div>`:`<button aria-current="${E.aba==m[0]||(E.aba=="ficha"&&m[0]=="empresas")}" onclick="irAba('${m[0]}')">${m[1]}${m[0]=="atend"&&ab?`<span class="bdg">${ab}</span>`:""}${m[0]=="avisos"&&E.avN?`<span class="bdg">${E.avN}</span>`:""}${m[2]?`<span class="soon">parte ${m[2]}</span>`:""}</button>`).join("")}</nav>
   <div style="border-top:1px solid var(--line);margin-top:10px;padding:10px 8px 0" class="muted">${esc(E.email)}<br><button class="btn ghost sm" style="margin-top:6px" onclick="sair()">Sair</button> <button class="btn ghost sm" style="margin-top:6px;color:var(--bad)" onclick="sairTodos()" title="Encerra o acesso em todos os computadores e celulares">Sair de todos os aparelhos</button></div></aside>
   <main class="mn"><div class="wrap">${E.hist.length?`<button class="btn ghost sm" style="margin-bottom:10px" onclick="voltar()">← Voltar</button>`:""}${msgH()}${corpo}
   <p class="lgpd">A Matriz vê apenas quantidades de uso. Os dados cadastrados pelos clientes (bens, fotos, valores e pessoas) pertencem a eles e não aparecem neste painel (LGPD: cliente controlador, Atalaia System operadora).</p><p class="muted" style="text-align:center;margin-top:10px">Atalaia System · Painel da Matriz ${CONFIG.versao}</p></div></main></div>${E.det?detalheHTML():""}`;
@@ -561,6 +565,17 @@ async function salvarTitular(){const d={nome_completo:$("#ti_nome").value.trim()
  try{E.msg=["ok",await DB.salvarTitular(d)];E.tit=null;render()}catch(er){E.msg=["err",er.message];render()}}
 /* convite por e-mail (item 59): cria o login e manda o e-mail; se a função ainda não estiver publicada, segue como antes */
 async function convite(email,nome,destino){try{const r=await DB.convidarM(email,nome,destino);return " "+(r&&r.mensagem||"Convite enviado.")}catch(e){if(e.semFuncao)return "";throw e}}
+/* ---------- Avisos (item 63): pessoa nova cadastrada + ações da equipe (só o titular) ---------- */
+const PERFIL_R={gestor:"Gestor",administrador:"Administrador",colaborador:"Colaborador",manutencionista:"Colaborador",responsavel:"Responsável por ambiente",matriz:"Equipe da Matriz",sistema:"Sistema"};
+function vistoAv(){try{return Number(localStorage.getItem("atalaia.matriz.avisos_visto")||0)}catch(e){return 0}}
+async function carregarAvisosM(){try{const [c,t]=await Promise.all([DB.avisosCad(),E.souP?DB.avisosTit():Promise.resolve([])]);E.avc=c||[];E.avt=t||[];const v=vistoAv();E.avN=[...E.avc,...E.avt].filter(a=>Date.parse(a.criado_em)>v).length}catch(e){E.avc=[];E.avt=[];E.avN=0}}
+function abaAvisosM(){const v=vistoAv();setTimeout(()=>{try{localStorage.setItem("atalaia.matriz.avisos_visto",String(Date.now()))}catch(e){}E.avN=0},0);
+ const novo=a=>Date.parse(a.criado_em)>v?` <span class="pill">novo</span>`:"",c=E.avc||[],t=E.avt||[];
+ return cab2("Avisos","Controle de quem é cadastrado e do que a equipe da Matriz faz")+
+ `<div class="card"><h2>Pessoas novas cadastradas</h2><p class="sub">Administrador cadastrou → avisa o Gestor e a Matriz · Gestor cadastrou → avisa a Matriz · alguém da Matriz cadastrou → avisa só o titular. Por privacidade (LGPD), a Matriz não recebe nome nem e-mail das pessoas dos clientes.</p>
+  <div class="tw"><table><tr><th>Quando</th><th>Empresa</th><th>Unidade</th><th>Pessoa nova</th><th>Cadastrada por</th></tr>${c.map(a=>`<tr><td>${dh(a.criado_em)}${novo(a)}</td><td>${esc(a.empresa||"—")}</td><td>${esc(a.unidade||"—")}</td><td>${esc(PERFIL_R[a.perfil_novo]||a.perfil_novo)}${a.nome_novo?` · ${esc(a.nome_novo)}`:""}</td><td>${esc(PERFIL_R[a.por_perfil]||a.por_perfil||"—")}${a.por_nome?` · ${esc(a.por_nome)}`:""}${a.para=="matriz_principal"?` <span class="pill">só para você</span>`:""}</td></tr>`).join("")||`<tr><td colspan="5" class="muted">Nenhum cadastro novo nos últimos dias.</td></tr>`}</table></div></div>
+ ${E.souP?`<div class="card"><h2>🔒 O que a equipe da Matriz fez</h2><p class="sub">Só você (★ titular) vê esta lista. Tudo o que um gerente ou ajudante da Matriz faz (cadastrar, alterar, encerrar, inativar, excluir) aparece aqui. Em destaque, o que muda situação, plano ou acesso.</p>
+  <div class="tw"><table><tr><th>Quando</th><th>Quem</th><th>O que fez</th><th>Empresa / detalhe</th></tr>${t.map(a=>`<tr${a.importante?' style="background:color-mix(in srgb,var(--bad) 9%,transparent)"':""}><td>${dh(a.criado_em)}${novo(a)}</td><td>${esc(a.quem||"—")}</td><td>${a.importante?"⚠️ ":""}${esc(a.acao)}</td><td>${esc([a.empresa,a.detalhe].filter(Boolean).join(" · ")||"—")}</td></tr>`).join("")||`<tr><td colspan="4" class="muted">A equipe ainda não fez nenhuma ação.</td></tr>`}</table></div></div>`:""}`}
 async function salvarFicha(s){try{await DB.atualizarContratante(s,$("#fn").value,$("#fg").value,$("#fc").value);toast("Dados salvos.");await recarregar()}catch(e){E.msg=["err",e.message];render()}}
 
 /* ---------- planos e limites ---------- */
@@ -641,7 +656,7 @@ async function posLogin(novo){
 }
 async function confirmarMfa(){try{const f=(await DB.fatores()).find(x=>x.status=="verified");await DB.verificar(f.id,$("#otp").value.trim());await posLogin(true)}catch(e){E.msg=["err",e.message];render()}}
 async function confirmarAtivacao(){try{await DB.verificar(E.insc.id,$("#otp").value.trim());E.insc=null;toast("Verificação em duas etapas ativada.");await posLogin(true);DB.registrar("ativou a verificação em duas etapas")}catch(e){E.msg=["err",e.message];render()}}
-async function recarregar(){try{[E.ind,E.cts,E.acessos,E.infra,E.leads,E.tks,E.planos,E.ads,E.recAd]=await Promise.all([DB.indicadores(),DB.contratantes(),DB.meusAcessos(),DB.infra(),DB.interessados(),DB.chamados(),DB.planos(),DB.adicionais(),DB.receitaAdicionais()]);E.souP=!!(await DB.souPrincipalM().catch(()=>false))}catch(e){E.msg=["err",e.message]}render()}
+async function recarregar(){try{[E.ind,E.cts,E.acessos,E.infra,E.leads,E.tks,E.planos,E.ads,E.recAd]=await Promise.all([DB.indicadores(),DB.contratantes(),DB.meusAcessos(),DB.infra(),DB.interessados(),DB.chamados(),DB.planos(),DB.adicionais(),DB.receitaAdicionais()]);E.souP=!!(await DB.souPrincipalM().catch(()=>false));await carregarAvisosM()}catch(e){E.msg=["err",e.message]}render()}
 function irAba(k){if(k!="titular")E.tit=null;if(E.aba!==k)E.hist.push(E.aba);if(E.hist.length>20)E.hist.shift();E.aba=k;E.msg=null;render();scrollTo(0,0)}
 function voltar(){E.aba=E.hist.pop()||"visao";E.msg=null;render();scrollTo(0,0)}
 async function sair(){await DB.sair();Object.assign(E,{tela:"login",msg:null,ind:null,cts:[],acessos:[],aba:"visao"});render()}

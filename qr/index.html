@@ -40,7 +40,7 @@ footer{text-align:center;color:var(--mut);font-size:.78rem;padding:8px 16px 24px
 <div id="app"><div class="wrap"><p class="muted">Carregando…</p></div></div>
 <script>
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.1.0"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.1.1"};
 const P=new URLSearchParams(location.search),DEMO=P.has("demo");
 const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const dh=d=>d?new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
@@ -48,7 +48,7 @@ let sb=null;
 const traduz=m=>m||"Não foi possível agora. Tente de novo.";
 const DB=DEMO?{
   async amb(){return {ambiente:"Sala de exames",unidade:"Filial Norte",empresa:"Clínica Exemplo",design:{},avalie:true,bens:[{id:"b1",nome:"Monitor multiparâmetro",patrimonio:"CE-0001"},{id:"b2",nome:"Ar-condicionado",patrimonio:"CE-0005"}]}},
-  async abrir(){return {numero:17,codigo:"demo17",aberto_em:new Date().toISOString()}},
+  async abrir(){return {numero:17,protocolo:"DEMO-2026-00017",codigo:"demo17",aberto_em:new Date().toISOString()}},
   async ver(){return {numero:17,situacao:P.get("sit")||"concluido",aberto_em:new Date(Date.now()-5*36e5).toISOString(),aceito_em:new Date(Date.now()-4*36e5).toISOString(),concluido_em:new Date(Date.now()-36e5).toISOString(),ambiente:"Sala de exames",descricao:"Ar-condicionado pingando",solucao:"Dreno desentupido e testado.",avaliacao:null}},
   async avaliar(){return "Obrigado pela avaliação!"},
   async avalie(){return "Mensagem enviada. Obrigado!"}
@@ -91,9 +91,9 @@ function contagem(n){clearInterval(_vt);_vt=setInterval(()=>{n--;const e=$("#vs"
 function voltarInicio(){pararVolta();const t=P.get("t")||((lerMeus().find(x=>x.codigo==(S.c||P.get("c")))||{}).t);location.href=t?"?t="+encodeURIComponent(t):"./"}
 async function enviar(){const d=$("#d").value.trim();if(d.length<5){formulario("Descreva o problema (pelo menos 5 letras).");return}
   const b=$("#env");b.disabled=true;b.textContent="Enviando…";
-  try{const r=await DB.abrir(P.get("t"),d,$("#n").value.trim(),$("#c").value.trim(),$("#b")?$("#b").value:null,S.pri);
-    guardarMeu({codigo:r.codigo,numero:r.numero,ambiente:S.a.ambiente,em:r.aberto_em,t:P.get("t")});
-    $("#app").innerHTML=cab(S.a)+`<div class="wrap"><div class="card" style="text-align:center"><p class="sub" style="margin:0">Chamado registrado</p><div class="num">nº ${r.numero}</div><p class="sub">Aberto em ${dh(r.aberto_em)} (hora do servidor). A equipe de manutenção já recebeu.</p>
+  try{const r=await DB.abrir(P.get("t"),d,$("#n").value.trim(),$("#c").value.trim(),$("#b")?$("#b").value:null,S.pri);try{const v=await DB.ver(r.codigo);r.protocolo=(v&&v.protocolo)||r.protocolo}catch(e){}
+    guardarMeu({codigo:r.codigo,numero:r.numero,protocolo:r.protocolo||null,ambiente:S.a.ambiente,em:r.aberto_em,t:P.get("t")});
+    $("#app").innerHTML=cab(S.a)+`<div class="wrap"><div class="card" style="text-align:center"><p class="sub" style="margin:0">Chamado registrado</p><div class="num">nº ${r.numero}</div>${r.protocolo?`<p style="margin:2px 0 8px">Protocolo <b>${esc(r.protocolo)}</b><br><span class="sub">Anote ou tire um print: com ele você acompanha o chamado.</span></p>`:""}<p class="sub">Aberto em ${dh(r.aberto_em)} (hora do servidor). A equipe de manutenção já recebeu.</p>
      <a class="btn amb" style="display:block;text-decoration:none;line-height:22px" href="?c=${encodeURIComponent(r.codigo)}&t=${encodeURIComponent(P.get("t"))}" onclick="pararVolta()">Acompanhar este chamado</a>
      <button class="btn" style="display:block;width:100%;margin-top:8px" onclick="voltarInicio()">✓ Finalizar e voltar ao início</button>
      <p class="muted" id="volta" style="margin-top:10px">Volta sozinho ao início em <b id="vs">30</b> s · <a href="#" onclick="event.preventDefault();pararVolta()">ficar nesta tela</a></p>
@@ -115,7 +115,7 @@ async function enviarAvalie(){const t=$("#at").value.trim();if(!S.tp)return tela
   catch(e){telaAvalie(e.message)}}
 const ETAPAS=[["aberto","Aberto","aberto_em"],["aceito","Aceito pela manutenção","aceito_em"],["em_atendimento","Em atendimento",null],["concluido","Concluído","concluido_em"],["confirmado","Confirmado","confirmado_em"]];
 async function acompanhar(c){try{const x=await DB.ver(c);S.x=x;S.c=c;const ord=ETAPAS.findIndex(e=>e[0]==x.situacao);
-  $("#app").innerHTML=cab()+`<div class="wrap"><div class="card"><h1>Chamado nº ${x.numero}</h1><p class="sub">${esc(x.ambiente||"")} · ${esc(x.descricao)}</p>
+  $("#app").innerHTML=cab()+`<div class="wrap"><div class="card"><h1>Chamado nº ${x.numero}</h1>${x.protocolo?`<p class="sub" style="margin:0 0 4px">Protocolo <b>${esc(x.protocolo)}</b>${x.os_numero?` · OS nº ${x.os_numero}`:""}</p>`:""}<p class="sub">${esc(x.ambiente||"")} · ${esc(x.descricao)}</p>
   <ul class="passos">${ETAPAS.map(([k,t,cp],i)=>`<li class="${i<=ord?"ok":""}">${t}${cp&&x[cp]?` · ${dh(x[cp])}`:""}</li>`).join("")}</ul>
   ${x.solucao?`<div class="msg ok" style="margin-top:10px"><b>O que foi feito:</b> ${esc(x.solucao)}</div>`:""}</div>
   ${["concluido","confirmado"].includes(x.situacao)&&!x.avaliacao?`<div class="card" style="text-align:center"><h2>Avalie o atendimento</h2><div class="estrelas">${[1,2,3,4,5].map(n=>`<button type="button" aria-label="${n} estrela(s)" class="${S.nota>=n?"on":""}" onclick="S.nota=${n};acompanharTela()">★</button>`).join("")}</div>
