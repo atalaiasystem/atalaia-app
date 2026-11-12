@@ -1,1 +1,1 @@
-{"app": "0.3.12", "gestor": "0.9.5", "matriz": "0.3.6", "novidade": "Aviso automático de bens de terceiros: ao abrir chamado de equipamento locado, em comodato ou emprestado, o representante da unidade recebe e-mail na hora; botões Cobrar de novo e WhatsApp no chamado."}
+{"app": "0.3.12", "gestor": "0.9.6", "matriz": "0.3.6", "novidade": "Lista de bens com coluna e filtro de Unidade; abrir chamado escolhendo a unidade e avisando quando o bem é de terceiro."}
