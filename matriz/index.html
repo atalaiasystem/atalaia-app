@@ -108,7 +108,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.6"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.7"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -146,6 +146,7 @@ function realDB(){
     exigir2:(s,v)=>rpc("matriz_exigir_2_etapas",{p_sigla:s,p_exigir:v}),
     criar:(d)=>rpc("matriz_criar_contratante",{p_nome:d.nome,p_sigla:d.sigla,p_plano:d.plano,p_segmento:d.segmento||null,p_cnpj:d.cnpj||null,p_ambiente:d.ambiente||""}),
     vincular:(e,s,n,p)=>rpc("matriz_vincular_usuario",{p_email:e,p_sigla:s,p_nome:n,p_perfil:p}),
+    trocarPrincipal:(s,e,n,m,i)=>rpc("matriz_trocar_principal",{p_sigla:s,p_email:e,p_nome:n,p_motivo:m,p_inativar_antigo:i}),
     registrar:(a,d)=>rpc("matriz_registrar",{p_acao:a,p_detalhe:d||null}).catch(()=>{}),
     meusAcessos:()=>rpc("matriz_meus_acessos"),
     infra:()=>rpc("matriz_infra"),
@@ -184,6 +185,7 @@ function mockDB(){
     async alterarSituacao(s,v){C.find(x=>x.sigla==s).situacao=v},async exigir2(s,v){C.find(x=>x.sigla==s).exige_2_etapas=v},
     async criar(d){if(C.some(c=>c.sigla==d.sigla))throw new Error("Já existe uma empresa com esta sigla.");C.unshift(mk(d.nome,d.sigla,d.plano,"teste",0,1,0,0,0,0,0))},
     async vincular(e,s){const c=C.find(x=>x.sigla==s);c.usuarios++;return "Usuário "+e+" vinculado."},
+    async trocarPrincipal(s,e,n,m){if((m||"").trim().length<10)throw new Error("Escreva o motivo e o pedido formal da empresa (ex.: ofício nº, e-mail da diretoria).");return "Gestor principal de "+s+" agora é "+e+" (demonstração)."},
     async registrar(){},async meusAcessos(){return [{criado_em:new Date().toISOString(),acao:"Matriz: entrou no painel",detalhe:null}]},
     async infra(){return {banco_mb:42.3,fotos_mb:C.reduce((s,c)=>s+c.fotos_mb,0),fotos_qtd:1830,contas:31,ativos_mes:25,chamados_abertos:T.filter(t=>t.situacao!="resolvido").length}},
     async interessados(){return I},async salvarInteressado(d){if(d.id){Object.assign(I.find(x=>x.id==d.id),d,{atualizado_em:new Date().toISOString()})}else I.unshift({...d,id:I.length+1,criado_em:new Date().toISOString(),atualizado_em:new Date().toISOString()})},
@@ -491,8 +493,16 @@ function abaFicha(){const c=E.cts.find(x=>x.id==E.ficha);if(!c)return `<p class=
  <div class="card"><h2>Ações sugeridas</h2><ul style="margin:0;padding-left:18px">${acoes(c,h).map(a=>`<li>${a}</li>`).join("")}</ul>
   <h2 style="margin-top:14px">Adicionais</h2>${ads.length?`<div class="tw"><table><tr><th>Tipo</th><th>Qtd.</th><th>Mensal</th><th>Situação</th></tr>${ads.map(a=>`<tr><td>${TADD[a.tipo]?.[0]||a.tipo}</td><td>${a.quantidade}</td><td>${brl(a.quantidade*a.valor_unit)}</td><td>${a.fim?"encerrado":"ativo"}</td></tr>`).join("")}</table></div>`:`<p class="muted">Nenhum adicional.</p>`}
   <button class="btn ghost sm" onclick="irAba('mods')">Gerenciar adicionais</button></div></div>
+ <form class="card" onsubmit="event.preventDefault();trocarPrincipal('${esc(c.sigla)}')"><h2>★ Trocar o Gestor principal</h2>
+  <p class="sub">Só com <b>pedido formal da empresa</b> (ofício ou e-mail da diretoria), quando ela perdeu a conta principal: ex-funcionário que não passou o acesso, e-mail desativado. O Gestor principal é a conta da empresa: não pode ser inativado por ninguém de dentro e é o único que cria e inativa Gestores. A Matriz não vê os dados da empresa; a troca é feita só pelo e-mail.</p>
+  <div class="row"><label>E-mail do novo Gestor principal *<input id="tpe" type="email" required placeholder="de preferência e-mail institucional"></label><label>Nome<input id="tpn" maxlength="80"></label></div>
+  <label>Motivo e pedido formal *<input id="tpm" required minlength="10" maxlength="300" placeholder="Ex.: ofício 12/2026 da diretoria; gestor anterior desligado"></label>
+  <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="tpi" style="width:auto" checked>Inativar o Gestor principal anterior (o histórico dele é mantido)</label>
+  <p class="muted">O e-mail novo precisa já ter login (criado como nos outros cadastros). Tudo fica registrado no histórico da empresa e no seu registro de acessos.</p>
+  <button class="btn amb">Trocar Gestor principal</button></form>
  <div class="g2"><div class="card"><h2>Chamados de suporte</h2>${tk.length?`<div class="tw"><table><tr><th>Nº</th><th>Assunto</th><th>Situação</th></tr>${tk.map(t=>`<tr><td>${t.id}</td><td><a href="#" onclick="event.preventDefault();E.tk=${t.id};irAba('atend')">${esc(t.assunto)}</a></td><td>${SITC[t.situacao]}</td></tr>`).join("")}</table></div>`:`<p class="muted">Nenhum chamado.</p>`}</div>
  <div class="card"><h2>Histórico de alterações</h2>${E.fichaHist.length?`<div class="tw"><table><tr><th>Data</th><th>Ação</th><th>Detalhe</th></tr>${E.fichaHist.map(r=>`<tr><td>${dh(r.criado_em)}</td><td>${esc(r.acao)}</td><td>${esc((r.detalhe||"").slice(0,60))}</td></tr>`).join("")}</table></div>`:`<p class="muted">Sem alterações registradas.</p>`}</div></div>`}
+async function trocarPrincipal(s){const e=$("#tpe").value.trim();if(!confirm("Confirmar a troca do Gestor principal de "+s+" para "+e+"?"))return;try{const r=await DB.trocarPrincipal(s,e,$("#tpn").value.trim(),$("#tpm").value.trim(),$("#tpi").checked);E.msg=["ok",r];await recarregar()}catch(er){E.msg=["err",er.message];render()}}
 async function salvarFicha(s){try{await DB.atualizarContratante(s,$("#fn").value,$("#fg").value,$("#fc").value);toast("Dados salvos.");await recarregar()}catch(e){E.msg=["err",e.message];render()}}
 
 /* ---------- planos e limites ---------- */

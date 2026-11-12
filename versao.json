@@ -1,1 +1,1 @@
-{"app": "0.3.13", "gestor": "0.9.7", "matriz": "0.3.6", "novidade": "Segurança: quando o acesso de uma pessoa é desativado, o aparelho dela apaga as cópias guardadas para uso sem internet e encerra a sessão."}
+{"app": "0.3.13", "gestor": "0.9.8", "matriz": "0.3.7", "novidade": "Gestor principal da empresa (não pode ser inativado; só ele cria e inativa Gestores) e segurança ao inativar pessoas."}
