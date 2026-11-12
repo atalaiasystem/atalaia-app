@@ -108,7 +108,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.8"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.9"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -148,6 +148,8 @@ function realDB(){
     vincular:(e,s,n,p)=>rpc("matriz_vincular_usuario",{p_email:e,p_sigla:s,p_nome:n,p_perfil:p}),
     dadosM:async()=>{const r=await sb.from("matriz_dados").select("*").eq("id",1).maybeSingle();return r.error?{}:(r.data||{})},
     salvarDadosM:d=>rpc("matriz_salvar_dados",{p:d}),
+    async convidarM(email,nome,destino){const {data,error}=await sb.functions.invoke("convidar-matriz",{body:{email,nome,destino}});if(error){let m=null,st=error.context&&error.context.status;try{m=(await error.context.json()).erro}catch(x){}if(!m&&(st==404||/Failed to send|not found|FunctionsFetchError|FunctionsRelayError/i.test(error.name+" "+error.message))){const e=new Error("sem_funcao");e.semFuncao=true;throw e}throw new Error(m||error.message)}if(data&&data.erro)throw new Error(data.erro);return data},
+    titularVer:()=>rpc("matriz_titular_ver"),salvarTitular:d=>rpc("matriz_titular_salvar",{p:d}),
     equipeM:()=>rpc("matriz_equipe_lista"),souPrincipalM:()=>rpc("e_matriz_principal"),
     addEquipeM:(e,n)=>rpc("matriz_adicionar_equipe",{p_email:e,p_nome:n}),
     situacaoEquipeM:(u,a,m)=>rpc("matriz_situacao_equipe",{p_user:u,p_ativo:a,p_motivo:m||null}),
@@ -195,6 +197,9 @@ function mockDB(){
     async souPrincipalM(){return true},
     async addEquipeM(e,n){if((n||"").trim().length<3)throw new Error("Informe o nome.");(await this.equipeM()).push({user_id:"m"+Date.now(),nome:n,email:e,principal:false,ativo:true,criado_em:new Date().toISOString()});return e+" agora faz parte da equipe da Matriz (demonstração)."},
     async situacaoEquipeM(u,a,m){if(!a&&(m||"").trim().length<5)throw new Error("Escreva o motivo (pelo menos 5 letras).");const x=(await this.equipeM()).find(y=>y.user_id==u);Object.assign(x,{ativo:a,inativado_em:a?null:new Date().toISOString(),motivo_inativacao:a?null:m});return x.nome+(a?" foi reativado(a).":" foi inativado(a).")},
+    async convidarM(e,n){if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e||""))throw new Error("E-mail inválido.");return {ok:true,mensagem:"Convite enviado (demonstração): a pessoa recebe um e-mail do Atalaia System para criar a senha."}},
+    async titularVer(){return window.__TIT||(window.__TIT={nome_completo:"",cpf:"",inicio_sistema:"2026-10-24"})},
+    async salvarTitular(d){if(!d.nome_completo||d.nome_completo.trim().indexOf(" ")<0)throw new Error("Escreva o nome completo.");window.__TIT={...window.__TIT,...d};return "Dados do titular salvos (demonstração)."},
     async salvarDadosM(d){window.__DM={...window.__DM,...d};return "Dados da Matriz salvos (demonstração)."},
     async trocarPrincipal(s,e,n,m){if((m||"").trim().length<10)throw new Error("Escreva o motivo e o pedido formal da empresa (ex.: ofício nº, e-mail da diretoria).");return "Gestor principal de "+s+" agora é "+e+" (demonstração)."},
     async registrar(){},async meusAcessos(){return [{criado_em:new Date().toISOString(),acao:"Matriz: entrou no painel",detalhe:null}]},
@@ -229,13 +234,13 @@ function telaNegado(){return `<div class="center wrap"><div class="card"><h2>Ace
 const MENU=[["grp","Negócio"],["visao","Dashboard"],["fin","Receita e métricas"],["saude","Saúde dos clientes"],["uso","Uso e adoção"],["funil","Funil comercial"],
  ["grp","Clientes"],["empresas","Contratantes"],["cadastrar","Cadastrar empresa"],["planos","Planos e limites"],["mods","Adicionais de uso"],["fat","Cobrança","B"],["atend","Atendimento ao cliente"],["sup","Acessos de suporte","B"],["com","Comunicados","B"],
  ["grp","Operação"],["infra","Infraestrutura e versões"],["ind","Indicadores"],["acessos","Registro de acessos"],["equipem","Equipe da Matriz"],["seg","Segurança e LGPD","C"],
- ["grp","Painel"],["dadosm","Dados da Matriz"],["design","Design do painel"],["ajuda","Como usar","C"]];
+ ["grp","Painel"],["dadosm","Dados da Matriz"],["titular","Titular do sistema 🔒"],["design","Design do painel"],["ajuda","Como usar","C"]];
 function telaPainel(){
   const ab=E.tks.filter(t=>t.situacao!="resolvido").length;
-  const T={visao:abaVisao,empresas:abaEmpresas,saude:abaSaude,fin:abaFin,uso:abaUso,funil:abaFunil,atend:abaAtend,infra:abaInfra,ind:abaInd,cadastrar:abaCadastrar,acessos:abaAcessos,planos:abaPlanos,mods:abaMods,design:abaDesign,ficha:abaFicha,dadosm:abaDadosM,equipem:abaEquipeM};
+  const T={visao:abaVisao,empresas:abaEmpresas,saude:abaSaude,fin:abaFin,uso:abaUso,funil:abaFunil,atend:abaAtend,infra:abaInfra,ind:abaInd,cadastrar:abaCadastrar,acessos:abaAcessos,planos:abaPlanos,mods:abaMods,design:abaDesign,ficha:abaFicha,dadosm:abaDadosM,equipem:abaEquipeM,titular:abaTitular};
   const it=MENU.find(m=>m[0]==E.aba),corpo=T[E.aba]?T[E.aba]():emBreve(it);
   return `<div class="shell"><aside class="side"><div class="sbrand"><div class="lg">${LOGO}</div><div><b>Painel da Matriz</b><small>Atalaia System · versão ${CONFIG.versao}</small></div></div>
-  <nav class="smenu">${MENU.map(m=>m[0]=="grp"?`<div class="grp">${m[1]}</div>`:`<button aria-current="${E.aba==m[0]||(E.aba=="ficha"&&m[0]=="empresas")}" onclick="irAba('${m[0]}')">${m[1]}${m[0]=="atend"&&ab?`<span class="bdg">${ab}</span>`:""}${m[2]?`<span class="soon">parte ${m[2]}</span>`:""}</button>`).join("")}</nav>
+  <nav class="smenu">${MENU.filter(m=>m[0]!="titular"||E.souP).map(m=>m[0]=="grp"?`<div class="grp">${m[1]}</div>`:`<button aria-current="${E.aba==m[0]||(E.aba=="ficha"&&m[0]=="empresas")}" onclick="irAba('${m[0]}')">${m[1]}${m[0]=="atend"&&ab?`<span class="bdg">${ab}</span>`:""}${m[2]?`<span class="soon">parte ${m[2]}</span>`:""}</button>`).join("")}</nav>
   <div style="border-top:1px solid var(--line);margin-top:10px;padding:10px 8px 0" class="muted">${esc(E.email)}<br><button class="btn ghost sm" style="margin-top:6px" onclick="sair()">Sair</button> <button class="btn ghost sm" style="margin-top:6px;color:var(--bad)" onclick="sairTodos()" title="Encerra o acesso em todos os computadores e celulares">Sair de todos os aparelhos</button></div></aside>
   <main class="mn"><div class="wrap">${E.hist.length?`<button class="btn ghost sm" style="margin-bottom:10px" onclick="voltar()">← Voltar</button>`:""}${msgH()}${corpo}
   <p class="lgpd">A Matriz vê apenas quantidades de uso. Os dados cadastrados pelos clientes (bens, fotos, valores e pessoas) pertencem a eles e não aparecem neste painel (LGPD: cliente controlador, Atalaia System operadora).</p><p class="muted" style="text-align:center;margin-top:10px">Atalaia System · Painel da Matriz ${CONFIG.versao}</p></div></main></div>${E.det?detalheHTML():""}`;
@@ -509,21 +514,21 @@ function abaFicha(){const c=E.cts.find(x=>x.id==E.ficha);if(!c)return `<p class=
   <div class="row"><label>E-mail do novo Gestor principal *<input id="tpe" type="email" required placeholder="de preferência e-mail institucional"></label><label>Nome<input id="tpn" maxlength="80"></label></div>
   <label>Motivo e pedido formal *<input id="tpm" required minlength="10" maxlength="300" placeholder="Ex.: ofício 12/2026 da diretoria; gestor anterior desligado"></label>
   <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input type="checkbox" id="tpi" style="width:auto" checked>Inativar o Gestor principal anterior (o histórico dele é mantido)</label>
-  <p class="muted">O e-mail novo precisa já ter login (criado como nos outros cadastros). Tudo fica registrado no histórico da empresa e no seu registro de acessos.</p>
+  <p class="muted">O novo Gestor principal recebe o e-mail de convite para criar a senha (se ainda não tiver login). Tudo fica registrado no histórico da empresa e no seu registro de acessos.</p>
   <button class="btn amb">Trocar Gestor principal</button></form>
  <div class="g2"><div class="card"><h2>Chamados de suporte</h2>${tk.length?`<div class="tw"><table><tr><th>Nº</th><th>Assunto</th><th>Situação</th></tr>${tk.map(t=>`<tr><td>${t.id}</td><td><a href="#" onclick="event.preventDefault();E.tk=${t.id};irAba('atend')">${esc(t.assunto)}</a></td><td>${SITC[t.situacao]}</td></tr>`).join("")}</table></div>`:`<p class="muted">Nenhum chamado.</p>`}</div>
  <div class="card"><h2>Histórico de alterações</h2>${E.fichaHist.length?`<div class="tw"><table><tr><th>Data</th><th>Ação</th><th>Detalhe</th></tr>${E.fichaHist.map(r=>`<tr><td>${dh(r.criado_em)}</td><td>${esc(r.acao)}</td><td>${esc((r.detalhe||"").slice(0,60))}</td></tr>`).join("")}</table></div>`:`<p class="muted">Sem alterações registradas.</p>`}</div></div>`}
-async function trocarPrincipal(s){const e=$("#tpe").value.trim();if(!confirm("Confirmar a troca do Gestor principal de "+s+" para "+e+"?"))return;try{const r=await DB.trocarPrincipal(s,e,$("#tpn").value.trim(),$("#tpm").value.trim(),$("#tpi").checked);E.msg=["ok",r];await recarregar()}catch(er){E.msg=["err",er.message];render()}}
+async function trocarPrincipal(s){const e=$("#tpe").value.trim();if(!confirm("Confirmar a troca do Gestor principal de "+s+" para "+e+"?"))return;try{const cv=await convite(e,$("#tpn").value.trim(),"cliente");const r=await DB.trocarPrincipal(s,e,$("#tpn").value.trim(),$("#tpm").value.trim(),$("#tpi").checked);E.msg=["ok",r+cv];await recarregar()}catch(er){E.msg=["err",er.message];render()}}
 function abaEquipeM(){if(!E.eqm){E.eqm=[];Promise.all([DB.equipeM(),DB.souPrincipalM()]).then(([l,p])=>{E.eqm=l||[];E.eqmP=!!p;render()}).catch(e=>{E.msg=["err",e.message];render()})}const P=E.eqmP;
  return cab2("Equipe da Matriz","Pessoas que usam este painel: titular, sócio e ajudantes")+
  `<div class="card"><h2>Pessoas</h2><p class="sub">O <b>titular (★ Matriz principal)</b> nunca é inativado e é o único que inclui, inativa e reativa pessoas. Os demais usam o painel normalmente (cadastrar empresas e gestores, planos, atendimento), sempre com verificação em duas etapas. Inativado perde o acesso na hora; o histórico fica.</p>
   <div class="tw"><table><tr><th>Nome</th><th>E-mail</th><th>Situação</th><th>Desde</th><th></th></tr>${E.eqm.map(m=>`<tr><td><b>${esc(m.nome)}</b>${m.principal?` <span class="pill">★ Matriz principal</span>`:""}</td><td>${esc(m.email||"")}</td><td>${m.ativo?"Ativo":`Inativo${m.motivo_inativacao?`<div class="muted">${esc(m.motivo_inativacao)}</div>`:""}`}</td><td>${new Date(m.criado_em).toLocaleDateString("pt-BR")}</td>
    <td style="white-space:nowrap">${P&&!m.principal?(m.ativo?`<button class="btn ghost sm" onclick="sitEquipeM('${m.user_id}',false)">Inativar</button>`:`<button class="btn sm" onclick="sitEquipeM('${m.user_id}',true)">Reativar</button>`):""}</td></tr>`).join("")||`<tr><td colspan="5" class="muted">Carregando…</td></tr>`}</table></div></div>
  ${P?`<form class="card" onsubmit="event.preventDefault();addEquipeM()"><h2>Incluir pessoa na equipe da Matriz</h2>
-  <div class="msg info">Antes, crie o usuário no Supabase: <b>Authentication › Users › Add user › Create new user</b>, com senha provisória e <b>Auto Confirm User</b>. No primeiro acesso ao painel, a pessoa troca a senha e ativa a verificação em duas etapas.</div>
+  <div class="msg info">O sistema envia na hora um <b>e-mail de convite</b> do Atalaia System para a pessoa criar a própria senha (o link vale por pouco tempo; se vencer, faça de novo que vai um link novo). Se ela já tem login, só recebe o acesso. Depois de criar a senha, ela entra em <b>app.atalaiasystem.com.br/matriz</b> e ativa a verificação em duas etapas.</div>
   <div class="row"><label>E-mail *<input id="eqe" type="email" required></label><label>Nome *<input id="eqn" required maxlength="80"></label></div>
   <button class="btn amb">Incluir na equipe</button></form>`:`<p class="muted">Só o titular inclui ou inativa pessoas da equipe.</p>`}`}
-async function addEquipeM(){try{E.msg=["ok",await DB.addEquipeM($("#eqe").value.trim(),$("#eqn").value.trim())];E.eqm=null;render()}catch(er){E.msg=["err",er.message];render()}}
+async function addEquipeM(){try{const cv=await convite($("#eqe").value.trim(),$("#eqn").value.trim(),"matriz");E.msg=["ok",(await DB.addEquipeM($("#eqe").value.trim(),$("#eqn").value.trim()))+cv];E.eqm=null;render()}catch(er){E.msg=["err",er.message];render()}}
 async function sitEquipeM(u,a){let m=null;if(!a){m=prompt("Motivo da inativação (ex.: saiu da sociedade):");if(m===null)return}try{E.msg=["ok",await DB.situacaoEquipeM(u,a,m)];E.eqm=null;render()}catch(er){E.msg=["err",er.message];render()}}
 function abaDadosM(){if(!E.dm){E.dm={};DB.dadosM().then(d=>{E.dm=d||{};render()}).catch(()=>{})}const d=E.dm,i=(k,t,m,x)=>`<label>${t}<input id="dm_${k}" maxlength="${m}" value="${esc(d[k]||"")}" ${x||""}></label>`;
  return cab2("Dados da Matriz","A própria Atalaia System: usados depois em cobrança, contratos, comunicados e rodapés")+
@@ -536,6 +541,26 @@ function abaDadosM(){if(!E.dm){E.dm={};DB.dadosM().then(d=>{E.dm=d||{};render()}
   <div class="row">${i("complemento","Complemento",80)}${i("bairro","Bairro",80)}${i("cidade","Cidade",80)}${i("uf","UF",2)}</div>
   <button class="btn amb">Salvar dados da Matriz</button></form>`}
 async function salvarDadosM(){const d={};["nome","razao_social","cnpj","email_contato","telefone","site","cep","logradouro","numero","complemento","bairro","cidade","uf"].forEach(k=>{d[k]=$("#dm_"+k).value.trim()});try{E.msg=["ok",await DB.salvarDadosM(d)];E.dm=await DB.dadosM();render()}catch(er){E.msg=["err",er.message];render()}}
+/* ---------- Titular do sistema (privado: só o ★ Matriz principal) ---------- */
+function abaTitular(){if(!E.souP)return cab2("Titular do sistema","Quadro privado")+`<div class="msg err">Somente o titular do sistema (★ Matriz principal) vê este quadro.</div>`;
+ if(!E.tit){E.tit={_c:1};DB.titularVer().then(d=>{E.tit=d||{};render()}).catch(e=>{E.tit=null;E.msg=["err",e.message];render()})}
+ const d=E.tit;if(d._c)return cab2("Titular do sistema","Quadro privado")+`<p class="muted">Carregando…</p>`;
+ const v=k=>esc(d[k]||""),dt=k=>(d[k]||"").slice(0,10);
+ return cab2("Titular do sistema","Quadro privado: comprova quem é o dono do Atalaia System")+
+ `<form class="card" onsubmit="event.preventDefault();salvarTitular()" autocomplete="off"><h2>🔒 Dados do titular</h2>
+  <div class="msg info">Só <b>você</b> (★ Matriz principal) enxerga este quadro: nem sócio, nem ajudantes da Matriz, nem clientes. Estes dados <b>não</b> aparecem em “Dados da Matriz”, em relatórios nem para clientes. Cada vez que o quadro é aberto ou salvo, fica anotado no registro de acessos (sem o CPF).</div>
+  <div class="row"><label>Nome completo *<input id="ti_nome" maxlength="150" required value="${v("nome_completo")}"></label>
+   <label>CPF<span style="display:flex;gap:6px"><input id="ti_cpf" type="password" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" value="${v("cpf")}" style="flex:1"><button type="button" class="btn ghost sm" onclick="const i=$('#ti_cpf');i.type=i.type=='password'?'text':'password';this.textContent=i.type=='password'?'Mostrar':'Ocultar'">Mostrar</button></span></label></div>
+  <div class="row"><label>Início do sistema<input id="ti_ini" type="date" value="${dt("inicio_sistema")}"></label>
+   <label>Nº do registro no INPI (quando tiver)<input id="ti_inpi" maxlength="40" value="${v("inpi_registro")}"></label>
+   <label>Data do registro no INPI<input id="ti_inpid" type="date" value="${dt("inpi_data")}"></label></div>
+  <label>Observações (ex.: onde está guardado o pacote do código, número da GRU)<textarea id="ti_obs" maxlength="1000" rows="3">${v("observacoes")}</textarea></label>
+  ${d.atualizado_em?`<p class="muted">Última alteração: ${new Date(d.atualizado_em).toLocaleString("pt-BR")}</p>`:""}
+  <button class="btn amb">Salvar dados do titular</button></form>`}
+async function salvarTitular(){const d={nome_completo:$("#ti_nome").value.trim(),cpf:$("#ti_cpf").value.trim(),inicio_sistema:$("#ti_ini").value,inpi_registro:$("#ti_inpi").value.trim(),inpi_data:$("#ti_inpid").value,observacoes:$("#ti_obs").value.trim()};
+ try{E.msg=["ok",await DB.salvarTitular(d)];E.tit=null;render()}catch(er){E.msg=["err",er.message];render()}}
+/* convite por e-mail (item 59): cria o login e manda o e-mail; se a função ainda não estiver publicada, segue como antes */
+async function convite(email,nome,destino){try{const r=await DB.convidarM(email,nome,destino);return " "+(r&&r.mensagem||"Convite enviado.")}catch(e){if(e.semFuncao)return "";throw e}}
 async function salvarFicha(s){try{await DB.atualizarContratante(s,$("#fn").value,$("#fg").value,$("#fc").value);toast("Dados salvos.");await recarregar()}catch(e){E.msg=["err",e.message];render()}}
 
 /* ---------- planos e limites ---------- */
@@ -592,10 +617,10 @@ function abaCadastrar(){return `<h1>Cadastrar empresa</h1><p class="sub">Duas pa
   <div class="row3"><label>Segmento<input id="cg" maxlength="60" placeholder="Ex.: Salão, Clínica, Hospital"></label><label>Sigla * <span class="muted" style="font-weight:400">(2 a 4 letras)</span><input id="cs" required maxlength="4" pattern="[A-Za-z]{2,4}" style="text-transform:uppercase"></label><label>CNPJ<input id="cj" maxlength="18" inputmode="numeric"></label></div>
   <div class="row"><label>Plano *<select id="cp">${PLANOS.map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select></label><label>Primeiro ambiente (opcional)<input id="ca" maxlength="80" placeholder="Deixe vazio: o Gestor cria os ambientes depois"></label></div>
   <h2 style="margin-top:6px">2. Administrador da empresa</h2>
-  <div class="msg info">Antes, crie o usuário no Supabase: <b>Authentication › Users › Add user › Create new user</b>, com senha provisória e <b>Auto Confirm User</b> marcado. No primeiro acesso, o sistema obriga a pessoa a criar a senha dela.</div>
+  <div class="msg info">O sistema envia na hora um <b>e-mail de convite</b> do Atalaia System para a pessoa criar a própria senha (o link vale por pouco tempo; se vencer, faça de novo que vai um link novo). Se ela já tem login, só recebe o acesso.</div>
   <div class="row"><label>E-mail do gestor *<input id="ue" type="email" required></label><label>Nome do gestor *<input id="un" required maxlength="80"></label></div>
   <button class="btn amb full">Cadastrar empresa e gestor</button></form>
- <form class="card" onsubmit="event.preventDefault();vincularExtra()"><h2>Adicionar usuário a uma empresa existente</h2><p class="sub">Para empresas pagas com mais usuários. O usuário também precisa ser criado antes no Supabase.</p>
+ <form class="card" onsubmit="event.preventDefault();vincularExtra()"><h2>Adicionar usuário a uma empresa existente</h2><p class="sub">Para empresas pagas com mais usuários. A pessoa recebe o e-mail de convite para criar a senha.</p>
   <label>Empresa<select id="vs">${E.cts.map(c=>`<option value="${esc(c.sigla)}">${esc(c.nome)} (${esc(c.sigla)}) · ${esc(c.usuarios)}/${esc(c.lim_usuarios)}</option>`).join("")}</select></label>
   <label>E-mail<input id="ve" type="email" required></label><label>Nome<input id="vn" required maxlength="80"></label>
   <label>Perfil<select id="vp"><option value="gestor">Gestor (empresa toda)</option><option value="administrador">Administrador (uma filial)</option><option value="colaborador">Colaborador (manutenção)</option><option value="responsavel">Responsável por ambiente</option></select></label>
@@ -616,8 +641,8 @@ async function posLogin(novo){
 }
 async function confirmarMfa(){try{const f=(await DB.fatores()).find(x=>x.status=="verified");await DB.verificar(f.id,$("#otp").value.trim());await posLogin(true)}catch(e){E.msg=["err",e.message];render()}}
 async function confirmarAtivacao(){try{await DB.verificar(E.insc.id,$("#otp").value.trim());E.insc=null;toast("Verificação em duas etapas ativada.");await posLogin(true);DB.registrar("ativou a verificação em duas etapas")}catch(e){E.msg=["err",e.message];render()}}
-async function recarregar(){try{[E.ind,E.cts,E.acessos,E.infra,E.leads,E.tks,E.planos,E.ads,E.recAd]=await Promise.all([DB.indicadores(),DB.contratantes(),DB.meusAcessos(),DB.infra(),DB.interessados(),DB.chamados(),DB.planos(),DB.adicionais(),DB.receitaAdicionais()])}catch(e){E.msg=["err",e.message]}render()}
-function irAba(k){if(E.aba!==k)E.hist.push(E.aba);if(E.hist.length>20)E.hist.shift();E.aba=k;E.msg=null;render();scrollTo(0,0)}
+async function recarregar(){try{[E.ind,E.cts,E.acessos,E.infra,E.leads,E.tks,E.planos,E.ads,E.recAd]=await Promise.all([DB.indicadores(),DB.contratantes(),DB.meusAcessos(),DB.infra(),DB.interessados(),DB.chamados(),DB.planos(),DB.adicionais(),DB.receitaAdicionais()]);E.souP=!!(await DB.souPrincipalM().catch(()=>false))}catch(e){E.msg=["err",e.message]}render()}
+function irAba(k){if(k!="titular")E.tit=null;if(E.aba!==k)E.hist.push(E.aba);if(E.hist.length>20)E.hist.shift();E.aba=k;E.msg=null;render();scrollTo(0,0)}
 function voltar(){E.aba=E.hist.pop()||"visao";E.msg=null;render();scrollTo(0,0)}
 async function sair(){await DB.sair();Object.assign(E,{tela:"login",msg:null,ind:null,cts:[],acessos:[],aba:"visao"});render()}
 async function trocarPlano(s,sel){const novo=sel.value,c=E.cts.find(x=>x.sigla==s);
@@ -633,10 +658,10 @@ async function cadastrar(){
   const email=$("#ue").value.trim(),nome=$("#un").value.trim();
   if(!/^[A-Z]{2,4}$/.test(d.sigla)){E.msg=["err","A sigla precisa ter de 2 a 4 letras, sem acentos."];render();return}
   try{await DB.criar(d)}catch(e){E.msg=["err",e.message];render();return}
-  try{await DB.vincular(email,d.sigla,nome,"gestor");DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["ok",`Empresa ${d.nome} (${d.sigla}) cadastrada no plano ${d.plano} e ${email} ligado como Gestor. Envie a ela o link do aplicativo e a senha provisória (em mensagens separadas).`]}
-  catch(e){DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["info",`A empresa ${d.sigla} foi criada, mas o usuário não foi ligado: ${e.message} Crie o usuário no Supabase e use “Adicionar usuário a uma empresa existente”.`]}
+  try{const cv=await convite(email,nome,"cliente");await DB.vincular(email,d.sigla,nome,"gestor");DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["ok",`Empresa ${d.nome} (${d.sigla}) cadastrada no plano ${d.plano} e ${email} ligado como Gestor (será o Gestor principal).${cv}`]}
+  catch(e){DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["info",`A empresa ${d.sigla} foi criada, mas o Gestor não foi ligado: ${e.message} Use “Adicionar usuário a uma empresa existente” para tentar de novo.`]}
   await recarregar();}
-async function vincularExtra(){const s=$("#vs").value;try{const r=await DB.vincular($("#ve").value.trim(),s,$("#vn").value.trim(),$("#vp").value);DB.registrar("adicionou usuário",s);E.msg=["ok",r];await recarregar()}catch(e){E.msg=["err",e.message];render()}}
+async function vincularExtra(){const s=$("#vs").value;try{const cv=await convite($("#ve").value.trim(),$("#vn").value.trim(),"cliente");const r=await DB.vincular($("#ve").value.trim(),s,$("#vn").value.trim(),$("#vp").value);DB.registrar("adicionou usuário",s);E.msg=["ok",r+cv];await recarregar()}catch(e){E.msg=["err",e.message];render()}}
 async function salvarLead(){const f=E.lead;const d={empresa:$("#le").value.trim(),segmento:$("#lg").value.trim()||null,origem:$("#lo").value||null,contato:$("#lc").value.trim()||null,telefone:$("#lt").value.trim()||null,email:$("#lm").value.trim()||null,proximo_passo:$("#lp").value.trim()||null,plano:$("#ll").value,etapa:$("#la").value,observacao:$("#lb").value.trim()||null};if(f.id)d.id=f.id;
   try{await DB.salvarInteressado(d);E.lead=null;toast("Interessado salvo.");E.leads=await DB.interessados();render()}catch(e){E.msg=["err",e.message];render()}}
 async function mudarEtapa(id,etapa){try{await DB.salvarInteressado({id,etapa});E.leads=await DB.interessados();toast("Etapa atualizada.");render()}catch(e){E.msg=["err",e.message];render()}}
