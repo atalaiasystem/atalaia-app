@@ -110,7 +110,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.16",
+  versao:"0.3.17",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -163,6 +163,8 @@ function realDB(){
     async abrirChamado(c,d){return chk(await sb.from("suporte_chamados").insert({contratante_id:c,autor:E.v.nome,tipo:d.tipo,assunto:d.assunto,mensagem:d.mensagem}).select().single())},
     async ultimosAcessos(){const u=await this.usuario();return chk(await sb.from("registro_acessos").select("criado_em,aparelho").eq("user_id",u.id).eq("acao","entrou").order("criado_em",{ascending:false}).limit(2))},
     async acessoInativo(){try{return chk(await sb.rpc("meu_acesso_inativo"))}catch(e){return null}},
+    async meusAvisos(){try{const u=(await sb.auth.getUser()).data.user;if(!u)return [];return chk(await sb.from("avisos").select("*").eq("para_user",u.id).is("lido_em",null).order("criado_em",{ascending:false}).limit(20))}catch(e){return []}},
+    async lerAvisoApp(id){try{await sb.from("avisos").update({lido_em:new Date().toISOString()}).eq("id",id)}catch(e){}},
     async souMatriz(){try{return chk(await sb.rpc("sou_da_matriz"))===true}catch(e){return false}},
     async meuVinculo(){const u=(await sb.auth.getUser()).data.user;const d=chk(await sb.from("membros").select("perfil,nome,foto_path,contratante_id,user_id,estabelecimento_id,contratantes(id,nome,sigla,situacao,plano_id,exige_2_etapas,design,planos(*))").eq("user_id",u.id).eq("ativo",true).limit(1));return d[0]?{...d[0],email:u.email}:null},
     async ambientes(c){return chk(await sb.from("ambientes").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em"))},
@@ -788,9 +790,10 @@ function irMan(t,id){if(t!=E.mt)(E.mtPilha=E.mtPilha||[]).push(E.mt||"home");E.m
 function bigBtn(ic,t,s,act,tag){return `<button class="big" ${act?`onclick="${act}"`:"disabled"}><span class="ico">${ic}</span><span class="tx"><b>${t}</b><span>${s}</span></span>${tag?`<span class="tagp">${tag}</span>`:""}</button>`}
 function abaMan(){if(!temMan())return `<h1>Manutenção</h1><div class="msg info">Chamados e manutenção estão nos planos pagos.</div>`;
   const t=E.mt||"home";return t=="lista"?manLista():t=="item"?manItem():t=="nahora"?manNaHora():t=="ajuda"?manAjuda():t=="qr"?manQR():t=="amb"?manAmb():t=="bem"?manBem():t=="novoch"?manNovoCh():t=="prog"?manProg():t=="servico"?manServico():t=="anexo"?manAnexo():t=="troca"?manTroca():t=="trocas"?manTrocas():t=="aud"?manAud():t=="resp"?manResp():t=="etqamb"?manEtqAmb():(E.mtPilha=[],manHome())}
-function manHome(){const L=meusChs(),novos=L.filter(c=>c.situacao=="aberto"),comigo=L.filter(c=>emAberto(c)&&souRespCh(c)),ag=L.filter(c=>c.situacao=="concluido");
+function manHome(){if(!E.avCarr&&DB.meusAvisos){E.avCarr=1;DB.meusAvisos().then(a=>{E.avApp=a||[];if(E.avApp.length)render()}).catch(()=>{})}const L=meusChs(),novos=L.filter(c=>c.situacao=="aberto"),comigo=L.filter(c=>emAberto(c)&&souRespCh(c)),ag=L.filter(c=>c.situacao=="concluido");
   const pri={urgente:0,alta:1,media:2,baixa:3};novos.sort((a,b)=>pri[a.prioridade]-pri[b.prioridade]);
   return `<h1>${souAdm()?"Área do administrador":"Área de "+esc((E.v.nome||"").split(" ")[0])}</h1><p class="sub">${esc(E.v.contratantes.nome)}${E.v.estabelecimento_id&&nomeUni(E.v.estabelecimento_id)?" · "+esc(nomeUni(E.v.estabelecimento_id)):""}</p>
+  ${(E.avApp||[]).length?`<div class="card" style="border-color:#f2a33a"><b>📣 Avisos para você (${E.avApp.length})</b>${E.avApp.slice(0,5).map(a=>`<div style="padding:6px 0;border-top:1px solid var(--line)"><b style="font-size:.92rem">${esc(a.titulo)}</b><div class="sub" style="margin:2px 0">${esc((a.texto||"").slice(0,160))}</div><button class="btn ghost sm" onclick="DB.lerAvisoApp(${a.id});E.avApp=E.avApp.filter(x=>x.id!=${a.id});render()">Ciente</button></div>`).join("")}</div>`:""}
   ${novos.length?`<div class="card" style="border-color:#c8372d"><b>🔔 Novos chamados (${novos.length})</b>${novos.slice(0,6).map(c=>linhaCh(c)).join("")}${novos.length>6?`<button class="btn ghost sm" onclick="E.mf={s:'aberto'};irMan('lista')">Ver todos</button>`:""}</div>`:""}
   <div class="bigs">
    ${bigBtn(`<b>${L.filter(emAberto).length}</b>`,"Painel de manutenções",`Chamados e manutenções feitas na hora${comigo.length?` · ${comigo.length} com você`:""}${ag.length?` · ${ag.length} aguardando confirmação`:""}`,"E.mf={};irMan('lista')")}
