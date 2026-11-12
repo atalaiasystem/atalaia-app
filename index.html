@@ -110,7 +110,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.15",
+  versao:"0.3.16",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -1022,7 +1022,7 @@ function manAmb(){const a=(E.amb||[]).find(x=>x.id==E.ambSel);if(!a)return `<but
   <div class="card"><b>Bens do ambiente (${B.length})</b>${B.map(b=>`<button class="rowch" onclick="E.bemSel='${b.id}';irMan('bem')" style="--pc:${["em reparo","em manutenção","ruim"].includes(b.estado)?"#c8372d":"#1f9a55"}"><span class="dot"></span><span class="tx"><b>${esc(b.nome)}</b><span>${esc(b.patrimonio||"sem patrimônio")}${b.numero_serie?" · série "+esc(b.numero_serie):""}${b.posicao?" · "+esc(b.posicao):""}</span></span></button>`).join("")||`<p class="muted">Nenhum bem cadastrado neste ambiente.</p>`}</div>`}
 function manBem(){const b=(E.bens||[]).find(x=>x.id==E.bemSel);if(!b)return `<button class="voltar" onclick="voltar()">← Voltar</button><p class="muted">Bem não encontrado.</p>`;
   const C=(E.chs||[]).filter(c=>c.bem_id==b.id).slice(0,20);
-  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>${esc(b.nome)}</h1><p class="sub">${esc(b.patrimonio||"sem patrimônio")} · ${esc(nomeAmbC(b.ambiente_id))}${nomeUni(b.estabelecimento_id||"")?" · "+esc(nomeUni(b.estabelecimento_id)):""}</p>
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>${esc(b.nome)}</h1><p class="sub">${esc(b.patrimonio||"sem patrimônio")} · ${esc(nomeAmbC(b.ambiente_id))}${nomeUni(b.estabelecimento_id||"")?" · "+esc(nomeUni(b.estabelecimento_id)):""}</p>${b.indisponivel?`<div class="msg err" style="margin:6px 0">⛔ <b>EQUIPAMENTO INDISPONÍVEL</b> · ${esc(b.indisponivel_motivo||"")}. Não usar até corrigir e repetir o ensaio.</div>`:""}
   <div class="card"><dl class="dl"><dt>Categoria</dt><dd>${esc(b.categoria||"—")}</dd><dt>Marca / modelo</dt><dd>${esc([b.marca,b.modelo].filter(Boolean).join(" · ")||"—")}</dd><dt>Nº de série</dt><dd>${esc(b.numero_serie||"—")}</dd><dt>Estado</dt><dd>${esc(b.estado||"—")}</dd>${typeof sitN=="function"?`<dt>Situação</dt><dd>${esc(sitN(sitK(b)))}${empDoBem(b)?" · "+esc(empDoBem(b)):""}</dd>`:""}${b.posicao?`<dt>Posição</dt><dd>${esc(b.posicao)}</dd>`:""}</dl></div>
   <div class="bigs">${bigBtn("+","Abrir chamado deste bem","Registrar defeito ou problema",`E.ncA='${b.ambiente_id}';E.ncB='${b.id}';irMan('novoch')`)}${bigBtn("▦","Ver o cadastro completo","Fotos e todos os dados",`abrirBem('${b.id}')`)}</div>
   ${typeof fichaHTML=="function"?fichaHTML(b):""}
@@ -1043,7 +1043,7 @@ async function vistDoAmb(id){const a=(E.amb||[]).find(x=>x.id==id);E.aba="ron";i
    laudo, ficha de vida do bem (serviços, calibrações, documentos e anexos),
    trocas de equipamento, auditoria do ambiente pela câmera, responsável pelo
    ambiente e etiqueta do QR do ambiente. */
-const TIPO_SV={calibracao:"Calibração",preventiva:"Preventiva",corretiva:"Corretiva",qualificacao:"Qualificação",inspecao:"Inspeção"};
+const TIPO_SV={calibracao:"Calibração",preventiva:"Preventiva",corretiva:"Corretiva",qualificacao:"Qualificação",inspecao:"Inspeção",seguranca_eletrica:"Segurança elétrica (TSE)"};
 const RES_SV={aprovado:["Aprovado","#1f9a55"],aprovado_com_ajuste:["Aprovado com ajuste","#b7791f"],reprovado:["Reprovado","#c8372d"]};
 const SIT_AG={vencida:["Vencida","#c8372d"],vence_30_dias:["Vence em até 30 dias","#b7791f"],em_dia:["Em dia","#1f9a55"]};
 const TIPO_DOC=[["laudo","Laudo de calibração"],["certificado","Certificado"],["laudo","Teste de segurança elétrica"],["manual","Manual do fabricante"],["nota_fiscal","Nota fiscal"],["contrato","Contrato"],["foto","Foto do equipamento"],["outro","Outro"]];
