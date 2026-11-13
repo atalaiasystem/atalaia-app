@@ -110,7 +110,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.17",
+  versao:"0.3.19",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -175,7 +175,7 @@ function realDB(){
     async renAmbiente(id,nome){return chk(await sb.from("ambientes").update({nome}).eq("id",id).select().single())},
     async bens(c){const [L,V]=await Promise.all([sb.from("bens").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em",{ascending:false}),E.v&&E.v.perfil=="gestor"?sb.from("bens_valores").select("bem_id,valor").eq("contratante_id",c):Promise.resolve({data:[]})]);const B=chk(L);const M={};(V&&!V.error&&V.data||[]).forEach(x=>M[x.bem_id]=x.valor);if(V&&V.error&&!/bens_valores/.test(V.error.message||""))console.warn(V.error.message);return B.map(b=>b.id in M?{...b,valor:M[b.id]}:b)},
     async addBem(b){const {valor,...d}=b;const r=chk(await sb.from("bens").insert(d).select().single());if(valor!=null&&valor!==""&&E.v&&E.v.perfil=="gestor"){const {error}=await sb.rpc("salvar_valor_bem",{p_bem:r.id,p_valor:Number(valor),p_origem:"cadastro"});if(error&&/salvar_valor_bem|schema cache|does not exist/i.test(error.message))await sb.from("bens").update({valor:Number(valor)}).eq("id",r.id);r.valor=Number(valor)}return r},
-    async updBem(id,b){const {valor,...d}=b;const tem="valor" in b&&E.v&&E.v.perfil=="gestor";const r=Object.keys(d).length?chk(await sb.from("bens").update(d).eq("id",id).select().single()):{id};if(tem){const {error}=await sb.rpc("salvar_valor_bem",{p_bem:id,p_valor:valor===""||valor==null?null:Number(valor),p_origem:"edição"});if(error){if(/salvar_valor_bem|schema cache|does not exist/i.test(error.message))chk(await sb.from("bens").update({valor:valor===""||valor==null?null:Number(valor)}).eq("id",id));else throw new Error(traduz(error.message))}r.valor=valor===""?null:valor}return r},
+    async solicitarBaixa(b,cl,m,d,o){const r=await sb.rpc("solicitar_baixa",{p_bem:b,p_classificacao:cl,p_motivo:m,p_destino:d,p_destino_obs:o||null,p_laudo:null});if(r.error)throw new Error(r.error.message);return r.data},async updBem(id,b){const {valor,...d}=b;const tem="valor" in b&&E.v&&E.v.perfil=="gestor";const r=Object.keys(d).length?chk(await sb.from("bens").update(d).eq("id",id).select().single()):{id};if(tem){const {error}=await sb.rpc("salvar_valor_bem",{p_bem:id,p_valor:valor===""||valor==null?null:Number(valor),p_origem:"edição"});if(error){if(/salvar_valor_bem|schema cache|does not exist/i.test(error.message))chk(await sb.from("bens").update({valor:valor===""||valor==null?null:Number(valor)}).eq("id",id));else throw new Error(traduz(error.message))}r.valor=valor===""?null:valor}return r},
     async enviarFoto(c,blob){const p=`${c}/${crypto.randomUUID()}.jpg`;chk(await sb.storage.from("fotos-bens").upload(p,blob,{contentType:"image/jpeg"}));return p},
     async urlFoto(p){if(!p)return null;const r=await sb.storage.from("fotos-bens").createSignedUrl(p,3600);return r.data?.signedUrl||null},
     async excluir(t,id,motivo){return chk(await sb.rpc("excluir_item",{p_tabela:t,p_id:id,p_motivo:motivo}))},
@@ -216,7 +216,7 @@ function mockDB(){
     async renAmbiente(id,nome){const a=amb.find(x=>x.id==id);a.nome=nome;return a},
     async bens(){return bens.filter(b=>b.ativo).sort((a,b)=>String(b.criado_em).localeCompare(String(a.criado_em)))},
     async addBem(b){await w(250);if(bens.filter(x=>x.ativo).length>=plano.bens)throw new Error(`Limite do plano atingido: ${plano.bens} bens. Para cadastrar mais, conheça os planos pagos.`);if(b.numero_serie&&bens.some(x=>x.numero_serie==b.numero_serie))throw new Error("Já existe um bem com este número de série.");const n={...b,id:"b"+Date.now(),patrimonio:temPat()?(b.patrimonio||"HTA-"+String(100+bens.length).padStart(4,"0")):null,criado_em:new Date().toISOString(),ativo:true};bens.push(n);return n},
-    async updBem(id,b){const x=bens.find(y=>y.id==id);Object.assign(x,b);return x},
+    async solicitarBaixa(id,cl,m,d,o){if(!cl||!d)throw new Error("Escolha a classificação e o destino.");if(!m||m.length<10)throw new Error("Explique o motivo da baixa (pelo menos 10 letras).");return "Pedido de baixa enviado. O Gestor precisa aprovar."},async updBem(id,b){const x=bens.find(y=>y.id==id);Object.assign(x,b);return x},
     async enviarFoto(ci,blob){const p="demo/"+Date.now();fotos[p]=URL.createObjectURL(blob);return p},
     async urlFoto(p){return fotos[p]||null},async apagarFotos(){},async registrar(){},
     async enviarPerfil(cid,blob){const p="demo/"+Date.now();fotos[p]=URL.createObjectURL(blob);return p},async enviarLogo(cid,blob,d){const p="demo/"+Date.now();fotos[p]=URL.createObjectURL(blob);c.design={...(d||{}),logo:p};return c.design},
@@ -307,7 +307,7 @@ function abaBens(p){
   const q=E.busca.toLowerCase();const L=E.bens.filter(b=>sitOk(b,E.fSit)&&(!E.fUni||uniDoBem(b)==E.fUni)&&(!q||(b.nome+" "+(b.patrimonio||"")+" "+(b.numero_serie||"")+" "+(b.marca||"")+" "+empDoBem(b)).toLowerCase().includes(q)));
   const cheio=E.bens.length>=p.bens;
   return `<h1>Bens</h1><p class="sub">${E.bens.length} de ${p.bens} bens cadastrados</p>${uso(E.bens.length,p.bens)}
-  <div style="display:flex;gap:8px;margin:14px 0"><button class="btn amb" style="flex:1" ${cheio?"disabled":""} onclick="abrirBem()">+ Cadastrar bem</button><button class="btn ghost" onclick="exportar()" title="Baixar em Excel ou PDF">⬇ Baixar</button></div>
+  <div style="display:flex;gap:8px;margin:14px 0"><button class="btn amb" style="flex:1" ${cheio?"disabled":""} onclick="abrirBem()">+ Cadastrar bem</button>${["gestor","administrador"].includes(E.v.perfil)?`<button class="btn ghost" onclick="exportar()" title="Baixar em Excel ou PDF">⬇ Baixar</button>`:""}</div>
   ${E.desfazer&&Date.now()<E.desfazer.ate?`<div class="msg ok" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span>Excluído: <b>${esc(E.desfazer.nome)}</b></span><button class="btn ghost sm" onclick="desfazer()">↶ Desfazer</button></div>`:""}
   ${cheio?`<div class="msg info">Limite do plano ${esc(p.nome)} atingido. Para cadastrar mais bens, conheça os planos pagos na aba Plano.</div>`:""}
   <input placeholder="Buscar por nome${temPat()?", patrimônio":""}, série ou marca" value="${esc(E.busca)}" oninput="E.busca=this.value;render();const i=document.querySelector('input[placeholder^=Buscar]');i.focus();i.setSelectionRange(i.value.length,i.value.length)" style="margin-bottom:8px">
@@ -407,7 +407,7 @@ function modalHTML(){
   <label>Observação<textarea id="fb" rows="2" maxlength="500">${esc(b.observacao)}</textarea></label>
   <button class="btn amb full" id="fsalvar">${novo?"Salvar bem":"Salvar alterações"}</button>
   ${novo?`<button type="button" class="btn ghost full" id="fsalvar2" style="margin-top:8px" onclick="E.modal.continuar=true;salvarBem()">＋ Salvar e continuar incluindo neste ambiente</button>`:""}
-  <div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn ghost" style="flex:1" onclick="voltar()">Cancelar</button>${novo?"":`<button type="button" class="btn ghost" style="flex:1;color:var(--bad)" onclick="inativar('${b.id}')">Dar baixa</button>`}</div>
+  <div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="btn ghost" style="flex:1" onclick="voltar()">Cancelar</button>${novo?"":`<button type="button" class="btn ghost" style="flex:1;color:var(--bad)" onclick="inativar('${b.id}')">Dar baixa</button>`}</div>${!novo&&E.modal.baixando==b.id?baixaAppHTML(b):""}
   ${novo?"":E.modal.excluindo?`<div class="msg err" style="margin-top:12px"><b>Excluir este cadastro?</b> Use só para cadastro feito por engano (para bem que saiu da empresa, use “Dar baixa”). O registro fica guardado para o Gestor, com o motivo.
    <label style="margin:10px 0 8px">Motivo da exclusão *<textarea id="xm" rows="2" maxlength="300" placeholder="Ex.: cadastrado em duplicidade"></textarea></label>
    <div style="display:flex;gap:8px"><button type="button" class="btn" style="flex:1;background:var(--bad)" onclick="confirmarExclusao('${b.id}')">Confirmar exclusão</button><button type="button" class="btn ghost" onclick="guardarForm();E.modal.excluindo=false;render()">Cancelar</button></div></div>`
@@ -543,9 +543,16 @@ async function salvarBem(){
     fecharSemVoltar();DB.apagarFotos(rem);await recarregar();
   }catch(e){guardarForm();E.modal.erro=e.message;render()}
 }
-async function inativar(id){const b=E.bens.find(x=>x.id==id);if(!b)return;
-  if(E.modal.confirmar!==id){E.modal.confirmar=id;E.modal.erro=`Toque de novo em “Dar baixa” para confirmar. O bem ${esc(rot(b))} sai da lista, mas o registro fica guardado${b.patrimonio?" e o número não é reaproveitado":""}.`;render();return}
-  try{await DB.updBem(id,{ativo:false,estado:"baixado"});DB.registrar(E.v.contratante_id,"deu baixa em bem",rot(b));toast("Baixa registrada: "+rot(b));fecharSemVoltar();await recarregar()}catch(e){E.modal.erro=e.message;render()}}
+async function inativar(id){E.modal.baixando=id;E.modal.erro=null;render();setTimeout(()=>{const x=document.getElementById("bxa_c");if(x)x.scrollIntoView({behavior:"smooth",block:"center"})},50)}
+function baixaAppHTML(b){const terc=["locado","comodato","leasing","cessao","emprestimo","demonstracao","consignado"].includes(b.propriedade);
+  return `<div class="msg err" style="margin-top:12px"><b>Dar baixa em ${esc(rot(b))}</b><p class="note" style="margin:4px 0">Use quando o bem sai da empresa. O pedido vai para o Gestor aprovar; o histórico fica guardado e o número não é reaproveitado.</p>
+  <label class="f">Classificação *<select id="bxa_c"><option value="">Escolha…</option><option value="ocioso">Ocioso (funciona, mas não tem uso)</option><option value="recuperavel">Recuperável (conserto viável)</option><option value="antieconomico">Antieconômico (conserto caro ou obsoleto)</option><option value="irrecuperavel">Irrecuperável (sem conserto)</option></select></label>
+  <label class="f">Motivo *<textarea id="bxa_m" rows="3" maxlength="600"></textarea></label>
+  <label class="f">Destino *<select id="bxa_d"><option value="">Escolha…</option>${(terc?[["devolucao_dono","Devolução ao dono"],["outro","Outro"]]:[["doacao","Doação"],["venda_leilao","Venda / leilão"],["devolucao_dono","Devolução ao dono"],["descarte","Descarte (sucata/resíduo)"],["reaproveitamento","Reaproveitamento de peças"],["outro","Outro"]]).map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select></label>
+  <label class="f">Detalhe do destino<input id="bxa_o" maxlength="200"></label><p class="note">O laudo técnico pode ser anexado depois pelo Gestor, na ficha do bem.</p>
+  <div style="display:flex;gap:8px"><button type="button" class="btn" style="flex:1;background:var(--bad);color:#fff" onclick="enviarBaixaApp('${b.id}')">Pedir baixa</button><button type="button" class="btn ghost" style="flex:1" onclick="E.modal.baixando=null;render()">Cancelar</button></div></div>`}
+async function enviarBaixaApp(id){const b=E.bens.find(x=>x.id==id);const cl=$("#bxa_c").value,m=$("#bxa_m").value.trim(),d=$("#bxa_d").value,o=$("#bxa_o").value.trim();
+  try{const r=await DB.solicitarBaixa(id,cl,m,d,o);DB.registrar(E.v.contratante_id,"pediu baixa de bem",rot(b));toast(r);E.modal.baixando=null;fecharSemVoltar();await recarregar()}catch(e){E.modal.erro=e.message;render()}}
 async function confirmarExclusao(id){const b=E.bens.find(x=>x.id==id);const m=($("#xm").value||"").trim();
   if(m.length<5){toast("Escreva o motivo da exclusão (pelo menos 5 letras).");return}
   try{await DB.excluir("bens",id,m);E.desfazer={t:"bens",id,nome:rot(b),ate:Date.now()+115000};toast("Excluído. Você pode desfazer por 2 minutos.");fecharSemVoltar();await recarregar();setTimeout(render,116000)}catch(e){E.modal.erro=e.message;render()}}
@@ -578,7 +585,7 @@ async function checarVersao(){if(DEMO||avisoVersao||location.protocol=="file:")r
 setInterval(checarVersao,10*60*1000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)checarVersao()});setTimeout(checarVersao,4000);
 
 /* ---------------- Baixar: Excel (.xlsx) e PDF com fotos ---------------- */
-function exportar(){E.modal={tipo:"baixar"};abrirNivel();render()}
+function exportar(){if(!["gestor","administrador"].includes(E.v.perfil)){toast("Relatórios e arquivos são gerados pelo Gestor ou pelo Administrador.");return}E.modal={tipo:"baixar"};abrirNivel();render()}
 function baixarHTML(){return `<div class="modal" onclick="if(event.target==this)voltar()"><div class="sheet"><button type="button" class="voltar" onclick="voltar()">← Voltar</button><h2>Baixar a lista de bens</h2><p class="sub">${E.bens.length} bem(ns) de ${esc(E.v.contratantes.nome)}. O arquivo vai para a pasta Downloads do aparelho.</p>
   ${veValor()?`<label class="chk" style="display:flex;gap:8px;align-items:center;margin:0 0 12px"><input type="checkbox" style="width:auto" ${E.comValor?"checked":""} onchange="E.comValor=this.checked"> Incluir os valores dos bens (desmarcado: sai sem valores)</label>`:`<p class="muted" style="margin:0 0 12px;font-size:.85rem">🔒 Os valores dos bens são restritos ao Gestor e não saem no arquivo.</p>`}
   <div class="opc-baixar"><button class="btn ghost" id="bx" onclick="baixarExcel()"><b>📊 Planilha Excel (.xlsx)</b><br><small class="muted">Para editar, filtrar e somar no Excel ou no Google Planilhas.</small></button>

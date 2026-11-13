@@ -1,7 +1,7 @@
 /* Atalaia System · app do celular e painel do Gestor funcionando sem internet
    Guarda as páginas e as bibliotecas. Os dados ficam no próprio app/painel (IndexedDB).
    Não intercepta a Matriz, a página do QR, os termos nem o servidor. */
-const V="atalaia-app-0.3.11";
+const V="atalaia-app-0.3.13";
 const CDN=["https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js",
   "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js",
   "https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js",
