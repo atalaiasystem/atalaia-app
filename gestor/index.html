@@ -8,7 +8,7 @@
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://ipwleoawvxmzvofcccjn.supabase.co; connect-src https://ipwleoawvxmzvofcccjn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d1f23%27/%3E%3Cpath d=%27M50 18 L24 82 M50 18 L76 82%27 stroke=%27white%27 stroke-width=%2710%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3Cpath d=%27M35 58 L46 67 L67 44%27 stroke=%27%23f2a33a%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 fill=%27none%27/%3E%3C/svg%3E">
-<link id="gf" rel="stylesheet">
+<link id="gf" rel="stylesheet"><link id="gf2" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
 <style>
 :root{--bg:#f5f3ef;--surface:#fff;--ink:#1d1f23;--muted:#6b7078;--line:#e3e0da;--soft:#efece6;--client:#1d1f23;--client-ink:#fff;--client-soft:#ecebe8;--amb:#f2a33a;--ok:#1f9a55;--warn:#b7791f;--bad:#c8372d;--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -126,6 +126,56 @@ label.f{display:grid;gap:5px;font-weight:600;font-size:.85rem;margin-bottom:10px
 .mais-ind>summary::before{content:"▸";color:var(--muted)}.mais-ind[open]>summary::before{content:"▾"}.mais-ind[open]>summary{margin-bottom:16px}.mais-ind>.grid{margin-bottom:16px}
 @media (max-width:900px){.grid.g4.dash-k{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px}.dash-k .kpi{padding:12px}.dash-k .kpi .val{font-size:1.3rem}.dash-k .kpi .lab{font-size:.74rem}.dash-k .kpi .kic{width:24px;height:24px;margin-right:6px}}
 @media (max-width:600px){.rosca{grid-template-columns:1fr;justify-items:center}}
+/* ===== Estilos do painel (item 89) · o Clássico continua sendo o padrão ===== */
+/* Executivo: sóbrio, cinza, uma régua preta, desvios em verde e vermelho (IBCS) */
+:root[data-estilo="executivo"] body{font-family:"IBM Plex Sans",var(--font)}
+:root[data-estilo="executivo"] .card{border-radius:3px;box-shadow:none}
+:root[data-estilo="executivo"] .kpi{border-top:3px solid var(--ink)}
+:root[data-estilo="executivo"] .kpi .val{font-weight:600}
+:root[data-estilo="executivo"] h1{font-weight:600;letter-spacing:-.01em}
+:root[data-estilo="executivo"] h2{font-weight:600;text-transform:uppercase;font-size:.82rem;letter-spacing:.06em}
+:root[data-estilo="executivo"] .hero{background:var(--surface);color:var(--ink);border-radius:3px;border:1px solid var(--line);border-bottom:3px solid var(--ink);box-shadow:none}
+:root[data-estilo="executivo"] .btn{border-radius:3px}
+/* Executivo e Editorial: cartões neutros (a cor fica só para o que é sinal) */
+:root[data-estilo="executivo"] .grid.g4>.kpi,:root[data-estilo="editorial"] .grid.g4>.kpi{background:var(--surface)!important;box-shadow:none!important}
+:root[data-estilo="executivo"] .grid.g4>.kpi .val,:root[data-estilo="editorial"] .grid.g4>.kpi .val{color:var(--ink)!important}
+:root[data-estilo="executivo"] .grid.g4>.kpi .kic,:root[data-estilo="editorial"] .grid.g4>.kpi .kic{background:var(--soft)!important;color:var(--muted)!important}
+:root[data-estilo="editorial"] .grid.g4>.kpi{border-top:2px solid var(--ink)!important}
+/* Editorial: papel claro, títulos com serifa, réguas finas no lugar de caixas */
+:root[data-estilo="editorial"][data-theme="claro"] body{background:#f6f1e8}
+:root[data-estilo="editorial"] h1,:root[data-estilo="editorial"] h2,:root[data-estilo="editorial"] .kpi .val,:root[data-estilo="editorial"] .ed-tit{font-family:"Source Serif 4",Georgia,serif}
+:root[data-estilo="editorial"] h1{font-weight:700;font-size:1.9rem;letter-spacing:-.015em}
+:root[data-estilo="editorial"] h2{font-weight:600;font-size:1.15rem}
+:root[data-estilo="editorial"] .card{border:0;border-top:2px solid var(--ink);border-radius:0;box-shadow:none}
+:root[data-estilo="editorial"] .modal .card{border-top:0;border-radius:10px}
+:root[data-estilo="editorial"] .kpi .lab{text-transform:uppercase;letter-spacing:.07em;font-size:.68rem}
+:root[data-estilo="editorial"] .kpi .val{font-weight:600;font-size:1.9rem}
+:root[data-estilo="editorial"] .hero{background:transparent;color:var(--ink);border-radius:0;border-bottom:1px solid var(--ink);padding:6px 0 14px;box-shadow:none}
+:root[data-estilo="editorial"] .btn{border-radius:2px}
+/* Operacional: denso, condensado, números monoespaçados, listras nas tabelas */
+:root[data-estilo="operacional"] body{font:13.5px/1.35 "IBM Plex Sans Condensed",var(--font)}
+:root[data-estilo="operacional"] .card{border-radius:6px;padding:10px 12px;gap:8px;box-shadow:none}
+:root[data-estilo="operacional"] .grid{gap:10px}
+:root[data-estilo="operacional"] .wrap{gap:10px;max-width:1500px}
+:root[data-estilo="operacional"] h1{font-size:1.25rem}
+:root[data-estilo="operacional"] h2{font-size:.95rem}
+:root[data-estilo="operacional"] .kpi .val{font-family:"IBM Plex Mono",monospace;font-size:1.3rem;font-weight:600}
+:root[data-estilo="operacional"] .tbl td,:root[data-estilo="operacional"] .tbl th{padding:4px 6px}
+:root[data-estilo="operacional"] .tbl tr:nth-child(even) td{background:var(--soft)}
+:root[data-estilo="operacional"] .hero{border-radius:6px;padding:10px 14px;box-shadow:none}
+/* blocos próprios de cada estilo */
+.est-tab td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.est-tab svg{display:block}
+.ed-frase{font-family:"Source Serif 4",Georgia,serif;font-size:1.22rem;line-height:1.45;margin:0}
+.ed-frase b{font-weight:700}
+.ed-kick{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.op-st{display:inline-flex;gap:4px;align-items:center;font-weight:600;white-space:nowrap}
+.op-st.at{color:var(--bad)}.op-st.vc{color:var(--warn)}.op-st.ok{color:var(--ok)}
+.est-opc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.est-opc button{text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px;cursor:pointer;display:grid;gap:4px}
+.est-opc button[aria-pressed=true]{border:2px solid var(--ink)}
+.est-opc .mini{height:46px;border-radius:4px;background:var(--soft);display:grid;gap:3px;padding:6px}
+@media (max-width:700px){.est-opc{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -136,7 +186,7 @@ label.f{display:grid;gap:5px;font-weight:600;font-size:.85rem;margin-bottom:10px
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.20"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.21"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -513,7 +563,7 @@ function aplicarPaleta(d){const r=document.documentElement,k=PALS[d.paleta]?d.pa
 function aplicarDesign(d){d=d||{};const r=document.documentElement,cor=aplicarPaleta(d);
   const tinta=contraste(cor,"#ffffff")>=4.5?"#ffffff":"#1d1f23";r.style.setProperty("--client",cor);r.style.setProperty("--client-ink",tinta);
   r.style.setProperty("--client-soft",r.dataset.herogr=="1"?PALS[r.dataset.pal][2].pris:cor+"22");r.dataset.theme=d.tema||"claro";const f=FONTES[d.fonte]||FONTES.sistema;r.style.setProperty("--font",f[1]);
-  if(f[2])$("#gf").href=`https://fonts.googleapis.com/css2?family=${f[2]}&display=swap`;else $("#gf").removeAttribute("href");}
+  if(f[2])$("#gf").href=`https://fonts.googleapis.com/css2?family=${f[2]}&display=swap`;else $("#gf").removeAttribute("href");aplicarEstilo(d);}
 
 /* ---------------- Telas ---------------- */
 function render(){
@@ -575,6 +625,7 @@ function pgInicio(){
   return `<div class="hero"><div><span class="eyebrow">Dashboard · ${E.iu?esc(nomeUni(E.iu)):"empresa toda"}</span><h1>Olá, ${esc(E.v.nome.split(" ")[0])}</h1><p>${hoje.charAt(0).toUpperCase()+hoje.slice(1)}${ant?` · acesso anterior: ${dh(ant.criado_em)}`:""}</p></div>
    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost hero-rel" onclick="abrirDashRel()">🖨 Relatório do Dashboard</button><button class="btn ghost" onclick="abrirBaixarApp()">📲 Baixar o app</button>${ADMIN()?`<button class="btn amb" onclick="E.pag='cad';E.cadTab='bens';abrirBem()">+ Cadastrar bem</button>`:""}</div></div>
   ${ADMIN()&&(E.bens.length==0||E.amb.length==0)?`<div class="card" style="border-color:var(--amb)"><div class="top"><div><h2 style="margin:0">Comece por aqui</h2><p class="note" style="margin:2px 0 0">O sistema ainda está vazio. Veja a ordem recomendada para montar tudo.</p></div><button class="btn" onclick="ir('passos')">Primeiros passos</button></div></div>`:""}
+  ${blocoEstilo()}
   <div class="grid g4 dash-k">${L1.join("")}</div>
   ${L2?`<div class="grid g4 dash-k dash-k2">${L2.join("")}</div>`:""}
   ${bannerDia()}
@@ -715,6 +766,7 @@ function cfgDesign(){
   const d=E.rascunho||(E.rascunho={...(E.v.contratantes.design||{})}),cor=d.cor||(PALS[d.paleta||PAL_PADRAO]||PALS.classico)[2].pri,cw=contraste(cor,"#ffffff"),cb=contraste(cor,"#1d1f23");
   const ok=Math.max(cw,cb)>=4.5;
   return `<div class="grid g2"><div class="card"><h2>Design do painel</h2><p class="note">Muda as cores, a fonte e a logo do Painel do Gestor para todos os usuários da empresa.${ADMIN()?"":" Somente administradores podem alterar."}</p>
+   ${estiloOpcHTML(d)}
    <div class="f" style="margin-bottom:14px"><b>Paleta de cores do painel e do app</b> <span class="muted">· menu, topo, indicadores e gráficos</span>
     ${["Claras","Escuras"].map(g=>`<div class="note" style="margin-top:8px;font-weight:700">${g}</div><div class="palc">${Object.entries(PALS).filter(([k,v])=>v[1]==g).map(([k,[n,,p]])=>`<button type="button" aria-pressed="${(d.paleta||PAL_PADRAO)==k}" onclick="E.rascunho.paleta='${k}';previa();render()" title="${n}"><span class="pv"><i style="background:linear-gradient(180deg,${p.s1},${p.s2});${p.s1=="#ffffff"?"border-right:1px solid #e3e0da":""}"></i><div style="background:${p.bg}"><span class="hd" style="background:linear-gradient(120deg,${p.h1},${p.h2})"></span><span class="ks"><span style="background:${p.k1}"></span><span style="background:${p.k2}"></span><span style="background:${p.k3}"></span><span style="background:${p.k4}"></span></span></div></span><b>${n}${k==PAL_PADRAO?" · padrão":""}</b></button>`).join("")}</div>`).join("")}</div>
    <div class="f" style="margin-bottom:12px"><b>Cor principal</b> <span class="muted">· opcional: a cor da sua marca nos botões e no topo. ${d.cor?`<button type="button" class="btn ghost sm" onclick="delete E.rascunho.cor;previa();render()">Usar a cor da paleta</button>`:"Sem cor própria: usa a da paleta."}</span> <span class="muted">· atual ${cor}</span>${paletaHTML(cor,"E.rascunho.cor='COR';render()")}<div class="pal-outra">Qualquer outra cor: <input type="color" value="${cor}" onchange="E.rascunho.cor=this.value;render()" style="width:56px;height:40px;padding:2px"></div></div>
@@ -1881,12 +1933,12 @@ async function pdfFotos(doc,P,per){const {W,M,quebra}=P;toast("Juntando as fotos
 async function relPDF(comFotos){const per=relPeriodo(),R=montarRel(E.rk,per);try{
   if(!window.jspdf)await addScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
   const larga=R.secoes.some(s=>s.cols.length>7),doc=new window.jspdf.jsPDF({unit:"mm",format:"a4",orientation:larga?"landscape":"portrait"}),W=larga?297:210,H=larga?210:297,M=12;let y=0;
-  const topo=()=>{doc.setFillColor(29,31,35);doc.rect(0,0,W,18,"F");doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text(E.v.contratantes.nome,M,8);doc.setFont("helvetica","normal");doc.setFontSize(8);doc.text(doc.splitTextToSize(linhaEmpresa(E.ru||null)||"Atalaia System · Sistema de Gestão de Patrimônio e Manutenção",W-2*M-60)[0],M,13.5);doc.text("Emitido em "+new Date().toLocaleString("pt-BR"),W-M,13.5,{align:"right"});doc.setTextColor(29,31,35);y=26};
+  const topo=()=>{pdfCab(doc,W,M,linhaEmpresa(E.ru||null));y=26};
   const quebra=h=>{if(y+h>H-14){doc.addPage();topo();return true}return false};
-  topo();doc.setFont("helvetica","bold");doc.setFontSize(14);doc.text(R.titulo,M,y);y+=6;doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(`${R.sub||""} · ${E.ru?nomeUni(E.ru):GESTOR()?"Todas as unidades":nomeUni(minhaUnidadeId())}`,M,y);y+=7;
+  topo();doc.setFont(pdfFonteTit(),"bold");doc.setFontSize(pdfFonteTit()=="times"?17:14);doc.text(R.titulo,M,y);y+=6;doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(`${R.sub||""} · ${E.ru?nomeUni(E.ru):GESTOR()?"Todas as unidades":nomeUni(minhaUnidadeId())}`,M,y);y+=7;
   if(R.kpis.length){const cw=(W-2*M)/2;R.kpis.forEach(([l,v,c],i)=>{const x=M+(i%2)*cw;if(i%2==0)quebra(c?11:7);doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.setTextColor(90,94,102);doc.text(l,x,y);doc.setTextColor(29,31,35);doc.setFont("helvetica","bold");doc.setFontSize(10);doc.text(String(v),x+cw-4,y,{align:"right"});if(c){doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(110,114,120);doc.text(doc.splitTextToSize(c,cw-6)[0],x,y+3.8);doc.setTextColor(29,31,35)}if(i%2==1||i==R.kpis.length-1)y+=R.kpis.slice(i-(i%2),i+1).some(k=>k[2])?9:6});y+=3}
   const secoes=R.secoes.slice();if(E.rk=="mensal"){const t=E.relAcoes??R.acoes;secoes.splice(secoes.length-1,0,{t:"Ações para o próximo mês",cols:["Ação"],linhas:t.split(/\n+/).filter(Boolean).map(x=>[x])})}
-  for(const sc of secoes){quebra(16);doc.setFont("helvetica","bold");doc.setFontSize(11);doc.text(sc.t,M,y);y+=5;
+  for(const sc of secoes){quebra(16);doc.setFont(pdfFonteTit(),"bold");doc.setFontSize(pdfFonteTit()=="times"?12.5:11);doc.text(sc.t,M,y);y+=5;
     if(!sc.linhas.length){doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.text("Nada neste período.",M,y);y+=7;continue}
     doc.setFontSize(7.8);const comp=sc.cols.map((c,i)=>Math.min(60,Math.max(String(c).length,...sc.linhas.slice(0,200).map(l=>String(l[i]??"").length))));const tot=comp.reduce((s,x)=>s+x,0),ws=comp.map(x=>Math.max(12,(W-2*M)*x/tot));const f=(W-2*M)/ws.reduce((s,x)=>s+x,0);for(let i=0;i<ws.length;i++)ws[i]*=f;
     const cab=()=>{doc.setFillColor(238,236,232);doc.rect(M,y-3.6,W-2*M,5.4,"F");doc.setFont("helvetica","bold");let x=M;sc.cols.forEach((c,i)=>{doc.text(doc.splitTextToSize(String(c),ws[i]-2)[0],x+1,y);x+=ws[i]});y+=5;doc.setFont("helvetica","normal")};cab();
@@ -1961,6 +2013,9 @@ const LEIS2=[
  {t:"ABNT NBR 15943:2011",g:"Programa de gerenciamento de equipamentos",r:"Diretrizes para o programa de gerenciamento de equipamentos de saúde e de infraestrutura: inventário, registro histórico, ensaios de aceitação, manutenção, treinamento e revisão anual de desempenho (item 4.17).",
   arts:[["Inventário","Lista com identificação, localização e situação de cada equipamento."],["Registro histórico","Tudo o que aconteceu com o equipamento."],["Item 4.17","Revisão anual do programa com indicadores."]],
   at:[["Inventário","ir('cad')"],["Relatório ONA (indicadores)",IR_REL("ona")]],u:"https://www.target.com.br/produtos/normas-tecnicas/42262/nbr15943-diretrizes-para-um-programa-de-gerenciamento-de-equipamentos-de-infraestrutura-de-servicos-de-saude-e-de-equipamentos-para-a-saude",ut:"Norma paga: página da norma para compra (o texto completo não é público)"},
+ {t:"ABNT NBR ISO 55001:2024",g:"Gestão de ativos · sistema de gestão",r:"Norma internacional, adotada pela ABNT em 2024, que define os requisitos de um sistema de gestão de ativos: tirar o melhor valor de cada ativo durante todo o ciclo de vida, equilibrando custo, risco e desempenho. A família tem a ISO 55000 (termos e princípios), a 55001 (requisitos) e a 55002 (como aplicar). É a base do próprio Atalaia: patrimônio e manutenção no mesmo lugar.",
+  arts:[["Cap. 4 e 5","Contexto e liderança: política de gestão de ativos, objetivos e papéis definidos pela direção."],["Cap. 6","Planejamento: plano de gestão de ativos, riscos e oportunidades, decisões baseadas em dados."],["Cap. 7","Apoio: informação documentada, dados confiáveis dos ativos e competência das pessoas."],["Cap. 8","Operação: controle do ciclo de vida (aquisição, uso, manutenção, desativação e descarte) e dos serviços terceirizados."],["Cap. 9","Avaliação de desempenho: indicadores, auditoria interna e análise crítica pela direção."],["Cap. 10","Melhoria: não conformidade, ação corretiva e melhoria contínua."]],
+  at:[["Inventário e ciclo de vida","ir('cad')"],["Saúde dos equipamentos",IR_REL("saude")],["Indicadores e análise crítica",IR_REL("ona")],["Calibrações, preventivas e TSE","ir('cal')"],["Automações (não conformidade vira corretiva)","E.cfgTab='auto';ir('cfg')"],["Treinamentos","ir('trein')"]],u:"",ut:"Norma paga: adquirir na ABNT (ABNT NBR ISO 55001:2024)"},
  {t:"ABNT NBR IEC 62353",g:"Ensaio de segurança elétrica",r:"Ensaio recorrente e ensaio após reparo de equipamentos eletromédicos: inspeção visual, aterramento, isolamento, correntes de fuga e ensaio funcional. Os limites usados pelo Atalaia seguem esta norma.",
   arts:[["Recorrente","Periódico (o Atalaia usa 12 meses como padrão)."],["Após reparo","Depois de corretiva em eletromédico."]],
   at:[["Registrar TSE","ir('cal')"],["Analisadores","E.calTab='tse';ir('cal')"]],u:"https://www.abntcatalogo.com.br",ut:"Norma paga: Catálogo ABNT (procure \"62353\"; o texto completo não é público)"},
@@ -2135,10 +2190,10 @@ function baixasPendHTML(){if(!GESTOR())return "";if(!E.bxCarr){E.bxCarr=1;DB.bai
 async function decBaixa(id,a){let o=null;if(a=="recusar"){o=prompt("Por que está recusando? (vai para quem pediu)");if(o==null)return}else if(!confirm("Aprovar a baixa? O bem sai da lista (o histórico fica guardado)."))return;
   try{toast(await DB.decidirBaixa(id,a,o));E.bxCarr=0;await recarregar()}catch(e){toast(e.message)}}
 async function pdfBase(titulo){if(!window.jspdf)await addScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
-  const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,M=14;doc.setFillColor(29,31,35);doc.rect(0,0,W,20,"F");doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text(E.v.contratantes.nome,M,8.5);doc.setFont("helvetica","normal");doc.setFontSize(8);doc.text(doc.splitTextToSize(linhaEmpresa()||"Atalaia System · Sistema de Gestão de Patrimônio e Manutenção",W-2*M-60)[0],M,14);doc.text("Emitido em "+new Date().toLocaleString("pt-BR"),W-M,14,{align:"right"});doc.setTextColor(29,31,35);
-  doc.setFont("helvetica","bold");doc.setFontSize(15);doc.text(titulo,M,30);const st={doc,W,M,y:38};
+  const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,M=14;pdfCab(doc,W,M,linhaEmpresa());
+  doc.setFont(pdfFonteTit(),"bold");doc.setFontSize(pdfFonteTit()=="times"?17:15);doc.text(titulo,M,30);const st={doc,W,M,y:38};
   st.L=(k,v)=>{if(st.y>270){doc.addPage();st.y=20}doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.text(k+":",M,st.y);doc.setFont("helvetica","normal");const t=doc.splitTextToSize(String(v==null||v===""?"—":v),W-2*M-46);doc.text(t,M+46,st.y);st.y+=Math.max(5.2,t.length*4.6)};
-  st.H=t=>{if(st.y>262){doc.addPage();st.y=20}st.y+=2;doc.setFont("helvetica","bold");doc.setFontSize(11);doc.text(t,M,st.y);st.y+=6};
+  st.H=t=>{if(st.y>262){doc.addPage();st.y=20}st.y+=2;doc.setFont(pdfFonteTit(),"bold");doc.setFontSize(11);doc.text(t,M,st.y);st.y+=6};
   st.fim=nome=>{const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFontSize(7.5);doc.setTextColor(107,112,120);doc.text(`Atalaia System · datas e horários registrados pelo servidor · página ${i} de ${n}`,M,290)}const bl=doc.output("blob"),l=document.createElement("a");l.href=URL.createObjectURL(bl);l.download=nome;document.body.appendChild(l);l.click();setTimeout(()=>l.remove(),1000)};
   return st}
 async function termoBaixaPDF(x,b){try{const s={...(x.bem_snapshot||{}),...(b||{})},st=await pdfBase(`Termo de baixa patrimonial${x.numero?" nº "+x.numero:""}`),{doc,M,W}=st;
@@ -2366,6 +2421,69 @@ async function pmocPDF(u){try{carregarClima();const e=u?E.est.find(x=>x.id==u):E
   ["Manter limpos bandejas, serpentinas, umidificadores, ventiladores e dutos.","Usar produtos de limpeza biodegradáveis e registrados no Ministério da Saúde.","Inspecionar os filtros e trocar quando necessário.","Casa de máquinas só para a climatização, sem materiais estranhos.","Tomada de ar externo longe de fontes de poluição e com filtro.","Garantir renovação de ar de pelo menos 27 m³/h por pessoa.","Recolher a sujeira removida em sacos, sem espalhar partículas."].forEach(t=>{const tx=doc.splitTextToSize("• "+t,W-2*M-4);if(st.y>282){doc.addPage();st.y=20}doc.text(tx,M+2,st.y);st.y+=tx.length*3.8});
   st.y+=16;if(st.y>250){doc.addPage();st.y=40}const cw=(W-2*M-10)/2;["Responsável técnico (assinatura e carimbo)","Proprietário / responsável pelo estabelecimento"].forEach((t,i)=>{const x=M+i*(cw+10);doc.line(x,st.y,x+cw,st.y);doc.setFontSize(8.5);doc.text(t,x,st.y+4.5)});
   st.fim(`PMOC_${(e.nome||"unidade").replace(/[^\w-]/g,"_")}.pdf`);DB.registrar(E.v.contratante_id,"gerou documento PMOC",e.nome||"");toast("Documento PMOC baixado. Confira com o responsável técnico antes de assinar.")}catch(er){toast(er.message||"Não foi possível gerar o PDF.")}}
+/* ---------------- Item 89 · estilos do painel e dos relatórios (o Clássico continua) ---------------- */
+const ESTILOS={classico:["Clássico","O visual de sempre: cartões, rosca e barras coloridas."],executivo:["Executivo","Realizado x meta x mês anterior, com o desvio em verde ou vermelho (padrão IBCS). Para a diretoria."],editorial:["Editorial","O título já conta a conclusão; fonte com serifa e réguas finas. Para relatórios e reuniões."],operacional:["Operacional","Fila do dia com prazo, tabelas densas, ícone e texto junto da cor. Para a equipe de manutenção."]};
+const EST_GF={executivo:"family=IBM+Plex+Sans:wght@400;500;600;700",editorial:"family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700",operacional:"family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600"};
+function estiloDe(d){d=d||{};return ESTILOS[d.estilo]?d.estilo:"classico"}
+function estiloAtual(){return estiloDe(E.rascunho||(E.v&&E.v.contratantes&&E.v.contratantes.design))}
+function aplicarEstilo(d){const e=estiloDe(d),r=document.documentElement,l=document.getElementById("gf2");r.dataset.estilo=e;if(l){if(EST_GF[e])l.href="https://fonts.googleapis.com/css2?"+EST_GF[e]+"&display=swap";else l.removeAttribute("href")}}
+function estiloOpcHTML(d){const at=estiloDe(d),mini={classico:`<span style="background:var(--client);height:12px;border-radius:3px"></span><span style="display:flex;gap:3px"><i style="flex:1;height:14px;background:#fff;border-radius:3px"></i><i style="flex:1;height:14px;background:#fff;border-radius:3px"></i></span>`,
+  executivo:`<span style="display:flex;gap:4px;align-items:center"><i style="width:60%;height:6px;background:#333"></i><i style="width:2px;height:12px;background:#000"></i></span><span style="display:flex;gap:4px"><i style="width:30%;height:6px;background:#2e7d32"></i><i style="width:18%;height:6px;background:#c62828"></i></span>`,
+  editorial:`<span style="font:700 .8rem Georgia,serif;color:var(--ink)">Chamados caíram 12%</span><span style="height:1px;background:var(--ink)"></span>`,
+  operacional:`<span style="display:grid;gap:2px">${[0,1,2].map(i=>`<i style="height:5px;background:${i%2?"var(--surface)":"#cfd3d8"}"></i>`).join("")}</span><span style="font:600 .62rem monospace;color:var(--bad)">⚠ atrasado 3h</span>`};
+  return `<div class="f" style="margin-bottom:14px"><b>Estilo do painel e dos relatórios</b> <span class="muted">· muda a forma de mostrar os números no Início e nos PDFs; nada é retirado</span><div class="est-opc">${Object.entries(ESTILOS).map(([k,[n,t]])=>`<button type="button" aria-pressed="${at==k}" ${ADMIN()?"":"disabled"} onclick="E.rascunho.estilo='${k}';previa();render()"><span class="mini">${mini[k]}</span><b>${n}${k=="classico"?" (padrão)":""}</b><span class="note">${t}</span></button>`).join("")}</div></div>`}
+
+/* períodos de mês para os blocos do Início */
+function perMes(k){const h=new Date(),a=new Date(h.getFullYear(),h.getMonth()+k,1),b=k==0?h:new Date(h.getFullYear(),h.getMonth()+k+1,0),f=x=>`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`,de=f(a),ate=f(b);
+  return {de,ate,ok:s=>!!s&&String(s).slice(0,10)>=de&&String(s).slice(0,10)<=ate,txt:a.toLocaleDateString("pt-BR",{month:"long",year:"numeric"}),mes:a.toLocaleDateString("pt-BR",{month:"long"})}}
+function comUni(fn){const bk=E.ru;E.ru=E.iu||"";try{return fn()}finally{E.ru=bk}}
+function blocoEstilo(){try{const e=estiloAtual();return e=="executivo"?blocoExecutivo():e=="editorial"?blocoEditorial():e=="operacional"?blocoOperacional():""}catch(er){return ""}}
+const fN=(v,u)=>v==null||isNaN(v)?"—":num(Math.round(v*10)/10)+(u=="%"?"%":u?" "+u:"");
+
+/* Executivo: realizado x meta x mês anterior (bullet graph + desvio) */
+function bulletSVG(a,m,py,u){const mx=u=="%"?100:Math.max(a||0,m||0,py||0)*1.15||1,x=v=>Math.max(0,Math.min(150,v/mx*150));
+  return `<svg width="156" height="16" viewBox="0 0 156 16" role="img" aria-label="Real ${fN(a,u)}${m!=null?", meta "+fN(m,u):""}"><rect x="0" y="2" width="150" height="12" fill="var(--soft)"/>${py!=null?`<rect x="0.5" y="2.5" width="${x(py)}" height="11" fill="none" stroke="#9aa0a8"/>`:""}${a!=null?`<rect x="0" y="5" width="${x(a)}" height="6" fill="var(--ink)"/>`:""}${m!=null?`<rect x="${x(m)-1}" y="0" width="2" height="16" fill="var(--ink)"/>`:""}</svg>`}
+function desvioHTML(a,py,dir,u){if(a==null||py==null)return `<span class="note">—</span>`;const d=a-py,bom=dir*d>=0,w=Math.min(60,Math.abs(d)/(Math.max(Math.abs(a),Math.abs(py),1))*120),cor=d==0?"#9aa0a8":bom?"#2e7d32":"#c62828";
+  return `<span style="display:inline-flex;gap:6px;align-items:center"><i style="display:inline-block;width:${Math.max(2,w)}px;height:8px;background:${cor}"></i><b style="color:${cor}">${d>0?"+":d<0?"−":""}${num(Math.round(Math.abs(d)*10)/10)}${u=="%"?" p.p.":u?" "+u:""}</b></span>`}
+function blocoExecutivo(){const pA=perMes(0),pP=perMes(-1),[A,P]=comUni(()=>[indicadoresRel(pA),indicadoresRel(pP)]),mt=E.v.contratantes.metas_indicadores||{disponibilidade:95,preventivas:90,mttr_h:48,atendimento_h:4,resolutividade:90};
+  const L=[["Disponibilidade dos equipamentos","%",A.disp,P.disp,mt.disponibilidade,1],["Preventivas em dia","%",A.prev,P.prev,mt.preventivas,1],["Chamados resolvidos","%",A.resol,P.resol,mt.resolutividade,1],["Tempo médio de reparo","h",A.mttr,P.mttr,mt.mttr_h,-1],["Tempo médio para atender","h",A.atend,P.atend,mt.atendimento_h,-1],["Chamados abertos","",A.ch,P.ch,null,-1]];
+  const sit=(a,m,dir)=>a==null||m==null?"":dir>0?(a>=m?"✓ na meta":"✗ abaixo da meta"):(a<=m?"✓ na meta":"✗ acima da meta");
+  return `<div class="card"><div class="top"><div><h2>Realizado x meta · ${esc(pA.txt)}</h2><p class="note" style="margin-top:4px">Barra preta = real · traço = meta · contorno cinza = ${esc(pP.mes)} · desvio em verde quando melhorou e em vermelho quando piorou. Metas em Relatórios › ONA.</p></div><button class="btn ghost sm" onclick="E.rk='ona';ir('rel')">Ver relatório</button></div>
+   <div class="tbl est-tab"><table><tr><th>Indicador</th><th style="text-align:right">Real</th><th style="text-align:right">Meta</th><th style="text-align:right">${esc(pP.mes)}</th><th>Real x meta</th><th>Desvio x ${esc(pP.mes)}</th><th></th></tr>
+   ${L.map(([n,u,a,py,m,dir])=>`<tr><td>${n}</td><td class="n"><b>${fN(a,u)}</b></td><td class="n">${m==null?"—":fN(m,u)}</td><td class="n">${fN(py,u)}</td><td>${bulletSVG(a,m,py,u)}</td><td>${desvioHTML(a,py,dir,u)}</td><td class="note">${sit(a,m,dir)}</td></tr>`).join("")}</table></div></div>`}
+
+/* Editorial: título-conclusão, frases e gráfico de inclinação */
+function blocoEditorial(){const pA=perMes(0),pP=perMes(-1),[A,P]=comUni(()=>[indicadoresRel(pA),indicadoresRel(pP)]),mt=E.v.contratantes.metas_indicadores||{preventivas:90};
+  const d=A.ch-P.ch,pc=P.ch?Math.round(Math.abs(d)/P.ch*100):null,B=E.bens.filter(b=>!E.iu||b.estabelecimento_id==E.iu),ruins=B.filter(b=>["ruim","em manutenção"].includes(b.estado)||b.indisponivel).length;
+  const titulo=!A.ch&&!P.ch?"Nenhum chamado aberto neste mês nem no anterior":d<0?`Chamados caíram ${pc!=null?pc+"%":""} em relação a ${pP.mes}`:d>0?(P.ch&&A.ch/P.ch>=2?`Chamados ${num(Math.round(A.ch/P.ch*10)/10)} vezes mais que em ${pP.mes}`:`Chamados subiram ${pc!=null?pc+"%":""} em relação a ${pP.mes}`):`Chamados estáveis em relação a ${pP.mes}`;
+  const fr=[`Em ${pA.mes}, foram abertos <b>${num(A.ch)} chamado${A.ch==1?"":"s"}</b>, ${d==0?"o mesmo número que":Math.abs(d)+(d>0?" a mais que":" a menos que")} em ${pP.mes}.`,
+   A.prev!=null?`As preventivas e calibrações estão <b>${fN(A.prev,"%")} em dia</b>${mt.preventivas?` (meta: ${mt.preventivas}%)`:""}.`:"",
+   A.mttr!=null?`O reparo levou em média <b>${fN(A.mttr,"h")}</b>${P.mttr!=null?`, contra ${fN(P.mttr,"h")} em ${pP.mes}`:""}.`:"",
+   ruins?`<b>${num(ruins)} be${ruins==1?"m pede":"ns pedem"} atenção</b> (estado ruim, em manutenção ou indisponível).`:"Nenhum bem em estado ruim ou indisponível."].filter(Boolean);
+  const pr=[["urgente","Urgente"],["media","Média"],["baixa","Baixa"]],ch=E.ch.filter(c=>!c.excluido_em&&(!E.iu||c.estabelecimento_id==E.iu)),cnt=(per,k)=>ch.filter(c=>per.ok(c.aberto_em)&&c.prioridade==k).length,V=pr.map(([k,n])=>[n,cnt(pP,k),cnt(pA,k)]),mx=Math.max(1,...V.flatMap(v=>[v[1],v[2]]));
+  const big=V.reduce((b,v)=>v[2]-v[1]>b[2]-b[1]?v:b,V[0]),y=v=>130-v/mx*110,sep=k=>{const o=V.map((v,i)=>({i,y:y(v[k])})).sort((a,b)=>a.y-b.y);for(let j=1;j<o.length;j++)if(o[j].y-o[j-1].y<12)o[j].y=o[j-1].y+12;const r=[];o.forEach(x=>r[x.i]=x.y);return r},yl=sep(1),yr=sep(2);
+  const svg=`<svg viewBox="0 0 320 150" width="100%" style="max-width:360px" role="img" aria-label="Chamados por prioridade: ${esc(pP.mes)} e ${esc(pA.mes)}"><text x="60" y="12" text-anchor="middle" font-size="10" fill="var(--muted)">${esc(pP.mes)}</text><text x="260" y="12" text-anchor="middle" font-size="10" fill="var(--muted)">${esc(pA.mes)}</text>
+   ${V.map(v=>{const dest=v===big&&v[2]!=v[1],cor=dest?"var(--ink)":"#a3a8b0";return `<line x1="60" y1="${y(v[1])}" x2="260" y2="${y(v[2])}" stroke="${cor}" stroke-width="${dest?2.5:1.5}"/><circle cx="60" cy="${y(v[1])}" r="3" fill="${cor}"/><circle cx="260" cy="${y(v[2])}" r="3" fill="${cor}"/><text x="52" y="${yl[V.indexOf(v)]+3}" text-anchor="end" font-size="10" fill="${cor}">${v[0]} ${v[1]}</text><text x="268" y="${yr[V.indexOf(v)]+3}" font-size="10" fill="${cor}" font-weight="${dest?700:400}">${v[2]} ${v[0]}</text>`}).join("")}</svg>`;
+  return `<div class="card"><span class="ed-kick">Em resumo · ${esc(pA.txt)}</span><h2 class="ed-tit" style="font-size:1.5rem;line-height:1.25">${esc(titulo)}</h2>
+   <div class="grid g2" style="align-items:center"><div style="display:grid;gap:8px">${fr.map(t=>`<p class="ed-frase">${t}</p>`).join("")}</div><div><span class="ed-kick">Chamados por prioridade</span>${svg}</div></div></div>`}
+
+/* Operacional: fila do dia com prazo */
+function prazoChip(c){if(!c.prazo_resolver)return `<span class="op-st">—</span>`;const h=(Date.parse(c.prazo_resolver)-Date.now())/36e5,t=Math.abs(h)>=48?Math.round(Math.abs(h)/24)+" dias":Math.max(1,Math.round(Math.abs(h)))+" h";
+  return h<0?`<span class="op-st at">⚠ atrasado ${t}</span>`:h<4?`<span class="op-st vc">⏱ vence em ${t}</span>`:`<span class="op-st ok">✓ ${t} de folga</span>`}
+function blocoOperacional(){const u=E.iu,C=E.ch.filter(c=>!c.excluido_em&&ABERTO(c)&&(!u||c.estabelecimento_id==u)).sort((a,b)=>(a.prazo_resolver||"9")<(b.prazo_resolver||"9")?-1:1),lim=new Date(Date.now()+7*864e5).toISOString().slice(0,10),
+   P=(E.prog||[]).filter(p=>!p.excluido_em&&p.proxima&&p.proxima<=lim&&(!u||p.estabelecimento_id==u)).sort((a,b)=>a.proxima<b.proxima?-1:1),I=E.bens.filter(b=>b.indisponivel&&(!u||b.estabelecimento_id==u)),bn=id=>{const b=E.bens.find(x=>x.id==id);return b?(b.patrimonio?b.patrimonio+" · ":"")+b.nome:"—"};
+  return `<div class="card"><div class="top"><h2>Fila de hoje · ${num(C.length)} chamado${C.length==1?"":"s"} em aberto</h2><button class="btn ghost sm" onclick="E.chF={...E.chF,sit:'abertos',uni:E.iu||''};ir('chamados')">Abrir chamados</button></div>
+   <div class="tbl"><table><tr><th>Nº</th><th>Prazo</th><th>Prioridade</th><th>Situação</th><th>Ambiente</th><th>Equipamento</th><th>Descrição</th></tr>${C.slice(0,15).map(c=>`<tr class="click" onclick="abrirChamadoDet('${c.id}')"><td><b>${c.numero}</b></td><td>${prazoChip(c)}</td><td>${c.prioridade=="urgente"?"🔴 ":c.prioridade=="media"?"🟡 ":"⚪ "}${esc(PRI[c.prioridade]||c.prioridade)}</td><td>${esc(SIT[c.situacao]||c.situacao)}</td><td>${esc(nomeAmbi(c.ambiente_id))}</td><td>${esc(c.bem_id?bn(c.bem_id):"—")}</td><td>${esc((c.descricao||"").slice(0,70))}</td></tr>`).join("")||`<tr><td colspan="7" class="note">Nenhum chamado em aberto. ✓</td></tr>`}</table></div>
+   <div class="grid g2"><div><h3 style="margin-bottom:4px">Programados vencidos ou nos próximos 7 dias (${P.length})</h3><div class="tbl"><table>${P.slice(0,8).map(p=>`<tr><td>${p.proxima<hojeISO()?'<span class="op-st at">⚠ vencido</span>':'<span class="op-st vc">⏱ '+dt(p.proxima)+"</span>"}</td><td>${esc(TIPOS_M[p.tipo]||p.tipo)}</td><td>${esc(bn(p.bem_id))}</td></tr>`).join("")||`<tr><td class="note">Nada vencendo. ✓</td></tr>`}</table></div></div>
+   <div><h3 style="margin-bottom:4px">Equipamentos indisponíveis (${I.length})</h3><div class="tbl"><table>${I.slice(0,8).map(b=>`<tr class="click" onclick="abrirBem('${b.id}')"><td><span class="op-st at">⛔ indisponível</span></td><td>${esc((b.patrimonio?b.patrimonio+" · ":"")+b.nome)}</td><td>${esc(nomeAmbi(b.ambiente_id))}</td></tr>`).join("")||`<tr><td class="note">Nenhum. ✓</td></tr>`}</table></div></div></div></div>`}
+
+/* cabeçalho dos PDFs conforme o estilo */
+function pdfCab(doc,W,M,linha){const e=estiloDe(E.v.contratantes.design),em="Emitido em "+new Date().toLocaleString("pt-BR"),lin=doc.splitTextToSize(linha||"Atalaia System · Sistema de Gestão de Patrimônio e Manutenção",W-2*M-60)[0];
+  if(e=="editorial"){doc.setTextColor(29,31,35);doc.setFont("times","bold");doc.setFontSize(14);doc.text(E.v.contratantes.nome,M,10);doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(90,94,102);doc.text(lin,M,14.6);doc.text(em,W-M,14.6,{align:"right"});doc.setDrawColor(29,31,35);doc.setLineWidth(0.7);doc.line(M,17.2,W-M,17.2);doc.setLineWidth(0.2)}
+  else if(e=="executivo"){doc.setTextColor(29,31,35);doc.setFont("helvetica","bold");doc.setFontSize(11.5);doc.text(E.v.contratantes.nome.toUpperCase(),M,9);doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(90,94,102);doc.text(lin,M,13.6);doc.text(em,W-M,13.6,{align:"right"});doc.setDrawColor(29,31,35);doc.setLineWidth(1.4);doc.line(M,16.6,W-M,16.6);doc.setLineWidth(0.2)}
+  else{const op=e=="operacional";doc.setFillColor(29,31,35);doc.rect(0,0,W,op?14:18,"F");doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(op?10.5:12);doc.text(E.v.contratantes.nome,M,op?6.5:8);doc.setFont("helvetica","normal");doc.setFontSize(op?7:8);doc.text(lin,M,op?11:13.5);doc.text(em,W-M,op?11:13.5,{align:"right"})}
+  doc.setTextColor(29,31,35)}
+const pdfFonteTit=()=>estiloDe(E.v.contratantes.design)=="editorial"?"times":"helvetica";
 function cfgAv(){const a=E.avR||cfgV("avisos",{app:true,email:true,whatsapp:false});E.avR=a;
   return `<form class="card" onsubmit="event.preventDefault();salvarAv()"><h2>Avisos e integrações</h2>
   ${[["app","Notificação no aplicativo (celular)","Grátis"],["email","E-mail","Grátis"],["whatsapp","WhatsApp (API oficial do WhatsApp Business)","Pago por mensagem · opcional · contratação à parte"]].map(([k,t,c])=>`<label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" ${a[k]?"checked":""} onchange="E.avR.${k}=this.checked"> ${t} <span class="note">· ${c}</span></label>`).join("")}
