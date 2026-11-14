@@ -142,7 +142,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.13"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.14"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -194,6 +194,7 @@ function realDB(){
     meusAcessos:()=>rpc("matriz_meus_acessos"),
     infra:()=>rpc("matriz_infra"),
     mapa:()=>rpc("matriz_mapa"),
+    localEmpresa:(id,c,u)=>rpc("matriz_local_empresa",{p_contratante:id,p_cidade:c||null,p_uf:u||null}),
     interessados:async()=>chk(await sb.from("interessados").select("*").order("atualizado_em",{ascending:false})),
     salvarInteressado:async(d)=>d.id?chk(await sb.from("interessados").update({...d,atualizado_em:new Date().toISOString()}).eq("id",d.id).select().single()):chk(await sb.from("interessados").insert(d).select().single()),
     chamados:async()=>chk(await sb.from("suporte_chamados").select("*, contratantes(nome,sigla,plano_id)").order("criado_em",{ascending:false}).limit(300)),
@@ -242,7 +243,8 @@ function mockDB(){
     async salvarDadosM(d){window.__DM={...window.__DM,...d};return "Dados da Matriz salvos (demonstração)."},
     async trocarPrincipal(s,e,n,m){if((m||"").trim().length<10)throw new Error("Escreva o motivo e o pedido formal da empresa (ex.: ofício nº, e-mail da diretoria).");return "Gestor principal de "+s+" agora é "+e+" (demonstração)."},
     async registrar(){},async meusAcessos(){return [{criado_em:new Date().toISOString(),acao:"Matriz: entrou no painel",detalhe:null}]},
-    async mapa(){const CID=[["Porto Velho","RO"],["Guajará-Mirim","RO"],["Cuiabá","MT"],["Salvador","BA"],["Goiânia","GO"],["Campo Grande","MS"],["Manaus","AM"],["São Paulo","SP"],["Curitiba","PR"]];let k=0;return C.flatMap(c=>{const n=1+Math.min(c.filiais||0,c.plano_id=="pro"?4:c.plano_id=="atalaia"?2:0);return Array.from({length:n},(_,i)=>{const[ci,uf]=CID[(k++)%CID.length];return {contratante_id:c.id,empresa:c.nome,sigla:c.sigla,plano_id:c.plano_id,situacao:c.situacao,unidade_id:c.sigla+i,unidade:i?"Filial "+i:c.nome,tipo:i?"filial":"empresa",cidade:ci,uf,bens:Math.round(c.bens/n)}})})},
+    async localEmpresa(id,ci,uf){const c=C.find(x=>x.id==id);if(c)Object.assign(c,{cidade:ci||null,uf:uf||null});return "Cidade e estado salvos."},
+    async mapa(){const CID=[["Porto Velho","RO"],["Guajará-Mirim","RO"],["Cuiabá","MT"],["Salvador","BA"],["Goiânia","GO"],["Campo Grande","MS"],["Manaus","AM"],["São Paulo","SP"],["Curitiba","PR"]];let k=0;return C.flatMap(c=>{const n=1+Math.min(c.filiais||0,c.plano_id=="pro"?4:c.plano_id=="atalaia"?2:0);return Array.from({length:n},(_,i)=>{let[ci,uf]=CID[(k++)%CID.length];if(!i&&c.uf){ci=c.cidade;uf=c.uf}return {contratante_id:c.id,empresa:c.nome,sigla:c.sigla,plano_id:c.plano_id,situacao:c.situacao,unidade_id:c.sigla+i,unidade:i?"Filial "+i:c.nome,tipo:i?"filial":"empresa",cidade:ci,uf,bens:Math.round(c.bens/n)}})})},
     async infra(){return {banco_mb:42.3,fotos_mb:C.reduce((s,c)=>s+c.fotos_mb,0),fotos_qtd:1830,contas:31,ativos_mes:25,chamados_abertos:T.filter(t=>t.situacao!="resolvido").length}},
     async interessados(){return I},async salvarInteressado(d){if(d.id){Object.assign(I.find(x=>x.id==d.id),d,{atualizado_em:new Date().toISOString()})}else I.unshift({...d,id:I.length+1,criado_em:new Date().toISOString(),atualizado_em:new Date().toISOString()})},
     async planos(){return PL},async salvarPlano(d){Object.assign(PL.find(p=>p.id==d.id),{preco_mensal:d.preco,filiais:d.filiais,ambientes:d.ambientes,bens:d.bens,usuarios:d.usuarios,armazenamento_gb:d.gb});return "ok"},
@@ -538,6 +540,7 @@ async function abrirFicha(id){E.ficha=id;irAba("ficha");try{[E.fichaDia,E.fichaH
 function abaFicha(){const c=E.cts.find(x=>x.id==E.ficha);if(!c)return `<p class="muted">Contratante não encontrado.</p>`;const h=saudeDe(c),f=faixa(h.t),ads=E.ads.filter(a=>a.contratante_id==c.id),tk=E.tks.filter(t=>t.contratante_id==c.id);
  return cab2(esc(c.nome),`${esc(c.sigla)} · ${esc(c.segmento||"sem segmento")} · cliente desde ${new Date(c.criado_em).toLocaleDateString("pt-BR")}`,pill(h.t+" · "+f[0],f[1]))+
  `<div class="kpis">${kpi("Plano",esc(c.plano_nome),brl(c.preco_mensal)+" por mês")}${kpi("Adicionais",brl(c.adicionais_valor||0),`${ads.filter(a=>!a.fim).length} ativo(s)`)}${kpi("Usuários ativos 30d",num(c.usuarios_ativos_30d),`${num(c.acessos_30d)} acessos`)}${kpi("Último acesso",c.ultimo_acesso?new Date(c.ultimo_acesso).toLocaleDateString("pt-BR"):"—",h.d==null?"nunca entrou":`há ${h.d} dia(s)`)}</div>
+ <div class="card"><h2 style="margin-bottom:8px">📍 Cidade e estado (mapa do Brasil)</h2><div class="row" style="align-items:end"><label>Cidade<input id="fcci" maxlength="80" value="${esc(locM(c).cidade||"")}"></label><label>UF<select id="fcuf">${ufOptsM(locM(c).uf)}</select></label><button class="btn sm" style="margin-bottom:12px" onclick="salvarLocalM('${c.id}')">Salvar</button></div></div>
  <div class="g2"><div class="card"><h2>Uso dos limites (plano + adicionais)</h2>
   ${[["Usuários",c.usuarios,c.lim_usuarios],["Ambientes",c.ambientes,c.lim_ambientes],["Bens",c.bens,c.lim_bens],["Filiais",c.filiais,c.lim_filiais]].map(([n,v,l])=>`<div class="hb"><span>${n}</span><div>${uso(v,l)}</div><span></span></div>`).join("")}
   <div class="hb"><span>Fotos</span><div>${num(c.fotos_mb)} MB <span class="muted">de ${num(c.lim_gb)} GB</span></div><span></span></div></div>
@@ -677,6 +680,10 @@ async function carregaMapaM(){if(E.mapaD||E._mpLd)return;E._mpLd=1;try{E.mapaD=a
 function mapaM(k,v){const st=E.mpM||(E.mpM={});if(k=="tudo"){st.reg=null;st.uf=null}else if(k=="reg"){st.reg=v;st.uf=null}else{st.uf=st.uf==v?null:v}render()}
 function mapaMHTML(){if(!E.mapaD){carregaMapaM();return `<p class="muted">Carregando o mapa…</p>`}setTimeout(mapaBadges,30);if(E.mapaErro)return `<p class="muted">Não foi possível carregar o mapa (${esc(E.mapaErro)}). Rode o arquivo SQL 55.</p>`;
   const emp=new Set(E.mapaD.map(r=>r.contratante_id)).size;return `<p class="muted" style="margin:0 0 8px">${num(emp)} empresa(s) e ${num(E.mapaD.length)} unidade(s) (matrizes e filiais).</p>`+mapaBRHTML(mapaItensM(),E.mpM||(E.mpM={}),"mapaM",{um:"unidade",varios:"unidades",dicaSem:"Cidade e UF ficam nos dados da empresa e das filiais"})}
+const UFS_M=["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+function ufOptsM(v){return `<option value="">—</option>`+UFS_M.map(u=>`<option value="${u}" ${(v||"").toUpperCase()==u?"selected":""}>${u}${typeof UF_NOME!="undefined"&&UF_NOME[u]?" · "+UF_NOME[u]:""}</option>`).join("")}
+function locM(c){if(!E.mapaD)carregaMapaM();const r=(E.mapaD||[]).find(x=>x.contratante_id==c.id&&x.tipo=="empresa")||{};return {cidade:c.cidade||r.cidade,uf:c.uf||r.uf}}
+async function salvarLocalM(id){try{const ci=$("#fcci").value.trim(),uf=$("#fcuf").value;toast(await DB.localEmpresa(id,ci,uf));const c=E.cts.find(x=>x.id==id);if(c)Object.assign(c,{cidade:ci||null,uf:uf||null});E.mapaD=null;E._mpLd=0;render()}catch(e){toast(e.message)}}
 function abaMapa(){return cab2("Mapa do Brasil","Onde ficam as empresas clientes e as filiais, por região, estado e cidade. Clique num estado para ver a lista; clique numa empresa para abrir a ficha.")+`<div class="card">${mapaMHTML()}</div>`}
 /* Estilo Vidro: 5 tonalidades (só Matriz) */
 const VIDROS={esmeralda:["Esmeralda (verde)","#0d1a15","#14523d","#2f8f6a","#5fd3a1"],oceano:["Oceano (azul)","#0c1420","#173f6e","#2f6fb3","#7cc0ff"],ambar:["Âmbar (laranja)","#1c1714","#7a4a1c","#c27a2c","#f2a33a"],rubi:["Rubi (vermelho)","#1c0f12","#6e1f2b","#b23a48","#ff8a96"],ametista:["Ametista (violeta)","#150f1e","#43266e","#7a4bb5","#c9a6ff"]};
@@ -705,6 +712,7 @@ function abaCadastrar(){return `<h1>Cadastrar empresa</h1><p class="sub">Duas pa
  <div class="g2"><form class="card" onsubmit="event.preventDefault();cadastrar()"><h2>1. Empresa</h2>
   <label>Nome da empresa *<input id="cn" required maxlength="120" oninput="sugerirSigla(this.value)"></label>
   <div class="row3"><label>Segmento<input id="cg" maxlength="60" placeholder="Ex.: Salão, Clínica, Hospital"></label><label>Sigla * <span class="muted" style="font-weight:400">(2 a 4 letras)</span><input id="cs" required maxlength="4" pattern="[A-Za-z]{2,4}" style="text-transform:uppercase"></label><label>CNPJ<input id="cj" maxlength="18" inputmode="numeric"></label></div>
+  <div class="row"><label>Cidade <span class="muted" style="font-weight:400">(aparece no mapa)</span><input id="cci" maxlength="80" placeholder="Ex.: Porto Velho"></label><label>UF<select id="cuf">${ufOptsM("")}</select></label></div>
   <div class="row"><label>Plano *<select id="cp">${PLANOS.map(([k,t])=>`<option value="${k}">${t}</option>`).join("")}</select></label><label>Primeiro ambiente (opcional)<input id="ca" maxlength="80" placeholder="Deixe vazio: o Gestor cria os ambientes depois"></label></div>
   <h2 style="margin-top:6px">2. Administrador da empresa</h2>
   <div class="msg info">O sistema envia na hora um <b>e-mail de convite</b> do Atalaia System para a pessoa criar a própria senha (o link vale por pouco tempo; se vencer, faça de novo que vai um link novo). Se ela já tem login, só recebe o acesso.</div>
@@ -748,6 +756,8 @@ async function cadastrar(){
   const email=$("#ue").value.trim(),nome=$("#un").value.trim();
   if(!/^[A-Z]{2,4}$/.test(d.sigla)){E.msg=["err","A sigla precisa ter de 2 a 4 letras, sem acentos."];render();return}
   try{await DB.criar(d)}catch(e){E.msg=["err",e.message];render();return}
+  const lci=($("#cci")||{}).value?$("#cci").value.trim():"",luf=($("#cuf")||{}).value||"";
+  if(lci||luf){try{const cs=await DB.contratantes();const c=(cs||[]).find(x=>x.sigla==d.sigla);if(c)await DB.localEmpresa(c.id,lci,luf)}catch(e){}}E.mapaD=null;E._mpLd=0;
   try{const cv=await convite(email,nome,"cliente");await DB.vincular(email,d.sigla,nome,"gestor");DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["ok",`Empresa ${d.nome} (${d.sigla}) cadastrada no plano ${d.plano} e ${email} ligado como Gestor (será o Gestor principal).${cv}`]}
   catch(e){DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["info",`A empresa ${d.sigla} foi criada, mas o Gestor não foi ligado: ${e.message} Use “Adicionar usuário a uma empresa existente” para tentar de novo.`]}
   await recarregar();}

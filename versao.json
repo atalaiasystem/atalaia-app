@@ -1,1 +1,1 @@
-{"app": "0.3.24", "gestor": "0.9.32", "matriz": "0.3.13", "novidade": "Mapa do Brasil das unidades (Gestor) e dos clientes (Matriz), por região, estado e cidade. Matriz com o estilo Vidro em 5 tonalidades."}
+{"app": "0.3.24", "gestor": "0.9.33", "matriz": "0.3.14", "novidade": "Mapa do Brasil: empresas contratadas (locadoras, assistência, calibração) e filiais aparecem sozinhas ao serem cadastradas com cidade e UF."}
