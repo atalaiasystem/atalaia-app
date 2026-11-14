@@ -110,7 +110,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.23",
+  versao:"0.3.24",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -365,7 +365,7 @@ function contaHTML(){
 }
 const nomeAmb=id=>E.amb.find(a=>a.id==id)?.nome||"Sem ambiente";
 /* Situação do bem: próprios (compra, doação, leasing) e de terceiros */
-const SITB=[["proprio","Próprio · compra","p"],["doacao","Próprio · doação","p"],["leasing","Leasing (arrendamento)","p"],["locado","Locado","t"],["comodato","Comodato","t"],["cessao","Cessão de uso","t"],["emprestimo","Empréstimo","t"],["demonstracao","Demonstração / teste","t"],["consignado","Consignado","t"]];
+const SITB=[["proprio","Próprio · compra","p"],["doacao","Próprio · doação","p"],["leasing","Leasing (arrendamento)","p"],["locado","Locado","t"],["comodato","Comodato","t"],["cessao","Cessão de uso","t"],["emprestimo","Empréstimo","t"],["demonstracao","Demonstração / teste","t"],["consignado","Consignado","t"],["cliente","Do cliente (atendido por nós)","t"]];
 const TIPO_SIT={locado:"locadora",comodato:"comodato",leasing:"leasing",cessao:"instituicao",emprestimo:"instituicao",demonstracao:"fornecedor",consignado:"fornecedor"};
 const empAchar=n=>(E.emps||[]).find(x=>x.nome.trim().toLowerCase()==String(n||"").trim().toLowerCase());
 async function empresaPorNome(nome,k,amb,gest){const n=String(nome||"").trim().replace(/\s+/g," ");if(!n)return null;const e=empAchar(n);if(e)return e.id;
@@ -373,7 +373,7 @@ async function empresaPorNome(nome,k,amb,gest){const n=String(nome||"").trim().r
 function empDica(inp){const d=document.getElementById(inp.id+"_dica");if(d)d.textContent=inp.value.trim()&&!empAchar(inp.value)?"Empresa nova: será cadastrada ao salvar (complete os dados depois em Empresas locadoras).":""}
 const uniDoBem=b=>b.estabelecimento_id||((E.amb||[]).find(a=>a.id==b.ambiente_id)||{}).estabelecimento_id;
 const SIT_PRAZO=["leasing","locado","cessao","emprestimo","demonstracao"];
-const sitK=b=>(b&&b.propriedade)||"proprio",sitN=k=>(SITB.find(x=>x[0]==k)||[0,"Próprio · compra"])[1],terc=k=>(SITB.find(x=>x[0]==(k||"proprio"))||[0,0,"p"])[2]=="t",sitEmp=k=>!["proprio","doacao"].includes(k||"proprio");
+const sitK=b=>(b&&b.propriedade)||"proprio",sitN=k=>(SITB.find(x=>x[0]==k)||[0,"Próprio · compra"])[1],terc=k=>(SITB.find(x=>x[0]==(k||"proprio"))||[0,0,"p"])[2]=="t",sitEmp=k=>!["proprio","doacao","cliente"].includes(k||"proprio");
 const empDoBem=b=>sitK(b)=="doacao"?(b.doador||""):sitEmp(sitK(b))?(((E.emps||[]).find(e=>e.id==b.empresa_id)||{}).nome||""):"";
 const sitOk=(b,f)=>!f||(f=="p"?!terc(sitK(b)):f=="t"?terc(sitK(b)):sitK(b)==f);
 const sitOpts=k=>`<optgroup label="Bens próprios">${SITB.filter(x=>x[2]=="p").map(([v,t])=>`<option value="${v}" ${k==v?"selected":""}>${t}</option>`).join("")}</optgroup><optgroup label="Bens de terceiros">${SITB.filter(x=>x[2]=="t").map(([v,t])=>`<option value="${v}" ${k==v?"selected":""}>${t}</option>`).join("")}</optgroup>`;
@@ -393,13 +393,21 @@ function modalHTML(){
   <label>Nome do bem *<input id="fn" required maxlength="120" value="${esc(b.nome)}" placeholder="Ex.: Cabine de secagem UV"></label>
   <div class="row"><label>Categoria (escolha ou escreva)<input id="fc" list="fcl" maxlength="60" value="${esc(b.categoria||"Equipamento")}"><datalist id="fcl">${[...new Set([...CAT,"Climatização","Elétrica","Hidráulica","Elevador","Informática","Eletromédico",...E.bens.map(x=>x.categoria).filter(Boolean)])].map(x=>`<option value="${esc(x)}">`).join("")}</datalist></label>
   <label>Estado<select id="fe">${EST.map(x=>`<option ${b.estado==x||(!b.estado&&x=="bom")?"selected":""}>${x}</option>`).join("")}</select></label></div>
-  <label>Ambiente<select id="fa">${optsAmb(b.ambiente_id)}</select></label>
+  <label>Ambiente<select id="fa" onchange="$('#fanw').style.display=this.value=='__novo'?'block':'none'">${optsAmb(b.ambiente_id)}${["gestor","administrador"].includes(E.v.perfil)?`<option value="__novo" ${b.ambiente_id=="__novo"?"selected":""}>＋ Criar um ambiente novo…</option>`:""}</select></label>
+  <div id="fanw" style="display:${b.ambiente_id=="__novo"?"block":"none"}">${variasUnis()?`<label>${E.v.contratantes.modo=="prestadora"?"Cliente":"Unidade"} do ambiente novo<select id="fanu">${E.unis.map(u=>`<option value="${u.id}" ${b._novoU==u.id?"selected":""}>${esc(u.nome)}</option>`).join("")}</select></label>`:""}<label>Nome do ambiente novo<input id="fann" maxlength="120" value="${esc(b._novoAmb||"")}" placeholder="Ex.: UTI, Sala de audiência"></label></div>
   <div class="card" style="background:var(--soft,#f4f6f8);padding:12px;margin:0 0 12px"><label>Situação do bem<select id="fpr" onchange="mudouProp(this.value)">${sitOpts(sitK(b))}</select></label>
   <label id="wemp" style="display:${sitEmp(sitK(b))?"block":"none"}"><span id="lemp">${sitK(b)=="leasing"?"Empresa de leasing *":"Empresa dona do bem *"}</span><input id="femp" list="lemps" maxlength="120" autocomplete="off" placeholder="Digite o nome ou escolha" value="${esc(b._empNome!=null?b._empNome:(((E.emps||[]).find(e=>e.id==b.empresa_id)||{}).nome||""))}" oninput="empDica(this)" ${sitEmp(sitK(b))?"required":""}><datalist id="lemps">${(E.emps||[]).map(e=>`<option value="${esc(e.nome)}">`).join("")}</datalist><span class="muted" id="femp_dica" style="font-weight:400;font-size:.8rem"></span></label>
   <label id="wdoa" style="display:${sitK(b)=="doacao"?"block":"none"}">Quem doou (opcional)<input id="fdoa" maxlength="120" value="${esc(b.doador||"")}"></label>
   <label id="wpos" style="display:${SIT_PRAZO.includes(sitK(b))?"block":"none"}">Válido até / devolver até<input id="fpos" type="date" value="${b.posse_ate||""}"></label></div>
   ${temManut()?`<div class="row"><label>Tipo de equipamento<input id="ftp" maxlength="80" value="${esc(b.tipo)}" placeholder="Ex.: Monitor multiparâmetro"></label><label>Posição (leito, box, sala)<input id="fpo" maxlength="40" value="${esc(b.posicao)}" placeholder="Ex.: Leito 3"></label></div>
-  <div class="row"><label>Vida útil (anos)<input id="fvu" type="number" min="1" max="50" inputmode="numeric" value="${b.vida_util_anos??""}"></label><label style="display:flex;gap:8px;align-items:center;margin-top:22px"><input type="checkbox" id="fcr" ${b.critico?"checked":""} style="width:auto"> Equipamento crítico</label></div>`:""}
+  <div class="row"><label>Vida útil (anos)<input id="fvu" type="number" min="1" max="50" inputmode="numeric" value="${b.vida_util_anos??""}"></label><label style="display:flex;gap:8px;align-items:center;margin-top:22px"><input type="checkbox" id="fcr" ${b.critico?"checked":""} style="width:auto"> Equipamento crítico</label></div>
+  <details style="margin:4px 0 12px" ${b.clima_tipo?"open":""}><summary style="cursor:pointer;font-weight:700;padding:8px 0">❄ Climatização (PMOC)</summary>
+   <label>Tipo de aparelho<select id="fktp"><option value="">Não é climatização</option>${Object.entries(CLIMA_T).map(([k,t])=>`<option value="${k}" ${b.clima_tipo==k?"selected":""}>${t}</option>`).join("")}</select></label>
+   <div class="row"><label>Capacidade (BTU/h)<input id="fkbt" inputmode="numeric" value="${b.capacidade_btu??""}" placeholder="Ex.: 24000"></label><label>Gás refrigerante<input id="fkgs" maxlength="20" value="${esc(b.gas_refrigerante||"")}" placeholder="Ex.: R-410A"></label></div>
+   <div class="row"><label>Carga de gás (kg)<input id="fkkg" inputmode="decimal" value="${b.carga_gas_kg??""}"></label><label>Tensão (V)<input id="fktv" inputmode="numeric" value="${b.tensao_v??""}" placeholder="220"></label></div>
+   <div class="row"><label>Área atendida (m²)<input id="fkar" inputmode="decimal" value="${b.area_m2??""}"></label><label>Ocupantes (pessoas)<input id="fkoc" inputmode="numeric" value="${b.ocupantes??""}"></label></div>
+   <div class="row"><label>Filtros<input id="fkfi" maxlength="60" value="${esc(b.filtros||"")}" placeholder="Ex.: G4 + F8"></label><label>Pressão da sala<select id="fkps"><option value="">—</option>${[["positiva","Positiva"],["negativa","Negativa"],["neutra","Neutra"]].map(([k,t])=>`<option value="${k}" ${b.pressao_sala==k?"selected":""}>${t}</option>`).join("")}</select></label></div>
+  </details>`:""}
   <button type="button" class="btn ghost full" style="margin:0 0 10px" onclick="lerEtiquetaEquip()">▥ Ler a etiqueta do equipamento (preenche nº de série e modelo)</button>
   <div class="row"><label>Marca<input id="fm" maxlength="60" value="${esc(b.marca)}"></label><label>Modelo<span class="campo-leitor"><input id="fo" maxlength="60" value="${esc(b.modelo)}"><button type="button" class="btn ghost sm" onclick="lerParaCampo('fo','o código do modelo')" aria-label="Ler modelo com a câmera">▥</button></span></label></div>
   <label>Número de série<span class="campo-leitor"><input id="fs" maxlength="80" value="${esc(b.numero_serie)}" placeholder="Se tiver"><button type="button" class="btn ghost sm" onclick="lerParaCampo('fs','o código de barras do nº de série')" aria-label="Ler nº de série com a câmera">▥ Ler</button></span></label>
@@ -513,8 +521,12 @@ async function urlCache(p){let u=E.fotos[p];if(!u){u=await DB.urlFoto(p);if(u)E.
 async function abrirBem(id){const b=id?E.bens.find(x=>x.id==id):null;
   const fs=await Promise.all(fotosDoBem(b).map(async p=>({path:p,url:await urlCache(p)})));
   E.modal={bem:b?{...b}:null,fotos:fs,removidas:[]};abrirNivel();render()}
+const CLIMA_T={split_hiwall:"Split hi-wall",cassete:"Cassete",piso_teto:"Piso-teto",janela:"Janela",vrf_evaporadora:"VRF · evaporadora",vrf_condensadora:"VRF · condensadora",condensadora:"Condensadora",self:"Self-contained",fancoil:"Fancoil",fancolete:"Fancolete",chiller:"Chiller",uta:"UTA (tratamento de ar)",renovacao:"Renovação de ar",exaustor:"Exaustor",cortina:"Cortina de ar",outro:"Outro"};
+function climaDoForm(){if(!$("#fktp"))return {};const nn=(k,f)=>{const v=$(k).value.trim().replace(",",".");if(v==="")return null;const x=f?parseFloat(v):parseInt(v,10);if(isNaN(x)||x<0)throw new Error("Valor inválido na parte de climatização.");return x};
+  return {clima_tipo:$("#fktp").value||null,capacidade_btu:nn("#fkbt"),gas_refrigerante:$("#fkgs").value.trim().toUpperCase()||null,carga_gas_kg:nn("#fkkg",1),tensao_v:nn("#fktv"),area_m2:nn("#fkar",1),ocupantes:nn("#fkoc"),filtros:$("#fkfi").value.trim()||null,pressao_sala:$("#fkps").value||null}}
+function climaGuardar(b){if(!$("#fktp"))return;Object.assign(b,{clima_tipo:$("#fktp").value,capacidade_btu:$("#fkbt").value,gas_refrigerante:$("#fkgs").value,carga_gas_kg:$("#fkkg").value,tensao_v:$("#fktv").value,area_m2:$("#fkar").value,ocupantes:$("#fkoc").value,filtros:$("#fkfi").value,pressao_sala:$("#fkps").value})}
 function guardarForm(){if(!E.modal||!$("#fn"))return;const b=E.modal.bem||(E.modal.bem={});
-  Object.assign(b,{nome:$("#fn").value,categoria:($("#fc").value||"").trim()||"Equipamento",estado:$("#fe").value,ambiente_id:$("#fa").value,marca:$("#fm").value,modelo:$("#fo").value,numero_serie:$("#fs").value,valor:$("#fv")?($("#fv").value===""?null:$("#fv").value):b.valor,patrimonio:$("#fpt")?$("#fpt").value:b.patrimonio,data_aquisicao:$("#fd").value,observacao:$("#fb").value,propriedade:$("#fpr")?$("#fpr").value:b.propriedade,_empNome:$("#femp")?$("#femp").value:b._empNome,doador:$("#fdoa")?$("#fdoa").value:b.doador,posse_ate:$("#fpos")?$("#fpos").value:b.posse_ate,tipo:$("#ftp")?$("#ftp").value:b.tipo,posicao:$("#fpo")?$("#fpo").value:b.posicao,vida_util_anos:$("#fvu")?$("#fvu").value:b.vida_util_anos,critico:$("#fcr")?$("#fcr").checked:b.critico})}
+  Object.assign(b,{nome:$("#fn").value,categoria:($("#fc").value||"").trim()||"Equipamento",estado:$("#fe").value,ambiente_id:$("#fa").value,marca:$("#fm").value,modelo:$("#fo").value,numero_serie:$("#fs").value,valor:$("#fv")?($("#fv").value===""?null:$("#fv").value):b.valor,patrimonio:$("#fpt")?$("#fpt").value:b.patrimonio,data_aquisicao:$("#fd").value,observacao:$("#fb").value,propriedade:$("#fpr")?$("#fpr").value:b.propriedade,_empNome:$("#femp")?$("#femp").value:b._empNome,doador:$("#fdoa")?$("#fdoa").value:b.doador,posse_ate:$("#fpos")?$("#fpos").value:b.posse_ate,tipo:$("#ftp")?$("#ftp").value:b.tipo,posicao:$("#fpo")?$("#fpo").value:b.posicao,vida_util_anos:$("#fvu")?$("#fvu").value:b.vida_util_anos,critico:$("#fcr")?$("#fcr").checked:b.critico,_novoAmb:$("#fann")?$("#fann").value:b._novoAmb,_novoU:$("#fanu")?$("#fanu").value:b._novoU});climaGuardar(b)}
 async function prevFoto(inp){const arq=[...inp.files];if(!arq.length)return;guardarForm();
   for(const f of arq){if(E.modal.fotos.length>=limFotos()){toast(`O seu plano permite até ${limFotos()} foto(s) por bem.`);break}
     try{const bl=await comprimir(f);E.modal.fotos.push({blob:bl,url:URL.createObjectURL(bl)})}catch(e){toast("Não foi possível ler a foto.")}}
@@ -531,6 +543,9 @@ async function salvarBem(){
   if($("#fpr")){const k=$("#fpr").value;d.propriedade=k;const en=sitEmp(k)?$("#femp").value.trim():"";d.empresa_id=null;d.doador=k=="doacao"?($("#fdoa").value.trim()||null):null;d.posse_ate=SIT_PRAZO.includes(k)?($("#fpos").value||null):null;if(sitEmp(k)&&!en){guardarForm();E.modal.erro=sitN(k)+": escreva ou escolha o nome da empresa.";btn.disabled=false;btn.textContent=b.id?"Salvar alterações":"Salvar bem";render();return}}
   if($("#ftp")){d.tipo=$("#ftp").value.trim()||null;d.posicao=$("#fpo").value.trim()||null;d.vida_util_anos=$("#fvu").value===""?null:Number($("#fvu").value);d.critico=$("#fcr").checked}
   try{
+    if(d.ambiente_id=="__novo"){const n=($("#fann").value||"").trim();if(!n)throw new Error("Escreva o nome do ambiente novo.");const u=$("#fanu")?$("#fanu").value:(E.v.estabelecimento_id||((E.unis||[])[0]||{}).id||null);
+      const ex=E.amb.find(a=>a.nome.trim().toLowerCase()==n.toLowerCase()&&(!u||a.estabelecimento_id==u));d.ambiente_id=ex?ex.id:(await DB.addAmbiente(c,n,u?{estabelecimento_id:u}:{})).id;if(!ex)toast(`Ambiente "${n}" criado.`)}
+    if($("#fktp"))Object.assign(d,climaDoForm());
     if($("#fpr")&&sitEmp(d.propriedade))d.empresa_id=await empresaPorNome($("#femp").value,d.propriedade,d.ambiente_id,E.v.perfil=="gestor");
     const lista=[];for(const f of E.modal.fotos){lista.push(f.path||await DB.enviarFoto(c,f.blob))}
     d.foto_path=lista[0]||null;if(temColFotos())d.fotos=lista;
@@ -538,7 +553,7 @@ async function salvarBem(){
     if(b.id){r=await DB.updBem(b.id,d);toast("Alterações salvas.")}
     else{r=await DB.addBem({...d,contratante_id:c});toast(r.patrimonio?"Bem cadastrado com o patrimônio "+r.patrimonio+".":"Bem cadastrado.");DB.registrar(c,"cadastrou bem",rot(r))}
     const rem=E.modal.removidas||[];
-    if(cont&&!b.id){const seq=(E.modal.seq||0)+1,base={ambiente_id:d.ambiente_id,categoria:d.categoria,estado:d.estado,propriedade:d.propriedade,_empNome:$("#femp")?$("#femp").value:"",doador:d.doador,posse_ate:d.posse_ate,posicao:d.posicao,tipo:d.tipo};
+    if(cont&&!b.id){const seq=(E.modal.seq||0)+1,base={ambiente_id:d.ambiente_id,categoria:d.categoria,estado:d.estado,propriedade:d.propriedade,_empNome:$("#femp")?$("#femp").value:"",doador:d.doador,posse_ate:d.posse_ate,posicao:d.posicao,tipo:d.tipo,clima_tipo:d.clima_tipo,capacidade_btu:d.capacidade_btu,gas_refrigerante:d.gas_refrigerante,carga_gas_kg:d.carga_gas_kg,tensao_v:d.tensao_v,filtros:d.filtros};
       E.modal={bem:base,fotos:[],removidas:[],seq};DB.apagarFotos(rem);await recarregar();document.querySelector(".modal .sheet")?.scrollTo(0,0);scrollTo(0,0);setTimeout(()=>{const f=$("#fpt")||$("#fn");if(f)f.focus()},100);return}
     fecharSemVoltar();DB.apagarFotos(rem);await recarregar();
   }catch(e){guardarForm();E.modal.erro=e.message;render()}
