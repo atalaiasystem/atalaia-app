@@ -152,6 +152,23 @@ label.f{display:grid;gap:5px;font-weight:600;font-size:.85rem;margin-bottom:10px
 :root[data-estilo="editorial"] .kpi .val{font-weight:600;font-size:1.9rem}
 :root[data-estilo="editorial"] .hero{background:transparent;color:var(--ink);border-radius:0;border-bottom:1px solid var(--ink);padding:6px 0 14px;box-shadow:none}
 :root[data-estilo="editorial"] .btn{border-radius:2px}
+/* Simples: tudo claro, fundo branco e letras pretas (o vermelho fica só para atraso e erro) */
+:root[data-estilo="simples"]{--bg:#fff!important;--surface:#fff!important;--ink:#000!important;--muted:#333!important;--line:#bdbdbd!important;--soft:#f3f3f3!important;--client:#fff!important;--client-ink:#000!important;--client-soft:#f3f3f3!important;--amb:#000!important;--ok:#000!important;--warn:#000!important;--p-pri:#000!important;--p-acc:#000!important;--p-bg:#fff!important;--p-h1:#fff!important;--p-h2:#fff!important;--p-hink:#000!important;--p-icon:#000!important;--p-k1:#000!important;--p-k2:#555!important;--p-k3:#888!important;--p-k4:#bbb!important;--p-line:#bdbdbd!important;--p-s1:#fff!important;--p-s2:#fff!important;--p-sact:#ededed!important;--p-sink:#000!important;--p-smut:#333!important;--p-soft:#f3f3f3!important;--p-str:#000!important;--p-tit:#000!important;color-scheme:light}
+:root[data-estilo="simples"] body{background:#fff!important;color:#000!important}
+:root[data-estilo="simples"] aside{background:#fff!important;border-right:1px solid #bdbdbd!important;box-shadow:none}
+:root[data-estilo="simples"] .card,:root[data-estilo="simples"] .kpi{background:#fff!important;box-shadow:none!important;border:1px solid #bdbdbd;border-radius:6px}
+:root[data-estilo="simples"] .grid.g4>.kpi{background:#fff!important;box-shadow:none!important}
+:root[data-estilo="simples"] .kpi .val,:root[data-estilo="simples"] .grid.g4>.kpi .val{color:#000!important}
+:root[data-estilo="simples"] .kpi .kic,:root[data-estilo="simples"] .grid.g4>.kpi .kic{background:#f3f3f3!important;color:#000!important}
+:root[data-estilo="simples"] .hero{background:#fff!important;color:#000!important;border:1px solid #000;box-shadow:none!important;border-radius:6px}
+:root[data-estilo="simples"] .btn{background:#000;color:#fff;border-radius:4px}
+:root[data-estilo="simples"] .btn.ghost{background:#fff!important;color:#000!important;border:1px solid #000!important}
+:root[data-estilo="simples"] h1,:root[data-estilo="simples"] h2,:root[data-estilo="simples"] h3,:root[data-estilo="simples"] a{color:#000!important}
+:root[data-estilo="simples"] .pill{background:#f3f3f3!important;color:#000!important}
+:root[data-estilo="simples"] img.logo-emp,:root[data-estilo="simples"] svg{filter:grayscale(1)}
+:root[data-estilo="simples"] .kpi,:root[data-estilo="simples"] .grid.g4>.kpi{border:1px solid #bdbdbd!important}
+:root[data-estilo="simples"] .brand .lg{background:#000!important}
+:root[data-estilo="simples"] .avatar{background:#fff!important;color:#000!important;border:1px solid #000!important}
 /* Operacional: denso, condensado, números monoespaçados, listras nas tabelas */
 :root[data-estilo="operacional"] body{font:13.5px/1.35 "IBM Plex Sans Condensed",var(--font)}
 :root[data-estilo="operacional"] .card{border-radius:6px;padding:10px 12px;gap:8px;box-shadow:none}
@@ -186,7 +203,7 @@ label.f{display:grid;gap:5px;font-weight:600;font-size:.85rem;margin-bottom:10px
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.24"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.26"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -200,7 +217,7 @@ const LOGO=`<svg viewBox="0 0 100 100" width="24" height="24" aria-hidden="true"
 const P={tag:"M3 12V4h8l10 10-8 8L3 12zM7.5 7.5h.01",trash:"M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6",qr:"M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2",home:"M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z",units:"M3 21h18M5 21V7l7-4 7 4v14M9 9h1M14 9h1M9 13h1M14 13h1M9 17h6",clip:"M9 4h6l1 2h3v15H5V6h3zM9 4v3h6V4M8 12h8M8 16h5",pulse:"M3 12h4l2-6 4 12 2-6h6",stack:"M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17l9 5 9-5",gauge:"M12 21a9 9 0 1 1 9-9M12 12l5-4",truck:"M3 6h11v10H3zM14 9h4l3 3v4h-7M7 19a2 2 0 1 0 0-.1M17 19a2 2 0 1 0 0-.1",route:"M6 19a2 2 0 1 0 0-.1M18 5a2 2 0 1 0 0-.1M6 17V9a3 3 0 0 1 3-3h6M18 7v8a3 3 0 0 1-3 3H9",check:"M4 5h16v14H4zM8 12l3 3 5-6",pen:"M4 20l4-1 11-11-3-3L5 16zM14 6l3 3",users:"M9 11a4 4 0 1 0 0-.1M2 21c0-4 3-6 7-6s7 2 7 6M17 11a3 3 0 1 0 0-.1M22 20c0-3-2-5-5-5",file:"M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h7",star:"M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z",scale:"M12 3v18M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0zM8 21h8",gear:"M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z",info:"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v6M12 7.5v.1"};
 const ic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${P[k]}"/></svg>`;
 /* Menu igual ao protótipo. f = função do plano necessária; etapa = quando fica pronto de verdade. */
-const MENU=[["inicio","home","Dashboard"],["passos","flag","Primeiros passos",{adm:1}],["unidades","units","Empresa e filiais",{nomeAdm:"Minha unidade"}],["chamados","clip","Chamados",{f:"chamados",etapa:2}],["monit","pulse","Monitoramento e mapa",{f:"chamados",etapa:2}],["cad","stack","Cadastros"],["etq","tag","Etiquetas de patrimônio",{f:"etiquetas"}],["cal","gauge","Calibrações, preventivas, corretivas e TSE",{f:"calibracoes",etapa:3}],["clima","pulse","Climatização (PMOC)",{f:"calibracoes",etapa:3}],["areas","stack","Radiologia, predial e odontologia",{f:"calibracoes",etapa:3}],["emp","truck","Empresas locadoras",{f:"calibracoes",etapa:3}],["rondas","route","Rondas",{f:"rondas",etapa:4}],["aud","check","Auditorias",{f:"auditoria",etapa:4}],["termos","pen","Termos de responsabilidade",{f:"termos",etapa:5}],["mov","swap","Transferências e empréstimos",{f:"etiquetas"}],["estoque","box","Estoque de peças",{f:"calibracoes"}],["custos","coin","Custos e investimentos",{f:"calibracoes"}],["subst","refresh","Substituição de equipamentos",{f:"calibracoes"}],["tecno","alert","Tecnovigilância",{f:"calibracoes"}],["trein","users","Treinamentos",{f:"calibracoes"}],["equipe","users","Equipe"],["rel","file","Relatórios",{f:"relatorios",etapa:6}],["aval","star","Avalie",{f:"avalie",etapa:5}],["leg","scale","Legislação e normas",{f:"relatorios",etapa:6}],["excl","trash","Excluídos e histórico",{gestor:1}],["sep"],["cfg","gear","Configurações"],["ajuda","help","Como usar"],["sobre","info","Sobre"]];
+const MENU=[["inicio","home","Dashboard"],["passos","flag","Primeiros passos",{adm:1}],["unidades","units","Empresa e filiais",{nomeAdm:"Minha unidade"}],["chamados","clip","Chamados",{f:"chamados",etapa:2}],["monit","pulse","Monitoramento e mapa",{f:"chamados",etapa:2}],["cad","stack","Cadastros"],["etq","tag","Etiquetas de patrimônio",{f:"etiquetas"}],["cal","gauge","Calibrações, preventivas, corretivas e TSE",{f:"calibracoes",etapa:3}],["clima","pulse","Climatização (PMOC)",{f:"calibracoes",etapa:3}],["areas","stack","Radiologia, predial e odontologia",{f:"calibracoes",etapa:3}],["emp","truck","Empresas locadoras",{f:"calibracoes",etapa:3}],["rondas","route","Rondas",{f:"rondas",etapa:4}],["aud","check","Auditorias",{f:"auditoria",etapa:4}],["termos","pen","Termos de responsabilidade",{f:"termos",etapa:5}],["mov","swap","Transferências e empréstimos",{f:"etiquetas"}],["estoque","box","Estoque de peças",{f:"calibracoes"}],["custos","coin","Custos e investimentos",{f:"calibracoes"}],["subst","refresh","Substituição de equipamentos",{f:"calibracoes"}],["tecno","alert","Tecnovigilância",{f:"calibracoes"}],["trein","users","Treinamentos",{f:"calibracoes"}],["equipe","users","Equipe"],["rel","file","Relatórios",{f:"relatorios",etapa:6}],["aval","star","Avalie",{f:"avalie",etapa:5}],["leg","scale","Legislação e normas",{f:"relatorios",etapa:6}],["excl","trash","Excluídos e histórico",{gestor:1}],["sep"],["cfg","gear","Configurações"],["ajuda","help","Como usar"],["pops","file","POPs (procedimentos)"],["sobre","info","Sobre"]];
 P.swap="M7 7h13l-4-4M17 17H4l4 4";P.box="M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10";P.coin="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9 9.5c0-1.4 1.3-2 3-2s3 .6 3 2-1.3 1.8-3 2.2-3 .8-3 2.2 1.3 2 3 2 3-.6 3-2M12 6v1.5M12 16.5V18";P.refresh="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7";P.alert="M12 3l10 18H2zM12 10v5M12 18h.01";P.flag="M5 21V4M5 4h11l-2 4 2 4H5";P.help="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.6 9.2a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 17h.01";
 const DESC={
  chamados:["Chamados de manutenção","Qualquer pessoa abre um chamado pelo QR Code do ambiente, sem login. Os manutencionistas recebem na hora, assumem, registram fotos de antes e depois e o responsável confirma.",[["QR Code por ambiente","Abrir chamado, ver bens do ambiente e calibrações, sem login."],["Prioridade e prazos (SLA)","Alta, média e baixa, com prazos de atendimento e solução editáveis."],["Foto obrigatória","Na abertura e no fechamento (antes e depois)."],["Confirmação do solicitante","Lembrete em 24 h; fecha sozinho após 72 h."],["Notificações","Aviso imediato para a equipe de manutenção."],["Histórico por bem","Tudo o que já aconteceu com cada equipamento."]]],
@@ -600,7 +617,7 @@ function telaLogin(){return `<div class="center"><div class="card"><div style="d
  <p class="note">Primeiro acesso ou esqueceu a senha? Use o <a href="../">aplicativo</a>.</p>${DEMO?`<div class="msg info">Modo demonstração: digite qualquer e-mail e senha.<br><b>Entrar como:</b> ${[["","Gestor (os 3 hospitais)"],["admin","Administrador do Hospital B"],["adminc","Administrador do Hospital C"]].map(([k,t])=>{const at=(new URLSearchParams(location.search).get("demo")||"")==k;return `<a href="?demo${k?"="+k:""}" style="display:block;margin-top:4px;font-weight:${at?800:500}">${at?"✓ ":""}${t}</a>`}).join("")}</div>`:`<button type="button" class="btn ghost" style="width:100%" onclick="location.search='?demo'">Ver demonstração (dados fictícios)</button>`}</div></div>`}
 function telaMfa(){return `<div class="center"><div class="card"><h2>Verificação em duas etapas</h2><p class="sub">Digite o código de 6 números do aplicativo autenticador.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}<form onsubmit="event.preventDefault();confirmarMfa()"><label class="f">Código<input id="otp" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" required style="font-size:1.4rem;letter-spacing:.4em;text-align:center"></label><button class="btn" style="width:100%;background:#1d1f23;color:#fff">Confirmar</button></form><button class="btn ghost sm" onclick="sair()">Sair</button></div></div>`}
 function telaNegado(){return `<div class="center"><div class="card"><h2>${E.negMsg||"Acesso não liberado"}</h2><p class="sub">${E.negSub||""}</p><a class="btn" style="background:#1d1f23;color:#fff;text-decoration:none" href="../">Abrir o aplicativo</a><button class="btn ghost sm" onclick="sair()">Sair</button></div></div>`}
-function pagina(item){if(CLIENTE()&&!CLI_PAGS.has(E.pag))E.pag="inicio";const p=E.pag;if(p=="chamados"&&TEM("chamados"))return pgChamados();if(p=="excl"&&GESTOR())return pgExcl();if(p=="cal"&&TEM("calibracoes"))return pgCal();if(p=="clima"&&TEM("calibracoes"))return pgClima();if(p=="areas"&&TEM("calibracoes"))return pgAreas();if(p=="rondas"&&TEM("rondas"))return pgRondas();if(p=="etq")return TEM("etiquetas")?pgEtq():paginaBloqueada("Etiquetas de patrimônio","O contratante gera os próprios números de patrimônio, com a sua sigla e sequência a partir de 0001, imprime em folha A4 e controla o que foi usado, sem empresa terceirizada.");if(p=="aud"&&TEM("auditoria"))return pgAud();if(p=="monit"&&TEM("chamados"))return pgMonit();if(p=="termos"&&TEM("termos"))return pgTermos();if(p=="rel"&&TEM("relatorios"))return pgRel();if(p=="aval"&&TEM("avalie"))return pgAval();if(p=="leg")return pgLeg();if(p=="ajuda")return pgAjuda();if(p=="passos")return pgPassos();if(p=="ind")return pgInd();if(p=="busca")return pgBusca();if(p=="estoque"&&TEM("calibracoes"))return pgEstoque();if(p=="custos"&&TEM("calibracoes"))return pgCustos();if(p=="mov"&&TEM("etiquetas"))return pgMov();if(p=="tecno"&&TEM("calibracoes"))return pgTecno();if(p=="trein"&&TEM("calibracoes"))return pgTrein();if(p=="subst"&&TEM("calibracoes"))return pgSubst();if(p=="ambiente")return pgAmbiente();if(p=="avisos")return pgAvisos();if(p=="emp"&&TEM("calibracoes"))return pgEmp();if(item&&item[3]&&DESC[p])return paginaModulo(item);return ({inicio:pgInicio,unidades:pgUnidades,cad:pgCad,equipe:pgEquipe,cfg:pgCfg,sobre:pgSobre}[p]||pgInicio)()}
+function pagina(item){if(CLIENTE()&&!CLI_PAGS.has(E.pag))E.pag="inicio";const p=E.pag;if(p=="chamados"&&TEM("chamados"))return pgChamados();if(p=="excl"&&GESTOR())return pgExcl();if(p=="cal"&&TEM("calibracoes"))return pgCal();if(p=="clima"&&TEM("calibracoes"))return pgClima();if(p=="areas"&&TEM("calibracoes"))return pgAreas();if(p=="rondas"&&TEM("rondas"))return pgRondas();if(p=="etq")return TEM("etiquetas")?pgEtq():paginaBloqueada("Etiquetas de patrimônio","O contratante gera os próprios números de patrimônio, com a sua sigla e sequência a partir de 0001, imprime em folha A4 e controla o que foi usado, sem empresa terceirizada.");if(p=="aud"&&TEM("auditoria"))return pgAud();if(p=="monit"&&TEM("chamados"))return pgMonit();if(p=="termos"&&TEM("termos"))return pgTermos();if(p=="rel"&&TEM("relatorios"))return pgRel();if(p=="aval"&&TEM("avalie"))return pgAval();if(p=="leg")return pgLeg();if(p=="ajuda")return pgAjuda();if(p=="pops")return pgPops();if(p=="passos")return pgPassos();if(p=="ind")return pgInd();if(p=="busca")return pgBusca();if(p=="estoque"&&TEM("calibracoes"))return pgEstoque();if(p=="custos"&&TEM("calibracoes"))return pgCustos();if(p=="mov"&&TEM("etiquetas"))return pgMov();if(p=="tecno"&&TEM("calibracoes"))return pgTecno();if(p=="trein"&&TEM("calibracoes"))return pgTrein();if(p=="subst"&&TEM("calibracoes"))return pgSubst();if(p=="ambiente")return pgAmbiente();if(p=="avisos")return pgAvisos();if(p=="emp"&&TEM("calibracoes"))return pgEmp();if(item&&item[3]&&DESC[p])return paginaModulo(item);return ({inicio:pgInicio,unidades:pgUnidades,cad:pgCad,equipe:pgEquipe,cfg:pgCfg,sobre:pgSobre}[p]||pgInicio)()}
 const kpi=(l,v,c,go,ic)=>go?`<button type="button" class="card kpi clk" onclick="${go}" title="Abrir: ${l}"><span class="lab">${ic?`<span class="kic" aria-hidden="true">${ic}</span>`:""}${l} <span class="seta">›</span></span><span class="val">${v}</span>${c?`<span class="cmp">${c}</span>`:""}</button>`:`<div class="card kpi"><span class="lab">${ic?`<span class="kic" aria-hidden="true">${ic}</span>`:""}${l}</span><span class="val">${v}</span>${c?`<span class="cmp">${c}</span>`:""}</div>`;
 function hbar(rows,fmt,go){const max=Math.max(1,...rows.map(r=>r[1]));return rows.length?rows.map(r=>{const [n,v]=r,a=r[2]||(go?go(n,r):null);return `<div class="hb${a?" clk":""}"${a?` role="button" tabindex="0" title="Ver: ${esc(n)}" onclick="${a}" onkeydown="if(event.key=='Enter')this.click()"`:""}><span>${esc(n)}</span><div class="bar"><i style="width:${v/max*100}%"></i></div><b>${fmt?fmt(v):num(v)}</b></div>`}).join(""):`<p class="note">Sem dados ainda.</p>`}
 const jsq=v=>String(v).replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,"&quot;");
@@ -1947,7 +1964,7 @@ function pdfGrade(st,cols,rows,o={}){const {doc,M}=st,TW=st.W-2*M,fs=o.fs||7.6,l
   const f=TW/ws.reduce((s,x)=>s+x,0);ws=ws.map(x=>x*f);
   const desenha=(cells,cab,z)=>{doc.setFont("helvetica",cab?"bold":"normal");doc.setFontSize(fs);const T=cells.map((c,i)=>doc.splitTextToSize(c===""?(cab?"":"—"):c,ws[i]-2*pad).slice(0,o.maxLin||10)),h=Math.max(1,...T.map(t=>t.length))*lh+2*pad+0.4;
     if(st.y+h>lim){st.nova();if(!cab)desenha(C,true)}
-    if(cab){doc.setFillColor(52,56,64);doc.rect(M,st.y,TW,h,"F");doc.setTextColor(255,255,255)}else if(z){doc.setFillColor(244,242,238);doc.rect(M,st.y,TW,h,"F")}
+    if(cab){if(estiloDe(E.v.contratantes.design)=="simples"){doc.setFillColor(236,236,236);doc.rect(M,st.y,TW,h,"F");doc.setTextColor(0,0,0)}else{doc.setFillColor(52,56,64);doc.rect(M,st.y,TW,h,"F");doc.setTextColor(255,255,255)}}else if(z){doc.setFillColor(244,242,238);doc.rect(M,st.y,TW,h,"F")}
     let x=M;T.forEach((t,i)=>{const dir=numCol[i]&&!cab;if(dir)doc.text(t,x+ws[i]-pad,st.y+pad+fs*0.3,{align:"right"});else doc.text(t,x+pad,st.y+pad+fs*0.3);x+=ws[i]});doc.setTextColor(29,31,35);
     doc.setDrawColor(cab?52:190,cab?56:185,cab?64:176);doc.setLineWidth(0.15);doc.rect(M,st.y,TW,h);x=M;doc.setDrawColor(190,185,176);for(let i=0;i<ws.length-1;i++){x+=ws[i];doc.line(x,st.y,x,st.y+h)}st.y+=h};
   desenha(C,true);if(!R.length)desenha(C.map((c,i)=>i==0?"Nada neste período.":" "),false,false);R.forEach((r,k)=>desenha(r,false,k%2==1));doc.setFont("helvetica","normal");st.y+=5}
@@ -2119,12 +2136,205 @@ const TUT={
   ["Abrir chamado","",["Leia o QR Code do ambiente.","Escolha o equipamento (se souber) e descreva o problema.","Em “É urgente?”, toque em Sim, Não ou Normal.","Toque em Enviar: aparece o número do chamado para acompanhar."]],
   ["Acompanhar e avaliar","",["Toque em Acompanhar este chamado (ou abra pelos chamados guardados no aparelho).","Quando concluir, dê de 1 a 5 estrelas."]],
   ["Avalie","",["No topo da página do QR, toque em Avalie.","Escolha Reclamação, Sugestão ou Elogio e escreva a mensagem (nome opcional)."]]]}};
+/* ================= POPs · Procedimentos Operacionais Padrão do sistema ================= */
+/* [código, página, título, perfis, objetivo, quando, passos, registros, cuidados, referências] */
+const POP_REV={n:"00",data:"2026-11-14"};
+const POPS=[
+["POP-01","inicio","Acompanhar o Dashboard","Gestor e Administrador","Ver, logo ao entrar, a situação da empresa ou da unidade: bens, chamados, prazos, valor investido e o que pede atenção.","Todo dia, no início do expediente, e antes de reuniões de resultado.",
+ ["Entre no painel com e-mail, senha e, se pedido, o código de duas etapas.","O Dashboard abre sozinho. Confira os cartões do alto: bens cadastrados, chamados em aberto, atendidos no prazo e bens que pedem atenção.","Clique em qualquer cartão para abrir a lista completa daquele número.","No bloco Hoje, veja se a ronda do dia foi feita e quantos chamados estão abertos e urgentes. Use Abrir a ronda ou Ver o mapa quando precisar.","O Gestor confere o Resumo por unidade e clica numa unidade para ver o Dashboard só dela.","Desça até os gráficos (chamados por mês, preventiva x corretiva, bens por estado e por categoria) e clique no título de um gráfico para ver o detalhe.","Para levar os números a uma reunião, clique em Relatório do Dashboard e baixe o PDF."],
+ "Nenhum registro novo: o Dashboard só lê os dados. O PDF baixado fica no registro de acessos.",
+ ["Os números usam as datas e horas gravadas pelo servidor; não há como alterá-los na tela.","O valor investido só aparece para o Gestor.","O Administrador vê apenas a própria unidade."],
+ "ISO 55001:2024 (gestão de ativos) · ONA (indicadores de manutenção)"],
+["POP-02","passos","Montar a operação pelos Primeiros passos","Gestor (e Administrador na sua unidade)","Colocar a empresa para funcionar na ordem certa, sem esquecer nenhuma etapa de implantação.","Na implantação do sistema e ao abrir uma filial nova.",
+ ["Abra Primeiros passos no menu.","Siga as etapas na ordem em que aparecem; cada uma tem o botão que leva à tela certa.","Comece pelos dados da empresa e pelas filiais.","Cadastre a equipe e os ambientes de cada filial.","Gere e imprima as etiquetas de patrimônio e cadastre os bens.","Imprima o QR Code de cada ambiente e fixe na entrada.","Programe calibrações, preventivas e rondas.","Volte aos Primeiros passos: as etapas concluídas ficam marcadas sozinhas. Repita até todas ficarem marcadas."],
+ "As etapas se marcam pelos próprios cadastros feitos no sistema.",
+ ["Não pule a etapa de ambientes: bens, QR Codes e rondas dependem deles.","Use o modo demonstração para treinar antes de lançar dados reais."],
+ "—"],
+["POP-03","unidades","Cadastrar a empresa e as filiais","Gestor","Registrar a empresa principal e cada filial, com os dados que saem nos relatórios, termos e etiquetas.","Na implantação e sempre que abrir, fechar ou mudar uma filial.",
+ ["Abra Empresa e filiais no menu.","Confira os dados da empresa principal (nome e CNPJ vêm do contrato).","Clique para cadastrar uma nova filial e preencha nome, endereço e contato.","Defina o Administrador responsável pela filial (ele precisa estar em Equipe).","Salve. A filial passa a aparecer nos filtros, no Dashboard e nos relatórios.","Em Configurações › Dados da empresa, complete razão social, endereço e telefone, que saem no cabeçalho dos documentos."],
+ "Criação e alteração das filiais ficam em Excluídos e histórico.",
+ ["Só o Gestor cria filiais e altera dados da empresa.","Os limites do plano (bens, ambientes, usuários) somam todas as filiais.","Nome e CNPJ da empresa contratante só mudam pela equipe do Atalaia System."],
+ "—"],
+["POP-04","chamados","Atender um chamado de manutenção","Gestor, Administrador e Colaborador","Atender cada pedido de manutenção do começo ao fim, com fotos, prazos e confirmação de quem pediu.","Sempre que chegar um chamado (aviso no painel, no app ou por e-mail).",
+ ["Abra Chamados. A lista mostra prioridade, situação e prazo de cada chamado.","Clique no chamado para ver a descrição, as fotos, o bem, o ambiente e a linha do tempo.","Clique em Aceitar para assumir o chamado, ou Passar para outro para encaminhar a um colega.","Ao chegar no local, clique em Iniciar e tire a foto de antes.","Faça o serviço. Se usar peça do estoque, registre a saída ligada ao chamado.","Clique em Concluir, tire a foto de depois e escreva o que foi feito.","Aguarde a confirmação de quem abriu. Se o problema voltar, ele pode reabrir."],
+ "Cada etapa (abertura, aceite, início, conclusão, confirmação) grava data, hora do servidor e quem fez. As fotos levam número, ambiente, hora e localização.",
+ ["Os horários não podem ser alterados; o SLA é calculado só com eles.","Quem concluiu não pode confirmar o próprio chamado quando a segregação estiver ligada.","Chamado de ambiente ou bem crítico aberto pelo QR Code entra como urgente."],
+ "RDC Anvisa 509/2021 (gerenciamento de tecnologias em saúde) · NBR 5674 (manutenção de edificações)"],
+["POP-05","monit","Usar o Monitoramento e mapa","Gestor e Administrador","Ver a situação de cada ambiente por cor e abrir tudo o que acontece nele num só lugar.","Diariamente e durante rondas e auditorias.",
+ ["Abra Monitoramento e mapa no menu.","Veja a cor de cada ambiente: ela mostra chamados abertos, atrasos e pendências.","Clique num ambiente para abrir o resumo.","No resumo, veja chamados, inventário, calibrações, termo de responsabilidade e relatório daquele ambiente.","Use os botões do resumo para ir direto à tela de cada assunto."],
+ "Nenhum registro novo: a tela só lê os dados.",
+ ["O Administrador vê apenas os ambientes da sua unidade."],
+ "—"],
+["POP-06","cad","Cadastrar ambientes, bens, pessoas e fornecedores","Gestor, Administrador e Colaborador (bens)","Manter o inventário completo e correto: cada bem no seu ambiente, com etiqueta, série e responsável.","Na implantação, a cada compra ou recebimento de bem e sempre que um dado mudar.",
+ ["Abra Cadastros no menu e escolha a aba (Ambientes, Bens, Colaboradores, Responsáveis ou Fornecedores).","Ambientes: cadastre nome, setor, unidade e marque se é crítico.","Bens: clique em cadastrar, informe o número da etiqueta de patrimônio, descrição, marca, modelo, nº de série, ambiente e situação (próprio, locado, comodato, do cliente...).","Preencha valor e data de aquisição, vida útil e, se for equipamento de saúde, o registro na Anvisa.","Se for aparelho de climatização ou de uma área técnica, preencha a parte Climatização (PMOC) ou Área técnica.","Anexe até o limite de fotos do plano e salve.","Para muitos bens de uma vez, use o botão Planilha e importe o arquivo modelo."],
+ "Criação e cada alteração ficam no histórico do bem e em Excluídos e histórico.",
+ ["Confira o nº de série antes de salvar: ele identifica o bem mesmo sem etiqueta.","Bem de terceiro não entra como patrimônio da empresa.","Não exclua bem que saiu de uso: use a baixa (POP-30)."],
+ "ISO 55001:2024 · RDC Anvisa 509/2021, art. 6º (inventário)"],
+["POP-07","etq","Gerar e imprimir etiquetas de patrimônio","Gestor e Administrador","Gerar os números de patrimônio da própria empresa, com a sigla dela, e imprimir as etiquetas.","Na implantação e quando as etiquetas em estoque acabarem.",
+ ["Abra Etiquetas de patrimônio no menu.","Informe a quantidade e o modelo da folha A4 de etiquetas.","Clique em Gerar lote. Os números seguem a sequência da empresa.","Imprima em papel A4, escala 100% (sem ajustar à página).","Cole a etiqueta no bem em local visível e liso.","Cadastre o bem com o mesmo número (POP-06).","Etiqueta estragada: use Reimprimir. O número não muda."],
+ "Cada lote gerado e cada reimpressão ficam registrados; o sistema controla os números usados.",
+ ["Não reutilize número de etiqueta de bem baixado.","O padrão do número (separador, dígitos, ano) é definido em Configurações › Número de patrimônio antes do primeiro lote."],
+ "—"],
+["POP-08","cal","Programar e registrar calibração, preventiva, corretiva e TSE","Gestor e Administrador","Manter em dia os serviços periódicos de cada equipamento, com laudo anexado e próxima data calculada.","Ao cadastrar um equipamento novo e a cada serviço feito.",
+ ["Abra Calibrações, preventivas, corretivas e TSE.","Clique em programar, escolha o bem, o tipo de serviço e a periodicidade.","Escolha o checklist do tipo de equipamento, se houver.","Quando o serviço for feito, clique em registrar serviço e preencha data, empresa ou técnico, resultado e custo.","Preencha o checklist; medições fora da faixa aparecem em vermelho.","Anexe o laudo ou certificado.","Salve: a próxima data é calculada sozinha. Não conformidade pode abrir chamado corretivo automaticamente."],
+ "Serviço, checklist, laudo e resultado ficam no histórico do bem; documentos guardados por 5 anos.",
+ ["Confira a validade e a rastreabilidade do certificado de calibração.","Equipamento reprovado não deve voltar ao uso antes da correção."],
+ "RDC Anvisa 509/2021 · NBR IEC 60601-1 e IEC 62353 (segurança elétrica)"],
+["POP-09","clima","Gerir a climatização e o PMOC","Gestor e Administrador","Cumprir o Plano de Manutenção, Operação e Controle (PMOC) dos aparelhos de ar-condicionado e acompanhar a qualidade do ar.","Na implantação, a cada preventiva, recarga de gás e laudo de qualidade do ar.",
+ ["Em Cadastros › Bens, marque cada aparelho na parte Climatização (PMOC): tipo, capacidade, gás e área atendida.","Abra Climatização (PMOC) no menu e confira a saúde de cada aparelho.","Clique em Responsável técnico e ART e preencha os dados do responsável e a validade da ART.","Programe as preventivas dos aparelhos (POP-08) com os checklists de climatização.","Registre cada recarga de gás refrigerante no aparelho.","Registre o laudo semestral de qualidade do ar.","Baixe o Documento PMOC (PDF) e o Relatório do mês quando precisar apresentar."],
+ "Preventivas, recargas, laudos e a ART ficam registrados por aparelho e por unidade.",
+ ["ART vencida ou laudo de ar vencido aparecem como alerta.","Recargas frequentes indicam vazamento: abra chamado corretivo."],
+ "Lei 13.589/2018 · Portaria GM/MS 3.523/1998 · NBR 16401"],
+["POP-10","areas","Gerir radiologia, manutenção predial e odontologia","Gestor e Administrador","Seguir o programa de manutenção de cada área técnica com as rotinas sugeridas e checklists prontos.","Na implantação de cada área e a cada serviço.",
+ ["No cadastro do bem, escolha a Área técnica (radiologia, predial ou odontologia).","Abra Radiologia, predial e odontologia no menu e escolha a área.","Veja as rotinas sugeridas para os bens daquela área e programe as que se aplicam.","Registre cada serviço com o checklist da área (testes de aceitação e constância, inspeções, etc.).","Anexe o relatório do físico médico ou do responsável técnico, quando houver.","Gere o relatório da área em Relatórios."],
+ "Serviços e checklists ficam no histórico de cada bem.",
+ ["Os testes de radiologia devem ser feitos ou assinados por profissional habilitado."],
+ "RDC Anvisa 611/2022 · NBR 5674 · RDC Anvisa 1002/2025"],
+["POP-11","emp","Cadastrar empresas locadoras e fornecedores","Gestor e Administrador","Controlar os equipamentos de terceiros (locação e comodato) e as empresas de assistência e calibração, com contrato.","Ao fechar um contrato e ao receber equipamento de terceiro.",
+ ["Abra Empresas locadoras no menu.","Cadastre a empresa com CNPJ, contato e tipo (locadora, assistência, calibração).","Informe número e vigência do contrato.","Ligue os equipamentos da empresa (bens com situação locado ou comodato).","Acompanhe os contratos perto do vencimento."],
+ "Empresas, contratos e equipamentos ligados ficam registrados.",
+ ["Conserto de bem locado ou em comodato é de responsabilidade do dono: avise o setor responsável pelo contrato."],
+ "—"],
+["POP-12","rondas","Fazer a ronda nos ambientes","Colaborador (Gestor e Administrador acompanham)","Inspecionar todos os ambientes no roteiro e transformar cada ocorrência em chamado.","Todo dia, conforme o roteiro da unidade.",
+ ["Abra Rondas (no app ou no painel).","Escolha o ambiente do roteiro.","Marque cada item como Normal ou Ocorrência.","Em Ocorrência, descreva o problema e tire a foto: o chamado é aberto sozinho.","Em centrais de gases, geradores e caixas d'água, registre as medições pedidas.","Feche o ambiente e siga para o próximo até concluir o roteiro."],
+ "Início e fim da ronda, itens marcados, fotos e medições ficam gravados com a hora do servidor.",
+ ["Unidade com 3 dias sem ronda gera alerta para o Gestor."],
+ "ONA · NBR 5674"],
+["POP-13","aud","Fazer auditoria de inventário","Gestor, Administrador ou auditor designado","Conferir se os bens estão onde o sistema diz e achar os que sumiram ou estão em outro lugar.","Pelo menos uma vez por ano em cada ambiente, ou quando houver suspeita de divergência.",
+ ["Abra Auditorias e clique em Nova auditoria.","Escolha o ambiente e o auditor.","No ambiente, leia a etiqueta de cada bem com o leitor de código de barras ou a câmera.","Bens de outro ambiente ou sem cadastro aparecem separados.","Clique em Finalizar: o que não foi lido fica como não localizado.","Trate as divergências: transfira, cadastre ou investigue os não localizados."],
+ "Cada leitura e o resultado da auditoria ficam registrados.",
+ ["Não finalize antes de ler todos os bens do ambiente."],
+ "ISO 55001:2024 · RDC Anvisa 509/2021"],
+["POP-14","termos","Emitir o termo de responsabilidade","Gestor e Administrador","Registrar quem responde pelos bens de cada ambiente, com assinatura.","Ao entregar um ambiente a um responsável e sempre que o termo precisar ser atualizado.",
+ ["Abra Termos de responsabilidade.","Escolha o ambiente e clique em Gerar termo; a lista de bens entra sozinha.","Informe o responsável.","Envie o link ou o QR Code: ele assina com o dedo no celular (ou assine em papel e anexe).","Quando entrar ou sair bem do ambiente, o termo aparece como Precisa atualizar: gere um novo."],
+ "Termo, assinatura, data e hora ficam guardados.",
+ ["Termo desatualizado não protege a empresa: atualize sempre que a lista mudar."],
+ "—"],
+["POP-15","mov","Transferir e emprestar bens","Gestor e Administrador","Registrar toda mudança de bem entre ambientes ou unidades, e os empréstimos com data de volta.","Sempre que um bem mudar de lugar.",
+ ["Abra Transferências e empréstimos.","Escolha o bem e o destino (ambiente ou unidade).","Na mesma unidade, a transferência vale na hora.","Entre unidades, o pedido vai para aprovação do Gestor.","Em empréstimo, informe a data de devolução e registre a volta quando o bem retornar."],
+ "Cada movimento fica no histórico do bem, com quem pediu e quem aprovou.",
+ ["Bem movido sem registro aparece como de outro ambiente na auditoria."],
+ "—"],
+["POP-16","estoque","Controlar o estoque de peças","Gestor e Administrador","Saber quantas peças existem e onde foram usadas.","A cada entrada de compra, uso em serviço e contagem.",
+ ["Abra Estoque de peças.","Cadastre a peça com código, descrição e estoque mínimo.","Registre as entradas (compras).","Registre as saídas ligadas ao chamado ou ao equipamento.","Na contagem física, registre o ajuste com o motivo."],
+ "O saldo muda só pelos movimentos, e nenhum movimento é apagado.",
+ ["Peça usada sem saída registrada deixa o custo do equipamento errado."],
+ "—"],
+["POP-17","custos","Acompanhar custos e investimentos","Gestor","Comparar o que se gasta em manutenção com o valor dos equipamentos.","Mensalmente e no planejamento do orçamento.",
+ ["Abra Custos e investimentos.","Veja os últimos 12 meses: chamados, calibrações, preventivas, corretivas e peças.","Compare o custo com o valor dos equipamentos.","Use os números na decisão de substituição (POP-18) e no orçamento."],
+ "Nenhum registro novo: a tela soma os custos lançados nos serviços.",
+ ["O resultado depende de lançar o custo em cada serviço e saída de peça."],
+ "ISO 55001:2024"],
+["POP-18","subst","Decidir a substituição de equipamentos","Gestor","Apontar, com critério, quais equipamentos devem ser trocados primeiro.","No planejamento anual de investimentos.",
+ ["Abra Substituição de equipamentos.","Veja a pontuação de cada equipamento: idade x vida útil, chamados em 12 meses, custo x valor, estado e tecnovigilância.","Ordene pelos de maior pontuação.","Use a lista para montar o plano de compras.","Ao trocar, faça a baixa do equipamento antigo (POP-30)."],
+ "Nenhum registro novo: a pontuação é calculada pelos dados do sistema.",
+ ["A pontuação apoia a decisão; a análise técnica continua necessária."],
+ "RDC Anvisa 509/2021 · ISO 55001:2024"],
+["POP-19","tecno","Registrar queixa técnica e evento adverso","Gestor e Administrador","Registrar defeitos de produto e eventos com risco ao paciente ou ao profissional e acompanhar até a notificação.","Sempre que um equipamento ou produto apresentar falha ou causar dano.",
+ ["Abra Tecnovigilância e clique em novo registro.","Escolha queixa técnica ou evento adverso e o bem envolvido.","Descreva o ocorrido, a data e as providências.","Notifique a Anvisa pelo sistema oficial e registre o número da notificação.","Acompanhe até o encerramento."],
+ "O registro e o acompanhamento ficam no histórico do bem e entram na pontuação de substituição.",
+ ["Evento adverso grave tem prazo de notificação: siga as regras da Anvisa."],
+ "RDC Anvisa 67/2009 (tecnovigilância) · RDC Anvisa 509/2021"],
+["POP-20","trein","Registrar treinamentos","Gestor e Administrador","Comprovar a capacitação da equipe técnica e dos usuários dos equipamentos.","A cada treinamento realizado.",
+ ["Abra Treinamentos e clique em novo treinamento.","Informe tema, data, carga horária, instrutor e equipamento.","Marque os participantes (lista de presença).","Anexe a lista assinada ou o certificado.","Salve: o treinamento entra nos relatórios ANVISA e ONA."],
+ "Treinamento e participantes ficam registrados.",
+ ["Equipamento novo deve ter treinamento antes do uso."],
+ "RDC Anvisa 509/2021, art. 11 · ONA"],
+["POP-21","equipe","Convidar e gerenciar a equipe","Gestor (e Administrador para Colaboradores e Clientes)","Dar acesso a cada pessoa com o perfil e a unidade certos, e tirar o acesso de quem sai.","Na admissão, mudança de função ou saída de alguém.",
+ ["Abra Equipe e clique em convidar.","Informe nome e e-mail e escolha o perfil (Administrador, Colaborador ou Cliente só consulta) e a unidade.","Envie: a pessoa recebe o e-mail e cria a senha.","Para mudar perfil ou unidade, abra a pessoa e altere.","Quando alguém sair, clique em inativar e escreva o motivo."],
+ "Convites, mudanças e inativações ficam no registro de acessos.",
+ ["Nunca compartilhe login: cada pessoa tem o seu.","Inative no mesmo dia em que a pessoa sair."],
+ "LGPD (Lei 13.709/2018)"],
+["POP-22","rel","Gerar relatórios","Gestor e Administrador","Tirar relatórios confiáveis em PDF e Excel para gestão, auditoria e prestação de contas.","Mensalmente, em auditorias e quando pedido.",
+ ["Abra Relatórios.","Escolha o período (este mês, mês passado, 90 dias ou personalizado).","Escolha o relatório.","Se quiser, filtre os equipamentos.","Clique em Baixar PDF ou Baixar Excel."],
+ "Cada relatório baixado fica no registro de acessos.",
+ ["Só o Gestor e o Administrador geram relatórios.","Os números vêm dos registros com hora do servidor."],
+ "ONA · RDC Anvisa 509/2021"],
+["POP-23","aval","Responder ao Avalie","Gestor e Administrador","Tratar reclamações, sugestões e elogios enviados pelo QR Code.","Sempre que chegar uma mensagem.",
+ ["Abra Avalie.","Leia a mensagem, o ambiente e a data.","Tome a providência necessária (abra chamado se for o caso).","Responda o que foi feito."],
+ "Mensagem e resposta ficam registradas e não podem ser apagadas.",
+ ["Responda com fatos e sem expor dados pessoais."],
+ "ONA (escuta do usuário)"],
+["POP-24","leg","Consultar legislação e normas","Todos os perfis","Saber quais leis e normas se aplicam e onde ler o texto oficial.","Ao montar procedimentos e antes de auditorias.",
+ ["Abra Legislação e normas.","Leia o resumo em linguagem simples.","Clique no link para abrir o texto oficial.","Confira sempre a versão vigente no site do órgão."],
+ "Nenhum registro.",
+ ["O resumo não substitui o texto oficial."],
+ "—"],
+["POP-25","excl","Consultar Excluídos e histórico e restaurar","Gestor","Ver tudo o que foi excluído ou alterado, por quem e quando, e restaurar o que foi apagado por engano.","Quando houver dúvida sobre uma alteração ou exclusão.",
+ ["Abra Excluídos e histórico.","Filtre por unidade, tipo ou período.","Veja quem excluiu, quando e o motivo.","Para desfazer, clique em restaurar no item."],
+ "A restauração também fica registrada.",
+ ["Nada é apagado de verdade; só o Gestor vê esta tela."],
+ "—"],
+["POP-26","cfg","Configurar o sistema","Gestor","Ajustar o sistema à empresa: dados, aparência, prazos, numeração, avisos e automações.","Na implantação e quando uma regra da empresa mudar.",
+ ["Abra Configurações.","Dados da empresa: complete os dados que saem nos documentos e escolha o tipo de empresa (própria ou prestadora).","Design: cores, logotipo e estilo do painel.","Prazos de SLA: prazos de atendimento e solução por prioridade.","Número de patrimônio: padrão do número antes do primeiro lote de etiquetas.","Avisos e automações: e-mails, expediente, feriados, plantão e regras automáticas.","Salve cada aba."],
+ "Cada alteração fica no registro de acessos.",
+ ["Mudanças de prazo valem para os chamados abertos depois da mudança."],
+ "—"],
+["POP-27","ajuda","Usar o Como usar","Todos os perfis","Encontrar rápido onde clicar em cada tela.","Sempre que surgir uma dúvida rápida.",
+ ["Abra Como usar.","Escolha o seu perfil ou busque uma palavra (ex.: etiqueta, laudo).","Siga os passos do cartão e use Abrir esta tela.","Para o procedimento completo, clique em Ver POP completo."],
+ "Nenhum registro.",
+ ["O Como usar é o resumo; o POP é o procedimento oficial."],
+ "—"],
+["POP-28","sobre","Consultar o Sobre e as versões","Todos os perfis","Saber a versão do sistema e as novidades.","Quando aparecer aviso de nova versão ou ao pedir suporte.",
+ ["Abra Sobre.","Confira a versão do painel e do aplicativo.","Quando aparecer Nova versão disponível, clique em Atualizar.","Ao pedir suporte, informe a versão."],
+ "Nenhum registro.",
+ [],
+ "—"],
+["POP-29","alertas","Tratar avisos e alertas","Gestor e Administrador","Resolver o que precisa de atenção agora: atrasos, vencimentos e pendências.","Diariamente.",
+ ["Clique no sino (Avisos e alertas) no alto do painel.","Veja os alertas: chamados atrasados, calibrações vencidas, termos desatualizados, dias sem ronda.","Clique no alerta para ir à tela do problema.","Resolva a causa: o alerta some sozinho."],
+ "Os alertas são montados pelo sistema a partir dos registros.",
+ ["Alerta ignorado vira não conformidade na auditoria."],
+ "—"],
+["POP-30","cad","Dar baixa em um equipamento","Gestor e Administrador (pedido); Gestor (aprovação)","Retirar do patrimônio um bem que saiu de uso, com motivo, destino, laudo e termo.","Quando o bem for descartado, doado, vendido, devolvido ao dono ou perdido.",
+ ["Abra o bem em Cadastros › Bens e clique em Dar baixa.","Escolha a classificação e escreva o motivo.","Escolha o destino (bem de terceiro só pode ser devolvido ao dono).","Anexe o laudo técnico (recomendado).","Envie: o pedido vai para aprovação, conforme a regra da empresa.","Aprovada a baixa, baixe o Termo de baixa (PDF) e colha as assinaturas."],
+ "Pedido, aprovação e termo ficam no histórico do bem; o bem sai do inventário ativo sem ser apagado.",
+ ["Não use Excluir para bem que saiu de uso: use a baixa.","Equipamento de saúde descartado segue o plano de resíduos."],
+ "RDC Anvisa 509/2021 · RDC Anvisa 222/2018 (resíduos)"],
+["POP-31","cad","Consultar o histórico do bem","Gestor, Administrador e Colaborador","Ver tudo o que já aconteceu com um equipamento numa linha do tempo.","Antes de decidir conserto ou troca, em auditorias e quando pedido.",
+ ["Abra o bem em Cadastros › Bens.","Clique em Histórico do bem.","Filtre pelo tipo (chamados, serviços, movimentos, baixa).","Para levar a uma reunião ou auditoria, clique em Baixar histórico (PDF)."],
+ "O PDF baixado fica no registro de acessos.",
+ ["Histórico importado de sistema antigo aparece marcado como importado."],
+ "ISO 55001:2024 · RDC Anvisa 509/2021"],
+["POP-32","cfg","Usar o modo prestadora de serviços","Gestor","Organizar a empresa que presta manutenção para vários clientes (hospital, fórum, escritório, escola).","Na implantação de empresa prestadora e a cada cliente novo.",
+ ["Em Configurações › Dados da empresa, clique em Prestadora de serviços.","Em Empresa e clientes, crie uma unidade para cada cliente.","Na tabela Clientes, clique em Editar e preencha segmento, contrato, vigência e contato.","Cadastre os aparelhos do cliente com a situação Do cliente (atendido por nós).","Para o cliente acompanhar, convide o responsável dele com o perfil Cliente (só consulta) (POP-21).","Para voltar, clique em Empresa própria: nada é apagado."],
+ "Mudança de modo e dados dos clientes ficam no registro de acessos.",
+ ["O cliente só vê a unidade dele e não altera nada nem baixa relatórios."],
+ "LGPD (Lei 13.709/2018)"],
+["POP-33","","Abrir chamado pelo QR Code (qualquer pessoa)","Qualquer pessoa, sem login","Permitir que quem está no ambiente peça manutenção na hora.","Sempre que notar um problema no ambiente ou equipamento.",
+ ["Leia o QR Code fixado na entrada do ambiente com a câmera do celular.","Escolha o equipamento, se souber, e descreva o problema.","Em É urgente?, toque em Sim, Não ou Normal.","Tire uma foto, se possível, e toque em Enviar.","Guarde o número do chamado para acompanhar.","Quando o serviço terminar, confirme e dê de 1 a 5 estrelas."],
+ "Abertura com hora do servidor; a confirmação e a nota ficam no chamado.",
+ ["Não coloque dados de pacientes na descrição."],
+ "—"]];
+const popPorPag=k=>POPS.find(p=>p[1]==k);
+function pgPops(){const q=(E.pq||"").toLowerCase(),sel=E.psel&&POPS.find(p=>p[0]==E.psel);
+  if(sel)return popVer(sel);
+  const L=POPS.filter(p=>!q||(p.join(" ")).toLowerCase().includes(q));
+  return `<div class="top"><div><h1>POPs · Procedimentos Operacionais Padrão</h1><p class="sub">O procedimento oficial de cada função do sistema: objetivo, quem faz, quando, passo a passo, registros, cuidados e normas. Use para treinar a equipe e apresentar em auditorias. O resumo rápido continua em Como usar.</p></div>
+   ${ADMIN()&&!CLIENTE()?`<button class="btn" onclick="popsPDF()">Baixar caderno de POPs (PDF)</button>`:""}</div>
+   <div class="card"><div class="filters"><label>Buscar nos POPs<input value="${esc(E.pq||"")}" placeholder="Ex.: baixa, PMOC, ronda" onkeydown="if(event.key=='Enter'){E.pq=this.value;render()}"></label>${q?`<button class="btn sm ghost" onclick="E.pq='';render()">Limpar busca</button>`:""}</div><p class="note" style="margin:8px 0 0">Revisão ${POP_REV.n} · ${dt(POP_REV.data)} · ${POPS.length} procedimentos</p></div>
+   <div class="card"><div class="tbl"><table><tr><th>Código</th><th>Procedimento</th><th>Quem faz</th><th></th></tr>${L.map(p=>`<tr><td><b>${p[0]}</b></td><td>${esc(p[2])}</td><td>${esc(p[3])}</td><td><button class="btn ghost sm" onclick="E.psel='${p[0]}';render()">Abrir</button></td></tr>`).join("")||`<tr><td colspan="4">Nada encontrado.</td></tr>`}</table></div></div>`}
+function popVer(p){const [cod,pag,tit,quem,obj,qdo,passos,reg,cuid,refs]=p;
+  return `<div class="top"><div><button class="voltar" onclick="E.psel=null;render()">← Todos os POPs</button><h1>${cod} · ${esc(tit)}</h1><p class="sub">Revisão ${POP_REV.n} · ${dt(POP_REV.data)}</p></div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap">${pag&&MENU.some(m=>m[0]==pag)?`<button class="btn ghost" onclick="E.psel=null;ir('${pag}')">Abrir esta tela</button>`:""}${ADMIN()&&!CLIENTE()?`<button class="btn" onclick="popsPDF('${cod}')">Baixar este POP (PDF)</button>`:""}</div></div>
+   <div class="card"><div class="tbl"><table><tr><th style="width:180px">Objetivo</th><td>${esc(obj)}</td></tr><tr><th>Quem faz</th><td>${esc(quem)}</td></tr><tr><th>Quando fazer</th><td>${esc(qdo)}</td></tr></table></div></div>
+   <div class="card"><h2>Passo a passo</h2><ol style="padding-left:1.3em;display:grid;gap:6px;margin:0">${passos.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></div>
+   <div class="grid g2"><div class="card"><h2>O que o sistema registra</h2><p>${esc(reg)}</p></div><div class="card"><h2>Cuidados</h2>${cuid.length?`<ul style="padding-left:1.2em;margin:0;display:grid;gap:4px">${cuid.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:"<p>—</p>"}</div></div>
+   <div class="card"><h2>Referências</h2><p>${esc(refs)}</p><p class="note">Elaborado por: Atalaia System · Aprovação: responsável da empresa (no PDF, com campo para assinatura).</p></div>`}
+async function popsPDF(cod){if(!ADMIN()||CLIENTE()){toast("Os POPs em PDF são baixados pelo Gestor ou pelo Administrador.");return}
+  try{const L=cod?POPS.filter(p=>p[0]==cod):POPS,st=await pdfBase(cod?`${L[0][0]} · ${L[0][2]}`:"Caderno de POPs do sistema"),{doc,M}=st;
+  if(!cod){st.L("Empresa",(E.v.contratantes||{}).nome);st.L("Revisão",`${POP_REV.n} · ${dt(POP_REV.data)}`);st.L("Conteúdo",`${L.length} procedimentos operacionais padrão de uso do sistema`);st.H("Índice");pdfGrade(st,["Código","Procedimento","Quem faz"],L.map(p=>[p[0],p[2],p[3]]),{ws:[22,92,68],fs:8})}
+  L.forEach((p,i)=>{const [c,pag,tit,quem,obj,qdo,passos,reg,cuid,refs]=p;if(!cod){st.nova();doc.setFont(pdfFonteTit(),"bold");doc.setFontSize(13);doc.text(pdfT(`${c} · ${tit}`),M,st.y+2);st.y+=8}
+   st.L("Código / revisão",`${c} · revisão ${POP_REV.n} · ${dt(POP_REV.data)}`);st.L("Objetivo",obj);st.L("Quem faz",quem);st.L("Quando fazer",qdo);
+   st.H("Passo a passo");pdfGrade(st,["Nº","Ação"],passos.map((x,j)=>[String(j+1),x]),{ws:[12,170],fs:8.4});
+   st.H("Registros e cuidados");st.L("O que o sistema registra",reg);st.L("Cuidados",cuid.length?cuid.map(x=>"• "+x).join("\n"):"—");st.L("Referências",refs);
+   st.H("Aprovação");pdfGrade(st,["","Nome","Assinatura","Data"],[["Elaborado por","Atalaia System","",dt(POP_REV.data)],["Revisado por","","",""],["Aprovado por","","",""]],{ws:[32,60,60,30],fs:8.4})});
+  st.fim(cod?`${cod}.pdf`:"Caderno_de_POPs.pdf");DB.registrar(E.v.contratante_id,"baixou POPs",cod||"caderno completo");toast("POP baixado.")}catch(e){toast(e.message||"Não foi possível gerar o PDF.")}}
 function pgAjuda(){const k=E.hp||"imp",q=(E.hq||"").toLowerCase();
   const secs=q?Object.values(TUT).flatMap(g=>g.L.map(s=>[...s,g.t])).filter(s=>(s[0]+" "+s[2].join(" ")).toLowerCase().includes(q)):TUT[k].L;
   return `<div class="top"><div><h1>Como usar</h1><p class="sub">Passo a passo de todas as funções, por perfil.</p></div></div>
   <div class="card"><div class="filters"><label>Buscar no passo a passo<input value="${esc(E.hq||"")}" placeholder="Ex.: etiqueta, laudo, ronda" onkeydown="if(event.key=='Enter'){E.hq=this.value;render()}"></label>${q?`<button class="btn sm ghost" onclick="E.hq='';render()">Limpar busca</button>`:""}</div>
   ${q?"":`<div class="filters" style="margin-top:8px">${Object.entries(TUT).map(([x,v])=>`<button class="btn sm ${k==x?"":"ghost"}" onclick="E.hp='${x}';render()">${v.t}</button>`).join("")}</div><p class="note" style="margin:8px 0 0">${TUT[k].d}</p>`}</div>
-  <div class="grid g2">${secs.map(([t,tela,P,g])=>`<div class="card"><h3 style="margin:0 0 6px">${t}</h3>${g?`<span class="note">${g}</span>`:""}<ol style="margin:6px 0 0;padding-left:1.3em;display:grid;gap:5px">${P.map(p=>`<li>${p}</li>`).join("")}</ol>${tela&&!q?`<button class="btn ghost sm" style="margin-top:8px" onclick="ir('${tela}')">Abrir esta tela</button>`:""}</div>`).join("")||`<p class="note">Nada encontrado.</p>`}</div>`}
+  <div class="grid g2">${secs.map(([t,tela,P,g])=>`<div class="card"><h3 style="margin:0 0 6px">${t}</h3>${g?`<span class="note">${g}</span>`:""}<ol style="margin:6px 0 0;padding-left:1.3em;display:grid;gap:5px">${P.map(p=>`<li>${p}</li>`).join("")}</ol>${tela&&!q?`<button class="btn ghost sm" style="margin-top:8px" onclick="ir('${tela}')">Abrir esta tela</button>`:""}${tela&&popPorPag(tela)?`<button class="btn ghost sm" style="margin-top:8px;margin-left:6px" onclick="E.psel='${popPorPag(tela)[0]}';ir('pops')">Ver POP completo</button>`:""}</div>`).join("")||`<p class="note">Nada encontrado.</p>`}</div>`}
 
 /* ================= Configurações completas ================= */
 const cfgV=(k,d)=>Object.assign({},d,(E.cfgE||{})[k]||{});
@@ -2470,12 +2680,12 @@ async function pmocPDF(u){try{carregarClima();const e=u?E.est.find(x=>x.id==u):E
   st.y+=16;if(st.y>250){doc.addPage();st.y=40}const cw=(W-2*M-10)/2;["Responsável técnico (assinatura e carimbo)","Proprietário / responsável pelo estabelecimento"].forEach((t,i)=>{const x=M+i*(cw+10);doc.line(x,st.y,x+cw,st.y);doc.setFontSize(8.5);doc.text(t,x,st.y+4.5)});
   st.fim(`PMOC_${(e.nome||"unidade").replace(/[^\w-]/g,"_")}.pdf`);DB.registrar(E.v.contratante_id,"gerou documento PMOC",e.nome||"");toast("Documento PMOC baixado. Confira com o responsável técnico antes de assinar.")}catch(er){toast(er.message||"Não foi possível gerar o PDF.")}}
 /* ---------------- Item 89 · estilos do painel e dos relatórios (o Clássico continua) ---------------- */
-const ESTILOS={classico:["Clássico","O visual de sempre: cartões, rosca e barras coloridas."],executivo:["Executivo","Realizado x meta x mês anterior, com o desvio em verde ou vermelho (padrão IBCS). Para a diretoria."],editorial:["Editorial","O título já conta a conclusão; fonte com serifa e réguas finas. Para relatórios e reuniões."],operacional:["Operacional","Fila do dia com prazo, tabelas densas, ícone e texto junto da cor. Para a equipe de manutenção."]};
+const ESTILOS={classico:["Clássico","O visual de sempre: cartões, rosca e barras coloridas."],executivo:["Executivo","Realizado x meta x mês anterior, com o desvio em verde ou vermelho (padrão IBCS). Para a diretoria."],editorial:["Editorial","O título já conta a conclusão; fonte com serifa e réguas finas. Para relatórios e reuniões."],operacional:["Operacional","Fila do dia com prazo, tabelas densas, ícone e texto junto da cor. Para a equipe de manutenção."],simples:["Simples","Tudo claro: fundo branco e letras pretas, sem cores. O vermelho aparece só em atraso e erro."]};
 const EST_GF={executivo:"family=IBM+Plex+Sans:wght@400;500;600;700",editorial:"family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700",operacional:"family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600"};
 function estiloDe(d){d=d||{};return ESTILOS[d.estilo]?d.estilo:"classico"}
 function estiloAtual(){return estiloDe(E.rascunho||(E.v&&E.v.contratantes&&E.v.contratantes.design))}
 function aplicarEstilo(d){const e=estiloDe(d),r=document.documentElement,l=document.getElementById("gf2");r.dataset.estilo=e;if(l){if(EST_GF[e])l.href="https://fonts.googleapis.com/css2?"+EST_GF[e]+"&display=swap";else l.removeAttribute("href")}}
-function estiloOpcHTML(d){const at=estiloDe(d),mini={classico:`<span style="background:var(--client);height:12px;border-radius:3px"></span><span style="display:flex;gap:3px"><i style="flex:1;height:14px;background:#fff;border-radius:3px"></i><i style="flex:1;height:14px;background:#fff;border-radius:3px"></i></span>`,
+function estiloOpcHTML(d){const at=estiloDe(d),mini={simples:`<span style="height:12px;border:1px solid #000;border-radius:3px;background:#fff"></span><span style="display:flex;gap:3px"><i style="flex:1;height:14px;background:#fff;border:1px solid #000;border-radius:3px"></i><i style="flex:1;height:14px;background:#fff;border:1px solid #000;border-radius:3px"></i></span>`,classico:`<span style="background:var(--client);height:12px;border-radius:3px"></span><span style="display:flex;gap:3px"><i style="flex:1;height:14px;background:#fff;border-radius:3px"></i><i style="flex:1;height:14px;background:#fff;border-radius:3px"></i></span>`,
   executivo:`<span style="display:flex;gap:4px;align-items:center"><i style="width:60%;height:6px;background:#333"></i><i style="width:2px;height:12px;background:#000"></i></span><span style="display:flex;gap:4px"><i style="width:30%;height:6px;background:#2e7d32"></i><i style="width:18%;height:6px;background:#c62828"></i></span>`,
   editorial:`<span style="font:700 .8rem Georgia,serif;color:var(--ink)">Chamados caíram 12%</span><span style="height:1px;background:var(--ink)"></span>`,
   operacional:`<span style="display:grid;gap:2px">${[0,1,2].map(i=>`<i style="height:5px;background:${i%2?"var(--surface)":"#cfd3d8"}"></i>`).join("")}</span><span style="font:600 .62rem monospace;color:var(--bad)">⚠ atrasado 3h</span>`};
@@ -2528,6 +2738,7 @@ function blocoOperacional(){const u=E.iu,C=E.ch.filter(c=>!c.excluido_em&&ABERTO
 /* cabeçalho dos PDFs conforme o estilo */
 function pdfCab(doc,W,M,linha){const e=estiloDe(E.v.contratantes.design),em="Emitido em "+new Date().toLocaleString("pt-BR"),lin=doc.splitTextToSize(linha||"Atalaia System · Sistema de Gestão de Patrimônio e Manutenção",W-2*M-60)[0];
   if(e=="editorial"){doc.setTextColor(29,31,35);doc.setFont("times","bold");doc.setFontSize(14);doc.text(E.v.contratantes.nome,M,10);doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(90,94,102);doc.text(lin,M,14.6);doc.text(em,W-M,14.6,{align:"right"});doc.setDrawColor(29,31,35);doc.setLineWidth(0.7);doc.line(M,17.2,W-M,17.2);doc.setLineWidth(0.2)}
+  else if(e=="simples"){doc.setTextColor(0,0,0);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text(E.v.contratantes.nome,M,9);doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.text(lin,M,13.6);doc.text(em,W-M,13.6,{align:"right"});doc.setDrawColor(0,0,0);doc.setLineWidth(0.4);doc.line(M,16.6,W-M,16.6);doc.setLineWidth(0.2)}
   else if(e=="executivo"){doc.setTextColor(29,31,35);doc.setFont("helvetica","bold");doc.setFontSize(11.5);doc.text(E.v.contratantes.nome.toUpperCase(),M,9);doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(90,94,102);doc.text(lin,M,13.6);doc.text(em,W-M,13.6,{align:"right"});doc.setDrawColor(29,31,35);doc.setLineWidth(1.4);doc.line(M,16.6,W-M,16.6);doc.setLineWidth(0.2)}
   else{const op=e=="operacional";doc.setFillColor(29,31,35);doc.rect(0,0,W,op?14:18,"F");doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(op?10.5:12);doc.text(E.v.contratantes.nome,M,op?6.5:8);doc.setFont("helvetica","normal");doc.setFontSize(op?7:8);doc.text(lin,M,op?11:13.5);doc.text(em,W-M,op?11:13.5,{align:"right"})}
   doc.setTextColor(29,31,35)}
@@ -2575,7 +2786,7 @@ function relArea(per,k){const A=AREAS[k],B=E.bens.filter(b=>uniOk(b)&&b.area_tec
     {t:"Itens da área",cols:["Patrimônio","Item","Ambiente","Marca / modelo","Nº de série","Saúde"],linhas:B.map(b=>{const h=saudeBem(b);return [b.patrimonio||"",b.nome,nomeAmbi(b.ambiente_id),[b.marca,b.modelo].filter(Boolean).join(" · "),b.numero_serie||"",`${h.s} · ${h.cls}`]})}]}}
 /* ---------------- Modo empresa prestadora de serviços (clientes = unidades) ---------------- */
 const CLIENTE=()=>E.v&&E.v.perfil=="cliente";
-const CLI_PAGS=new Set(["inicio","chamados","cad","clima","areas","leg"]);
+const CLI_PAGS=new Set(["inicio","chamados","cad","clima","areas","leg","pops"]);
 const PRESTADORA=()=>((E.v&&E.v.contratantes)||{}).modo=="prestadora";
 const SEGMENTOS={hospital:"Hospital",clinica:"Clínica",odontologia:"Clínica odontológica",laboratorio:"Laboratório",ubs:"UBS / posto de saúde",orgao_publico:"Órgão público / fórum",juridico:"Escritório de advocacia",escritorio:"Escritório / empresa",escola:"Escola / universidade",comercio:"Comércio / loja",industria:"Indústria",condominio:"Condomínio",hotel:"Hotel",outro:"Outro"};
 function modoEmpresaHTML(){const p=PRESTADORA(),E2=E.est||[];
