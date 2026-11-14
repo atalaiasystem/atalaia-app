@@ -108,7 +108,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.10"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.11"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -236,7 +236,7 @@ function telaAtivar(){const i=E.insc;return `<div class="center wrap" style="max
  <p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="sair()">Sair</button></p></div></div>`}
 function telaNegado(){return `<div class="center wrap"><div class="card"><h2>Acesso não permitido</h2><p class="sub">Esta conta não faz parte da equipe da Matriz.</p><button class="btn ghost" onclick="sair()">Sair</button></div></div>`}
 const MENU=[["grp","Negócio"],["visao","Dashboard"],["fin","Receita e métricas"],["saude","Saúde dos clientes"],["uso","Uso e adoção"],["funil","Funil comercial"],
- ["grp","Clientes"],["empresas","Contratantes"],["cadastrar","Cadastrar empresa"],["planos","Planos e limites"],["mods","Adicionais de uso"],["fat","Cobrança","B"],["atend","Atendimento ao cliente"],["sup","Acessos de suporte","B"],["com","Comunicados","B"],
+ ["grp","Clientes"],["empresas","Empresas"],["cadastrar","Cadastrar empresa"],["planos","Planos e limites"],["mods","Adicionais de uso"],["fat","Cobrança","B"],["atend","Atendimento ao cliente"],["sup","Acessos de suporte","B"],["com","Comunicados","B"],
  ["grp","Operação"],["infra","Infraestrutura e versões"],["ind","Indicadores"],["acessos","Registro de acessos"],["avisos","Avisos 🔔"],["equipem","Equipe da Matriz"],["seg","Segurança e LGPD","C"],
  ["grp","Painel"],["dadosm","Dados da Matriz"],["titular","Titular do sistema 🔒"],["design","Design do painel"],["ajuda","Como usar","C"]];
 function telaPainel(){
