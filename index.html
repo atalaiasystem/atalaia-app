@@ -110,7 +110,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.22",
+  versao:"0.3.23",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -391,7 +391,7 @@ function modalHTML(){
   ${E.modal.seq?`<div class="msg info">✔ ${E.modal.seq} bem(ns) cadastrado(s) em <b>${esc(nomeAmb(b.ambiente_id)||"")}</b> nesta sequência. Continue com o próximo.</div>`:""}
   ${novo&&temPat()?`<label>Nº de patrimônio (da etiqueta)<span class="campo-leitor"><input id="fpt" maxlength="40" autocomplete="off" autocapitalize="characters" value="${esc(b.patrimonio||"")}" placeholder="Deixe em branco para gerar automático"><button type="button" class="btn ghost sm" onclick="lerParaCampo('fpt','a etiqueta de patrimônio')" aria-label="Ler etiqueta com a câmera">📷</button></span><span class="muted" style="font-weight:400;font-size:.8rem">Use o número de uma etiqueta já impressa (livre) ou deixe em branco.</span></label>`:""}
   <label>Nome do bem *<input id="fn" required maxlength="120" value="${esc(b.nome)}" placeholder="Ex.: Cabine de secagem UV"></label>
-  <div class="row"><label>Categoria<select id="fc">${CAT.map(x=>`<option ${b.categoria==x?"selected":""}>${x}</option>`).join("")}</select></label>
+  <div class="row"><label>Categoria (escolha ou escreva)<input id="fc" list="fcl" maxlength="60" value="${esc(b.categoria||"Equipamento")}"><datalist id="fcl">${[...new Set([...CAT,"Climatização","Elétrica","Hidráulica","Elevador","Informática","Eletromédico",...E.bens.map(x=>x.categoria).filter(Boolean)])].map(x=>`<option value="${esc(x)}">`).join("")}</datalist></label>
   <label>Estado<select id="fe">${EST.map(x=>`<option ${b.estado==x||(!b.estado&&x=="bom")?"selected":""}>${x}</option>`).join("")}</select></label></div>
   <label>Ambiente<select id="fa">${optsAmb(b.ambiente_id)}</select></label>
   <div class="card" style="background:var(--soft,#f4f6f8);padding:12px;margin:0 0 12px"><label>Situação do bem<select id="fpr" onchange="mudouProp(this.value)">${sitOpts(sitK(b))}</select></label>
@@ -514,7 +514,7 @@ async function abrirBem(id){const b=id?E.bens.find(x=>x.id==id):null;
   const fs=await Promise.all(fotosDoBem(b).map(async p=>({path:p,url:await urlCache(p)})));
   E.modal={bem:b?{...b}:null,fotos:fs,removidas:[]};abrirNivel();render()}
 function guardarForm(){if(!E.modal||!$("#fn"))return;const b=E.modal.bem||(E.modal.bem={});
-  Object.assign(b,{nome:$("#fn").value,categoria:$("#fc").value,estado:$("#fe").value,ambiente_id:$("#fa").value,marca:$("#fm").value,modelo:$("#fo").value,numero_serie:$("#fs").value,valor:$("#fv")?($("#fv").value===""?null:$("#fv").value):b.valor,patrimonio:$("#fpt")?$("#fpt").value:b.patrimonio,data_aquisicao:$("#fd").value,observacao:$("#fb").value,propriedade:$("#fpr")?$("#fpr").value:b.propriedade,_empNome:$("#femp")?$("#femp").value:b._empNome,doador:$("#fdoa")?$("#fdoa").value:b.doador,posse_ate:$("#fpos")?$("#fpos").value:b.posse_ate,tipo:$("#ftp")?$("#ftp").value:b.tipo,posicao:$("#fpo")?$("#fpo").value:b.posicao,vida_util_anos:$("#fvu")?$("#fvu").value:b.vida_util_anos,critico:$("#fcr")?$("#fcr").checked:b.critico})}
+  Object.assign(b,{nome:$("#fn").value,categoria:($("#fc").value||"").trim()||"Equipamento",estado:$("#fe").value,ambiente_id:$("#fa").value,marca:$("#fm").value,modelo:$("#fo").value,numero_serie:$("#fs").value,valor:$("#fv")?($("#fv").value===""?null:$("#fv").value):b.valor,patrimonio:$("#fpt")?$("#fpt").value:b.patrimonio,data_aquisicao:$("#fd").value,observacao:$("#fb").value,propriedade:$("#fpr")?$("#fpr").value:b.propriedade,_empNome:$("#femp")?$("#femp").value:b._empNome,doador:$("#fdoa")?$("#fdoa").value:b.doador,posse_ate:$("#fpos")?$("#fpos").value:b.posse_ate,tipo:$("#ftp")?$("#ftp").value:b.tipo,posicao:$("#fpo")?$("#fpo").value:b.posicao,vida_util_anos:$("#fvu")?$("#fvu").value:b.vida_util_anos,critico:$("#fcr")?$("#fcr").checked:b.critico})}
 async function prevFoto(inp){const arq=[...inp.files];if(!arq.length)return;guardarForm();
   for(const f of arq){if(E.modal.fotos.length>=limFotos()){toast(`O seu plano permite até ${limFotos()} foto(s) por bem.`);break}
     try{const bl=await comprimir(f);E.modal.fotos.push({blob:bl,url:URL.createObjectURL(bl)})}catch(e){toast("Não foi possível ler a foto.")}}
@@ -524,7 +524,7 @@ function comprimir(file){return new Promise((ok,er)=>{const img=new Image();img.
 async function salvarBem(){
   const btn=$("#fsalvar");btn.disabled=true;btn.textContent="Salvando…";
   const b=E.modal.bem||{},c=E.v.contratante_id;
-  const d={nome:$("#fn").value.trim(),categoria:$("#fc").value,estado:$("#fe").value,ambiente_id:$("#fa").value||null,marca:$("#fm").value.trim()||null,modelo:$("#fo").value.trim()||null,numero_serie:$("#fs").value.trim()||null,data_aquisicao:$("#fd").value||null,observacao:$("#fb").value.trim()||null};
+  const d={nome:$("#fn").value.trim(),categoria:($("#fc").value||"").trim()||"Equipamento",estado:$("#fe").value,ambiente_id:$("#fa").value||null,marca:$("#fm").value.trim()||null,modelo:$("#fo").value.trim()||null,numero_serie:$("#fs").value.trim()||null,data_aquisicao:$("#fd").value||null,observacao:$("#fb").value.trim()||null};
   if($("#fv"))d.valor=$("#fv").value===""?null:Number($("#fv").value);
   if($("#fpt")&&$("#fpt").value.trim())d.patrimonio=$("#fpt").value.trim().toUpperCase();
   const cont=!!E.modal.continuar;E.modal.continuar=false;
