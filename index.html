@@ -110,7 +110,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.24",
+  versao:"0.3.25",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -136,6 +136,9 @@ const DB=DEMO?mockDB():realDB();
 function realDB(){
   sb=supabase.createClient(CONFIG.url,CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const chk=({data,error})=>{if(error)throw new Error(traduz(error.message));return data};
+/* Busca em páginas: o servidor devolve no máximo 1.000 linhas por consulta */
+async function todas(q,max){const T=1000;let out=[],i=0;max=max||200000;for(;;){const r=await q.range(i,i+T-1);if(r.error)throw new Error(traduz(r.error.message));const d=r.data||[];out=out.concat(d);if(d.length<T||out.length>=max)break;i+=T}return out}
+
   return {
     async sessao(){return chk(await sb.auth.getSession()).session},
     aoMudar(fn){sb.auth.onAuthStateChange((ev,s)=>fn(ev,s))},
@@ -167,13 +170,13 @@ function realDB(){
     async lerAvisoApp(id){try{await sb.from("avisos").update({lido_em:new Date().toISOString()}).eq("id",id)}catch(e){}},
     async souMatriz(){try{return chk(await sb.rpc("sou_da_matriz"))===true}catch(e){return false}},
     async meuVinculo(){const u=(await sb.auth.getUser()).data.user;const d=chk(await sb.from("membros").select("perfil,nome,foto_path,contratante_id,user_id,estabelecimento_id,contratantes(id,nome,sigla,situacao,plano_id,exige_2_etapas,design,planos(*))").eq("user_id",u.id).eq("ativo",true).limit(1));return d[0]?{...d[0],email:u.email}:null},
-    async ambientes(c){return chk(await sb.from("ambientes").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em"))},
+    async ambientes(c){return await todas(sb.from("ambientes").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em").order("id"))},
     async addAmbiente(c,nome,extra){return chk(await sb.from("ambientes").insert({contratante_id:c,nome,...(extra||{})}).select().single())},
     async unidades(c){try{return chk(await sb.from("estabelecimentos").select("id,nome,tipo").eq("contratante_id",c).order("criado_em"))}catch(e){return []}},
     async addEmpresa(d){return chk(await sb.from("empresas").insert(d).select("id,nome,tipo").single())},
-    async empresas(c){try{return chk(await sb.from("empresas").select("id,nome,tipo").eq("contratante_id",c).is("excluido_em",null).order("nome"))}catch(e){return []}},
+    async empresas(c){try{return await todas(sb.from("empresas").select("id,nome,tipo").eq("contratante_id",c).is("excluido_em",null).order("nome").order("id"))}catch(e){return []}},
     async renAmbiente(id,nome){return chk(await sb.from("ambientes").update({nome}).eq("id",id).select().single())},
-    async bens(c){const [L,V]=await Promise.all([sb.from("bens").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em",{ascending:false}),E.v&&E.v.perfil=="gestor"?sb.from("bens_valores").select("bem_id,valor").eq("contratante_id",c):Promise.resolve({data:[]})]);const B=chk(L);const M={};(V&&!V.error&&V.data||[]).forEach(x=>M[x.bem_id]=x.valor);if(V&&V.error&&!/bens_valores/.test(V.error.message||""))console.warn(V.error.message);return B.map(b=>b.id in M?{...b,valor:M[b.id]}:b)},
+    async bens(c){const [L,V]=await Promise.all([todas(sb.from("bens").select("*").eq("contratante_id",c).eq("ativo",true).order("criado_em",{ascending:false}).order("id")).then(d=>({data:d}),e=>({error:{message:e.message}})),E.v&&E.v.perfil=="gestor"?todas(sb.from("bens_valores").select("bem_id,valor").eq("contratante_id",c).order("bem_id")).then(d=>({data:d}),e=>({data:[],error:{message:e.message}})):Promise.resolve({data:[]})]);const B=chk(L);const M={};(V&&!V.error&&V.data||[]).forEach(x=>M[x.bem_id]=x.valor);if(V&&V.error&&!/bens_valores/.test(V.error.message||""))console.warn(V.error.message);return B.map(b=>b.id in M?{...b,valor:M[b.id]}:b)},
     async addBem(b){const {valor,...d}=b;const r=chk(await sb.from("bens").insert(d).select().single());if(valor!=null&&valor!==""&&E.v&&E.v.perfil=="gestor"){const {error}=await sb.rpc("salvar_valor_bem",{p_bem:r.id,p_valor:Number(valor),p_origem:"cadastro"});if(error&&/salvar_valor_bem|schema cache|does not exist/i.test(error.message))await sb.from("bens").update({valor:Number(valor)}).eq("id",r.id);r.valor=Number(valor)}return r},
     async solicitarBaixa(b,cl,m,d,o){const r=await sb.rpc("solicitar_baixa",{p_bem:b,p_classificacao:cl,p_motivo:m,p_destino:d,p_destino_obs:o||null,p_laudo:null});if(r.error)throw new Error(r.error.message);return r.data},async updBem(id,b){const {valor,...d}=b;const tem="valor" in b&&E.v&&E.v.perfil=="gestor";const r=Object.keys(d).length?chk(await sb.from("bens").update(d).eq("id",id).select().single()):{id};if(tem){const {error}=await sb.rpc("salvar_valor_bem",{p_bem:id,p_valor:valor===""||valor==null?null:Number(valor),p_origem:"edição"});if(error){if(/salvar_valor_bem|schema cache|does not exist/i.test(error.message))chk(await sb.from("bens").update({valor:valor===""||valor==null?null:Number(valor)}).eq("id",id));else throw new Error(traduz(error.message))}r.valor=valor===""?null:valor}return r},
     async enviarFoto(c,blob){const p=`${c}/${crypto.randomUUID()}.jpg`;chk(await sb.storage.from("fotos-bens").upload(p,blob,{contentType:"image/jpeg"}));return p},
@@ -763,7 +766,7 @@ const souRespCh=c=>c.responsavel_id&&c.responsavel_id==meuId();
 /* ---- dados ---- */
 function realMan(){const chk=({data,error})=>{if(error)throw new Error(traduz(error.message));return data};return {
   async chs(c){return chk(await sb.from("chamados").select("*").eq("contratante_id",c).is("excluido_em",null).order("aberto_em",{ascending:false}).limit(400))},
-  async mems(c){try{return chk(await sb.from("membros").select("user_id,nome,perfil,estabelecimento_id,ativo").eq("contratante_id",c).eq("ativo",true))}catch(e){return []}},
+  async mems(c){try{return await todas(sb.from("membros").select("user_id,nome,perfil,estabelecimento_id,ativo").eq("contratante_id",c).eq("ativo",true).order("user_id"))}catch(e){return []}},
   async eventosCh(id){return chk(await sb.from("chamado_eventos").select("*").eq("chamado_id",id).order("id"))},
   async fotosCh(id){return chk(await sb.from("chamado_fotos").select("*").eq("chamado_id",id).order("id"))},
   async ajudantes(id){try{return chk(await sb.from("chamado_ajudantes").select("*").eq("chamado_id",id))}catch(e){return []}},

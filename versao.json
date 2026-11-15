@@ -1,1 +1,1 @@
-{"app": "0.3.24", "gestor": "0.9.33", "matriz": "0.3.14", "novidade": "Mapa do Brasil: empresas contratadas (locadoras, assistência, calibração) e filiais aparecem sozinhas ao serem cadastradas com cidade e UF."}
+{"app": "0.3.25", "gestor": "0.9.34", "matriz": "0.3.15", "novidade": "Correção importante: listas grandes (mais de 1.000 bens, chamados ou serviços) agora vêm completas, buscadas em páginas."}

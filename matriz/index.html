@@ -142,7 +142,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.14"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.15"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -163,6 +163,8 @@ function realDB(){
   sb=supabase.createClient(CONFIG.url,CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"atalaia-matriz"}});
   const chk=({data,error})=>{if(error)throw new Error(traduz(error.message));return data};
   const rpc=async(f,a)=>chk(await sb.rpc(f,a||{}));
+/* rpc que devolve lista: busca em páginas (o servidor devolve no máximo 1.000 linhas por vez) */
+const rpcTodas=async(f,a)=>{const T=1000;let out=[],i=0;for(;;){const r=await sb.rpc(f,a||{}).range(i,i+T-1);const d=chk(r)||[];if(!Array.isArray(d))return d;out=out.concat(d);if(d.length<T||out.length>=100000)break;i+=T}return out};
   return {
     async sessao(){return chk(await sb.auth.getSession()).session},
     async entrar(e,s){return chk(await sb.auth.signInWithPassword({email:e,password:s}))},
@@ -174,7 +176,7 @@ function realDB(){
     async verificar(id,code){return chk(await sb.auth.mfa.challengeAndVerify({factorId:id,code}))},
     souMatriz:()=>rpc("sou_da_matriz"),
     indicadores:()=>rpc("matriz_indicadores"),
-    contratantes:()=>rpc("matriz_contratantes"),
+    contratantes:()=>rpcTodas("matriz_contratantes"),
     alterarPlano:(s,p)=>rpc("matriz_alterar_plano",{p_sigla:s,p_plano:p}),
     alterarSituacao:(s,v)=>rpc("matriz_alterar_situacao",{p_sigla:s,p_situacao:v}),
     exigir2:(s,v)=>rpc("matriz_exigir_2_etapas",{p_sigla:s,p_exigir:v}),
@@ -193,7 +195,7 @@ function realDB(){
     registrar:(a,d)=>rpc("matriz_registrar",{p_acao:a,p_detalhe:d||null}).catch(()=>{}),
     meusAcessos:()=>rpc("matriz_meus_acessos"),
     infra:()=>rpc("matriz_infra"),
-    mapa:()=>rpc("matriz_mapa"),
+    mapa:()=>rpcTodas("matriz_mapa"),
     localEmpresa:(id,c,u)=>rpc("matriz_local_empresa",{p_contratante:id,p_cidade:c||null,p_uf:u||null}),
     interessados:async()=>chk(await sb.from("interessados").select("*").order("atualizado_em",{ascending:false})),
     salvarInteressado:async(d)=>d.id?chk(await sb.from("interessados").update({...d,atualizado_em:new Date().toISOString()}).eq("id",d.id).select().single()):chk(await sb.from("interessados").insert(d).select().single()),
