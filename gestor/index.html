@@ -215,7 +215,7 @@ label.f{display:grid;gap:5px;font-weight:600;font-size:.85rem;margin-bottom:10px
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.34"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.36"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -295,7 +295,7 @@ async function todas(q,max){const T=1000;let out=[],i=0;max=max||200000;for(;;){
     async excluir(t,id,m){return chk(await sb.rpc("excluir_item",{p_tabela:t,p_id:id,p_motivo:m}))},
     async desfazer(t,id){return chk(await sb.rpc("desfazer_exclusao",{p_tabela:t,p_id:id}))},
     async restaurar(t,id){return chk(await sb.rpc("restaurar_item",{p_tabela:t,p_id:id}))},
-    async excluidos(c){return chk(await sb.rpc("gestor_excluidos",{p_c:c}))},
+    async excluidos(c){return await todas(sb.rpc("gestor_excluidos",{p_c:c}),20000)},
     async excluidosUnidade(c){return chk(await sb.rpc("gestor_excluidos_por_unidade",{p_c:c,p_dias:30}))},
     async historico(c){return chk(await sb.from("historico").select("*").eq("contratante_id",c).order("id",{ascending:false}).limit(300))},
     async programados(c){return await todas(sb.from("servicos_programados").select("*").eq("contratante_id",c).is("excluido_em",null).order("proxima").order("id"))},
@@ -367,7 +367,7 @@ async function todas(q,max){const T=1000;let out=[],i=0;max=max||200000;for(;;){
     async avisos(){return chk(await sb.from("avisos").select("*").order("criado_em",{ascending:false}).limit(50))},
     async lerAviso(id){return chk(await sb.from("avisos").update({lido_em:new Date().toISOString()}).eq("id",id))},
     async salvarMinhaFoto(c,blob){const p=`${c}/usuarios/${E.uid}-${Date.now()}.jpg`;chk(await sb.storage.from("fotos-bens").upload(p,blob,{contentType:"image/jpeg"}));chk(await sb.rpc("salvar_minha_foto",{p_c:c,p_path:p}));return p},
-    async situacaoTermos(c){return chk(await sb.rpc("situacao_termos",{p_c:c}))},
+    async situacaoTermos(c){return await todas(sb.rpc("situacao_termos",{p_c:c}),20000)},
     async gerarTermo(a,n,f,ct){return chk(await sb.rpc("gerar_termo",{p_ambiente:a,p_nome:n,p_funcao:f||null,p_contato:ct||null}))},
     async termo(id){return chk(await sb.from("termos").select("*").eq("id",id).single())},
     async termosAmb(a){return chk(await sb.from("termos").select("id,numero,responsavel_nome,situacao,gerado_em,assinado_em,substituido_em").eq("ambiente_id",a).order("gerado_em",{ascending:false}))},
@@ -610,7 +610,7 @@ function render(){
   const c=E.v.contratantes,item=MENU.find(m=>m[0]==E.pag);
   $("#app").innerHTML=`${DEMO?`<div style="background:var(--amb);color:#1d1f23;text-align:center;font-size:.8rem;font-weight:700;padding:4px">MODO DEMONSTRAÇÃO · dados fictícios</div>`:""}<div class="shell"><div class="veu ${E.menuAberto?"aberto":""}" onclick="E.menuAberto=false;render()"></div><aside class="${E.menuAberto?"aberto":""}">
    <div class="brand"><div class="lg">${E.logoUrl?`<img src="${esc(E.logoUrl)}" alt="">`:LOGO}</div><b>${esc(c.nome)}</b><span>Atalaia System · ${esc(PL().nome.replace("Atalaia ",""))}</span></div>
-   <nav class="menu">${MENU.filter(m=>!(m[3]&&m[3].gestor&&!GESTOR())&&!(CLIENTE()&&m[0]!="sep"&&!CLI_PAGS.has(m[0]))).map(m=>m[0]=="sep"?`<div class="sep"></div>`:`<button aria-current="${E.pag==m[0]||(m[0]=="monit"&&E.pag=="ambiente")}" onclick="ir('${m[0]}')">${ic(m[1])}<span>${m[0]=="unidades"&&PRESTADORA()?(GESTOR()?"Empresa e clientes":"Meu cliente"):m[3]&&m[3].nomeAdm&&!GESTOR()?m[3].nomeAdm:m[2]}</span>${m[3]&&m[3].f&&!TEM(m[3].f)?`<span class="lk" title="Disponível nos planos pagos">🔒</span>`:""}</button>`).join("")}</nav>
+   <nav class="menu">${MENU.filter(m=>!(m[3]&&m[3].gestor&&!GESTOR())&&!(CLIENTE()&&m[0]!="sep"&&!CLI_PAGS.has(m[0]))&&!menuOculto(m[0])).map(m=>m[0]=="sep"?`<div class="sep"></div>`:`<button aria-current="${E.pag==m[0]||(m[0]=="monit"&&E.pag=="ambiente")}" onclick="ir('${m[0]}')">${ic(m[1])}<span>${m[0]=="unidades"&&PRESTADORA()?(GESTOR()?"Empresa e clientes":"Meu cliente"):m[3]&&m[3].nomeAdm&&!GESTOR()?m[3].nomeAdm:(rotPerfil(m[0])||m[2])}</span>${m[3]&&m[3].f&&!TEM(m[3].f)?`<span class="lk" title="Disponível nos planos pagos">🔒</span>`:""}</button>`).join("")}</nav>
    <div class="sep" style="height:1px;background:var(--line);margin:12px 4px"></div><button class="btn ghost sm" style="margin:0 8px 8px" onclick="ir('avisos')">🔔 Avisos e alertas${nSino()?` <b style="background:var(--bad);color:#fff;border-radius:99px;padding:0 6px">${nSino()}</b>`:""}</button><p class="note" style="padding:0 8px">${esc(E.v.nome)}<br><b>${NOMEP[E.v.perfil]||esc(E.v.perfil)}</b>${E.v.perfil!="gestor"?` · ${esc(minhaUnidade())}`:" · empresa toda"}</p><div style="padding:8px"><button class="btn ghost sm" onclick="sair()">Sair</button></div></aside>
    <main><div class="topo"><button class="btn sm so-cel" onclick="E.menuAberto=true;render()" aria-label="Abrir o menu">☰ Menu</button><span class="note">Atalaia System · Sistema de Gestão de Patrimônio e Manutenção</span>
    ${E.pilha&&E.pilha.length?`<button class="btn ghost sm" onclick="voltarPag()" title="Voltar para a tela anterior">← Voltar</button>`:""}
@@ -802,11 +802,24 @@ function pgCfg(){
   <div style="display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap">${tabs.map(([k,t])=>`<button onclick="E.cfgTab='${k}';render()" style="background:none;border:0;border-bottom:3px solid ${E.cfgTab==k?"var(--client)":"transparent"};padding:8px 12px;font-weight:700;cursor:pointer;color:${E.cfgTab==k?"var(--ink)":"var(--muted)"}">${t}</button>`).join("")}</div>
   <div style="display:flex;flex-wrap:wrap;gap:0"></div>${E.cfgTab=="dados"?cfgDados():E.cfgTab=="design"?cfgDesign():E.cfgTab=="sla"?cfgSla():E.cfgTab=="np"?cfgNp():E.cfgTab=="av"?cfgAv():E.cfgTab=="auto"?cfgAuto():E.cfgTab=="mod"?cfgMod():E.cfgTab=="gr"?cfgGr():E.cfgTab=="pf"?cfgPf():E.cfgTab=="lgpd"?cfgLgpd():E.cfgTab=="conta"?cfgConta():cfgAcessos()}`;
 }
+/* ---------------- Perfil do menu por segmento (item 87) · esconde, nunca apaga ---------------- */
+const PERFIS={completo:{n:"Completo",d:"Todas as funções. Indicado para hospitais e clínicas.",ocultar:[],rot:{}},
+ climatizacao:{n:"Climatização",d:"Para empresas de ar-condicionado e refrigeração: aparelhos, chamados, PMOC, preventivas, qualidade do ar, recargas de gás e relatórios. Esconde radiologia/odontologia, tecnovigilância, termos e transferências.",ocultar:["areas","tecno","termos","mov"],rot:{cal:"Manutenções (preventiva e corretiva)",cad:"Cadastros (aparelhos e ambientes)",emp:"Fornecedores e parceiros",subst:"Substituição de aparelhos"}},
+ predial:{n:"Predial / Facilities",d:"Para condomínios, escolas, prédios e facilities: manutenção predial, climatização, rondas, chamados e estoque. Esconde tecnovigilância.",ocultar:["tecno"],rot:{cal:"Manutenções e inspeções",areas:"Manutenção predial e áreas técnicas"}},
+ escritorio:{n:"Escritório / Comércio",d:"Para escritórios, lojas e advocacias: patrimônio, etiquetas, chamados, termos e relatórios. Esconde radiologia/odontologia, tecnovigilância, substituição e treinamentos.",ocultar:["areas","tecno","subst","trein"],rot:{cal:"Manutenções"}}};
+function perfilAuto(){const g=((E.v&&E.v.contratantes&&E.v.contratantes.segmento)||"").toLowerCase();if(/climat|refrig|ar.?condic|hvac/.test(g))return "climatizacao";if(/condom|escola|predial|facilit|prédio|predio|shopping|hotel/.test(g))return "predial";if(/escrit|comérc|comerc|loja|advoc|jur[ií]d/.test(g))return "escritorio";return "completo"}
+function perfilMenu(){const d=(E.v&&E.v.contratantes&&E.v.contratantes.design)||{};return PERFIS[d.perfil]?d.perfil:perfilAuto()}
+function menuOculto(k){const d=(E.v&&E.v.contratantes&&E.v.contratantes.design)||{};return !d.vertudo&&PERFIS[perfilMenu()].ocultar.includes(k)}
+function rotPerfil(k){return PERFIS[perfilMenu()].rot[k]}
+function perfilOpcHTML(d){const at=PERFIS[d.perfil]?d.perfil:perfilAuto();
+  return `<div class="f" style="margin-bottom:14px"><b>Perfil do menu (segmento)</b> <span class="muted">· mostra só o que a empresa usa; nada é apagado</span>
+   <div style="display:grid;gap:8px;margin-top:8px">${Object.entries(PERFIS).map(([k,p])=>`<label style="display:flex;gap:10px;align-items:flex-start;border:1px solid ${at==k?"var(--client)":"var(--line)"};border-radius:10px;padding:10px;cursor:pointer"><input type="radio" name="pfm" style="width:auto;margin-top:3px" ${at==k?"checked":""} ${GESTOR()?"":"disabled"} onchange="E.rascunho.perfil='${k}';render()"><span><b>${p.n}</b>${!d.perfil&&k==at?' <span class="note">(sugerido pelo segmento)</span>':""}<br><span class="note">${p.d}</span></span></label>`).join("")}</div>
+   <label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:.9rem"><input type="checkbox" style="width:auto" ${d.vertudo?"checked":""} ${GESTOR()?"":"disabled"} onchange="E.rascunho.vertudo=this.checked;render()"> Mostrar todas as funções no menu, mesmo as escondidas pelo perfil</label></div>`}
 function cfgDesign(){
   const d=E.rascunho||(E.rascunho={...(E.v.contratantes.design||{})}),cor=d.cor||(PALS[d.paleta||PAL_PADRAO]||PALS.classico)[2].pri,cw=contraste(cor,"#ffffff"),cb=contraste(cor,"#1d1f23");
   const ok=Math.max(cw,cb)>=4.5;
   return `<div class="grid g2"><div class="card"><h2>Design do painel</h2><p class="note">Muda as cores, a fonte e a logo do Painel do Gestor para todos os usuários da empresa.${ADMIN()?"":" Somente administradores podem alterar."}</p>
-   ${estiloOpcHTML(d)}
+   ${perfilOpcHTML(d)}${estiloOpcHTML(d)}
    <div class="f" style="margin-bottom:14px"><b>Paleta de cores do painel e do app</b> <span class="muted">· menu, topo, indicadores e gráficos</span>
     ${["Claras","Escuras"].map(g=>`<div class="note" style="margin-top:8px;font-weight:700">${g}</div><div class="palc">${Object.entries(PALS).filter(([k,v])=>v[1]==g).map(([k,[n,,p]])=>`<button type="button" aria-pressed="${(d.paleta||PAL_PADRAO)==k}" onclick="E.rascunho.paleta='${k}';previa();render()" title="${n}"><span class="pv"><i style="background:linear-gradient(180deg,${p.s1},${p.s2});${p.s1=="#ffffff"?"border-right:1px solid #e3e0da":""}"></i><div style="background:${p.bg}"><span class="hd" style="background:linear-gradient(120deg,${p.h1},${p.h2})"></span><span class="ks"><span style="background:${p.k1}"></span><span style="background:${p.k2}"></span><span style="background:${p.k3}"></span><span style="background:${p.k4}"></span></span></div></span><b>${n}${k==PAL_PADRAO?" · padrão":""}</b></button>`).join("")}</div>`).join("")}</div>
    <div class="f" style="margin-bottom:12px"><b>Cor principal</b> <span class="muted">· opcional: a cor da sua marca nos botões e no topo. ${d.cor?`<button type="button" class="btn ghost sm" onclick="delete E.rascunho.cor;previa();render()">Usar a cor da paleta</button>`:"Sem cor própria: usa a da paleta."}</span> <span class="muted">· atual ${cor}</span>${paletaHTML(cor,"E.rascunho.cor='COR';render()")}<div class="pal-outra">Qualquer outra cor: <input type="color" value="${cor}" onchange="E.rascunho.cor=this.value;render()" style="width:56px;height:40px;padding:2px"></div></div>
@@ -2358,7 +2371,7 @@ const POPS=[
  ["Nada é apagado de verdade; só o Gestor vê esta tela."],
  "—"],
 ["POP-26","cfg","Configurar o sistema","Gestor","Ajustar o sistema à empresa: dados, aparência, prazos, numeração, avisos e automações.","Na implantação e quando uma regra da empresa mudar.",
- ["Abra Configurações.","Dados da empresa: complete os dados que saem nos documentos e escolha o tipo de empresa (própria ou prestadora).","Design: cores, logotipo e estilo do painel.","Prazos de SLA: prazos de atendimento e solução por prioridade.","Número de patrimônio: padrão do número antes do primeiro lote de etiquetas.","Avisos e automações: e-mails, expediente, feriados, plantão e regras automáticas.","Salve cada aba."],
+ ["Abra Configurações.","Dados da empresa: complete os dados que saem nos documentos e escolha o tipo de empresa (própria ou prestadora).","Design: perfil do menu por segmento (Completo, Climatização, Predial/Facilities ou Escritório/Comércio; esconde o que a empresa não usa, sem apagar), cores, logotipo e estilo do painel.","Prazos de SLA: prazos de atendimento e solução por prioridade.","Número de patrimônio: padrão do número antes do primeiro lote de etiquetas.","Avisos e automações: e-mails, expediente, feriados, plantão e regras automáticas.","Salve cada aba."],
  "Cada alteração fica no registro de acessos.",
  ["Mudanças de prazo valem para os chamados abertos depois da mudança."],
  "—"],
