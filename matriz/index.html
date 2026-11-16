@@ -131,6 +131,9 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
 .gauges{display:none}:root[data-vidro]:not([data-vidro=""]) .gauges{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:14px}
 .gauges .card{margin:0;text-align:center}.gauges small{display:block;color:var(--mut);margin-top:2px}
 .vdsw{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;margin-top:8px}.vdsw button{border:2px solid var(--line);border-radius:12px;padding:0;overflow:hidden;cursor:pointer;background:none;color:inherit;text-align:left}.vdsw button[aria-pressed="true"]{border-color:var(--amb);box-shadow:0 0 0 2px var(--amb)}.vdsw i{display:block;height:46px}.vdsw span{display:block;padding:6px 8px;font-size:.8rem;font-weight:700}
+
+.campo-erro{outline:2px solid #c0392b!important;outline-offset:1px;background:#fff5f4!important}
+.msg.err.fx{margin:8px 0 12px;font-weight:600}
 </style>
 </head>
 <body>
@@ -142,7 +145,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.15"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.16"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -260,6 +263,30 @@ function mockDB(){
 
 /* ---------------- Estado e telas ---------------- */
 const E={tela:"carregando",aba:"visao",msg:null,ind:null,cts:[],filtro:"todos",insc:null,email:"",acessos:[],infra:null,leads:[],tks:[],lead:null,tk:null,tf:"abertos",hc:null,planos:[],ads:[],recAd:0,ficha:null,fichaDia:[],fichaHist:[],det:null,hist:[],editPl:null};
+/* Aviso de erro sem perder o que foi digitado: mostra a mensagem no alto da janela (ou da página),
+   marca o campo com problema e devolve os botões. Não redesenha a tela. */
+function falha(msg,obj){msg=String(msg||"Não foi possível concluir.");if(obj)obj.erro=msg;else E.msg=["err",msg];
+  const box=document.querySelector(".modal .card")||document.querySelector("main")||document.querySelector("#app");if(!box)return;
+  let el=box.querySelector(".msg.err.fx");if(!el){el=document.createElement("div");el.className="msg err fx";el.setAttribute("role","alert");const fm=box.querySelector("form");const h=box.querySelector("h2,h1");if(fm&&fm.parentNode)fm.parentNode.insertBefore(el,fm);else if(h&&h.parentNode)h.parentNode.insertBefore(el,h.nextSibling);else box.prepend(el)}
+  box.querySelectorAll(".msg.err:not(.fx)").forEach(x=>{if(x.textContent.trim()==msg.trim())x.remove()});
+  el.innerHTML="⚠ "+String(msg).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))+'<div style="font-size:.8rem;margin-top:4px;opacity:.85">O que você já preencheu continua na tela. Corrija e tente de novo.</div>';
+  box.querySelectorAll("button[disabled]").forEach(b=>{const t=b.textContent.trim();if(/…$/.test(t)){b.disabled=false;b.textContent=t.replace(/ando…$/,"ar").replace(/endo…$/,"er").replace(/indo…$/,"ir").replace(/…$/,"")}});
+  box.querySelectorAll(".campo-erro").forEach(x=>x.classList.remove("campo-erro"));
+  const low=msg.toLowerCase();let alvo=null;
+  const LB=[...box.querySelectorAll("label")].map(l=>({l,f:l.querySelector("input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea"),t:(l.childNodes[0]&&l.childNodes[0].textContent||"").replace(/\*|\(.*?\)|:/g,"").trim().toLowerCase()})).filter(x=>x.f);
+  const STOP=/^(valor|inválido|invalido|campo|escolha|escreva|preencha|informe|precisa|pelo|menos|letras)$/;
+  const ruim=f=>{const v=String(f.value||"").trim(),lt=((f.closest("label")||{}).textContent||"").toLowerCase();return (f.required&&!v)||(v&&isNaN(Number(v.replace(",",".")))&&(f.type=="number"||/numeric|decimal/.test(f.inputMode||"")||/btu|\(kg\)|\(v\)|m²|ocupantes|r\$|meses|anos|qtd|°c/.test(lt)))};
+  alvo=(LB.find(x=>x.t.length>=4&&!STOP.test(x.t)&&low.includes(x.t))||{}).f||null;
+  if(!alvo)box.querySelectorAll("details").forEach(d=>{if(alvo)return;const sm=(d.querySelector("summary")||{}).textContent||"";const k=sm.replace(/[^\wÀ-ú ]/g," ").trim().toLowerCase().split(/\s+/).find(w=>w.length>=6);if(k&&low.includes(k)){d.open=true;alvo=[...d.querySelectorAll("input,select,textarea")].find(ruim)||null}});
+  if(!alvo){alvo=(LB.find(x=>x.t.split(/\s+/).filter(w=>w.length>=6&&!STOP.test(w)).some(w=>low.includes(w)))||{}).f||null}
+  if(!alvo)alvo=(LB.find(x=>ruim(x.f))||{}).f||null;
+  if(!alvo)alvo=[...box.querySelectorAll("input[required],select[required],textarea[required]")].find(f=>!String(f.value||"").trim());
+  if(alvo){alvo.classList.add("campo-erro");alvo.addEventListener("input",()=>alvo.classList.remove("campo-erro"),{once:true})}
+  el.scrollIntoView({behavior:"smooth",block:"center"});if(alvo)setTimeout(()=>{try{alvo.focus({preventScroll:true})}catch(e){}},400)}
+
+/* rede de segurança: qualquer erro não tratado vira aviso na tela, sem apagar o formulário */
+window.addEventListener("unhandledrejection",ev=>{try{const m=ev.reason&&ev.reason.message||String(ev.reason||"");if(m&&!/aborted|Load failed|NetworkError when attempting/i.test(m)){falha(typeof traduz=="function"?traduz(m):m,E.modal||null)}}catch(e){}});
+window.addEventListener("error",ev=>{try{const m=ev.error&&ev.error.message||"";if(m&&/inválid|Preencha|Escolha|Escreva|obrigat|Informe/i.test(m))falha(m,E.modal||null)}catch(e){}});
 function render(){
   const h={login:telaLogin,mfa:telaMfa,ativar:telaAtivar,negado:telaNegado,painel:telaPainel}[E.tela];
   $("#app").innerHTML=(DEMO?`<div class="demo">MODO DEMONSTRAÇÃO · dados fictícios</div>`:"")+(E.tela=="painel"?"":cab())+(h?h():`<div class="center"><p class="muted" style="text-align:center">Carregando…</p></div>`);
@@ -564,8 +591,8 @@ function abaFicha(){const c=E.cts.find(x=>x.id==E.ficha);if(!c)return `<p class=
   <button class="btn amb">Trocar Gestor principal</button></form>
  <div class="g2"><div class="card"><h2>Chamados de suporte</h2>${tk.length?`<div class="tw"><table><tr><th>Nº</th><th>Assunto</th><th>Situação</th></tr>${tk.map(t=>`<tr><td>${t.id}</td><td><a href="#" onclick="event.preventDefault();E.tk=${t.id};irAba('atend')">${esc(t.assunto)}</a></td><td>${SITC[t.situacao]}</td></tr>`).join("")}</table></div>`:`<p class="muted">Nenhum chamado.</p>`}</div>
  <div class="card"><h2>Histórico de alterações</h2>${E.fichaHist.length?`<div class="tw"><table><tr><th>Data</th><th>Ação</th><th>Detalhe</th></tr>${E.fichaHist.map(r=>`<tr><td>${dh(r.criado_em)}</td><td>${esc(r.acao)}</td><td>${esc((r.detalhe||"").slice(0,60))}</td></tr>`).join("")}</table></div>`:`<p class="muted">Sem alterações registradas.</p>`}</div></div>`}
-async function trocarPrincipal(s){const e=$("#tpe").value.trim();if(!confirm("Confirmar a troca do Gestor principal de "+s+" para "+e+"?"))return;try{const cv=await convite(e,$("#tpn").value.trim(),"cliente");const r=await DB.trocarPrincipal(s,e,$("#tpn").value.trim(),$("#tpm").value.trim(),$("#tpi").checked);E.msg=["ok",r+cv];await recarregar()}catch(er){E.msg=["err",er.message];render()}}
-function abaEquipeM(){if(!E.eqm){E.eqm=[];Promise.all([DB.equipeM(),DB.souPrincipalM()]).then(([l,p])=>{E.eqm=l||[];E.eqmP=!!p;render()}).catch(e=>{E.msg=["err",e.message];render()})}const P=E.eqmP;
+async function trocarPrincipal(s){const e=$("#tpe").value.trim();if(!confirm("Confirmar a troca do Gestor principal de "+s+" para "+e+"?"))return;try{const cv=await convite(e,$("#tpn").value.trim(),"cliente");const r=await DB.trocarPrincipal(s,e,$("#tpn").value.trim(),$("#tpm").value.trim(),$("#tpi").checked);E.msg=["ok",r+cv];await recarregar()}catch(er){falha(er.message)}}
+function abaEquipeM(){if(!E.eqm){E.eqm=[];Promise.all([DB.equipeM(),DB.souPrincipalM()]).then(([l,p])=>{E.eqm=l||[];E.eqmP=!!p;render()}).catch(e=>{falha(e.message)})}const P=E.eqmP;
  return cab2("Equipe da Matriz","Pessoas que usam este painel: titular, sócio e ajudantes")+
  `<div class="card"><h2>Pessoas</h2><p class="sub">O <b>titular (★ Matriz principal)</b> nunca é inativado e é o único que inclui, inativa e reativa pessoas. Os demais usam o painel normalmente (cadastrar empresas e gestores, planos, atendimento), sempre com verificação em duas etapas. Inativado perde o acesso na hora; o histórico fica.</p>
   <div class="tw"><table><tr><th>Nome</th><th>E-mail</th><th>Situação</th><th>Desde</th><th></th></tr>${E.eqm.map(m=>`<tr><td><b>${esc(m.nome)}</b>${m.principal?` <span class="pill">★ Matriz principal</span>`:""}</td><td>${esc(m.email||"")}</td><td>${m.ativo?"Ativo":`Inativo${m.motivo_inativacao?`<div class="muted">${esc(m.motivo_inativacao)}</div>`:""}`}</td><td>${new Date(m.criado_em).toLocaleDateString("pt-BR")}</td>
@@ -574,8 +601,8 @@ function abaEquipeM(){if(!E.eqm){E.eqm=[];Promise.all([DB.equipeM(),DB.souPrinci
   <div class="msg info">O sistema envia na hora um <b>e-mail de convite</b> do Atalaia System para a pessoa criar a própria senha (o link vale por pouco tempo; se vencer, faça de novo que vai um link novo). Se ela já tem login, só recebe o acesso. Depois de criar a senha, ela entra em <b>app.atalaiasystem.com.br/matriz</b> e ativa a verificação em duas etapas.</div>
   <div class="row"><label>E-mail *<input id="eqe" type="email" required></label><label>Nome *<input id="eqn" required maxlength="80"></label></div>
   <button class="btn amb">Incluir na equipe</button></form>`:`<p class="muted">Só o titular inclui ou inativa pessoas da equipe.</p>`}`}
-async function addEquipeM(){try{const cv=await convite($("#eqe").value.trim(),$("#eqn").value.trim(),"matriz");E.msg=["ok",(await DB.addEquipeM($("#eqe").value.trim(),$("#eqn").value.trim()))+cv];E.eqm=null;render()}catch(er){E.msg=["err",er.message];render()}}
-async function sitEquipeM(u,a){let m=null;if(!a){m=prompt("Motivo da inativação (ex.: saiu da sociedade):");if(m===null)return}try{E.msg=["ok",await DB.situacaoEquipeM(u,a,m)];E.eqm=null;render()}catch(er){E.msg=["err",er.message];render()}}
+async function addEquipeM(){try{const cv=await convite($("#eqe").value.trim(),$("#eqn").value.trim(),"matriz");E.msg=["ok",(await DB.addEquipeM($("#eqe").value.trim(),$("#eqn").value.trim()))+cv];E.eqm=null;render()}catch(er){falha(er.message)}}
+async function sitEquipeM(u,a){let m=null;if(!a){m=prompt("Motivo da inativação (ex.: saiu da sociedade):");if(m===null)return}try{E.msg=["ok",await DB.situacaoEquipeM(u,a,m)];E.eqm=null;render()}catch(er){falha(er.message)}}
 function abaDadosM(){if(!E.dm){E.dm={};DB.dadosM().then(d=>{E.dm=d||{};render()}).catch(()=>{})}const d=E.dm,i=(k,t,m,x)=>`<label>${t}<input id="dm_${k}" maxlength="${m}" value="${esc(d[k]||"")}" ${x||""}></label>`;
  return cab2("Dados da Matriz","A própria Atalaia System: usados depois em cobrança, contratos, comunicados e rodapés")+
  `<form class="card" onsubmit="event.preventDefault();salvarDadosM()"><h2>Atalaia System</h2>
@@ -586,10 +613,10 @@ function abaDadosM(){if(!E.dm){E.dm={};DB.dadosM().then(d=>{E.dm=d||{};render()}
   <div class="row">${i("cep","CEP",9)}${i("logradouro","Rua / avenida (comercial)",150)}${i("numero","Número",20)}</div>
   <div class="row">${i("complemento","Complemento",80)}${i("bairro","Bairro",80)}${i("cidade","Cidade",80)}${i("uf","UF",2)}</div>
   <button class="btn amb">Salvar dados da Matriz</button></form>`}
-async function salvarDadosM(){const d={};["nome","razao_social","cnpj","email_contato","telefone","site","cep","logradouro","numero","complemento","bairro","cidade","uf"].forEach(k=>{d[k]=$("#dm_"+k).value.trim()});try{E.msg=["ok",await DB.salvarDadosM(d)];E.dm=await DB.dadosM();render()}catch(er){E.msg=["err",er.message];render()}}
+async function salvarDadosM(){const d={};["nome","razao_social","cnpj","email_contato","telefone","site","cep","logradouro","numero","complemento","bairro","cidade","uf"].forEach(k=>{d[k]=$("#dm_"+k).value.trim()});try{E.msg=["ok",await DB.salvarDadosM(d)];E.dm=await DB.dadosM();render()}catch(er){falha(er.message)}}
 /* ---------- Titular do sistema (privado: só o ★ Matriz principal) ---------- */
 function abaTitular(){if(!E.souP)return cab2("Titular do sistema","Quadro privado")+`<div class="msg err">Somente o titular do sistema (★ Matriz principal) vê este quadro.</div>`;
- if(!E.tit){E.tit={_c:1};DB.titularVer().then(d=>{E.tit=d||{};render()}).catch(e=>{E.tit=null;E.msg=["err",e.message];render()})}
+ if(!E.tit){E.tit={_c:1};DB.titularVer().then(d=>{E.tit=d||{};render()}).catch(e=>{E.tit=null;falha(e.message)})}
  const d=E.tit;if(d._c)return cab2("Titular do sistema","Quadro privado")+`<p class="muted">Carregando…</p>`;
  const v=k=>esc(d[k]||""),dt=k=>(d[k]||"").slice(0,10);
  return cab2("Titular do sistema","Quadro privado: comprova quem é o dono do Atalaia System")+
@@ -604,7 +631,7 @@ function abaTitular(){if(!E.souP)return cab2("Titular do sistema","Quadro privad
   ${d.atualizado_em?`<p class="muted">Última alteração: ${new Date(d.atualizado_em).toLocaleString("pt-BR")}</p>`:""}
   <button class="btn amb">Salvar dados do titular</button></form>`}
 async function salvarTitular(){const d={nome_completo:$("#ti_nome").value.trim(),cpf:$("#ti_cpf").value.trim(),inicio_sistema:$("#ti_ini").value,inpi_registro:$("#ti_inpi").value.trim(),inpi_data:$("#ti_inpid").value,observacoes:$("#ti_obs").value.trim()};
- try{E.msg=["ok",await DB.salvarTitular(d)];E.tit=null;render()}catch(er){E.msg=["err",er.message];render()}}
+ try{E.msg=["ok",await DB.salvarTitular(d)];E.tit=null;render()}catch(er){falha(er.message)}}
 /* convite por e-mail (item 59): cria o login e manda o e-mail; se a função ainda não estiver publicada, segue como antes */
 async function convite(email,nome,destino){try{const r=await DB.convidarM(email,nome,destino);return " "+(r&&r.mensagem||"Convite enviado.")}catch(e){if(e.semFuncao)return "";throw e}}
 /* ---------- Avisos (item 63): pessoa nova cadastrada + ações da equipe (só o titular) ---------- */
@@ -618,7 +645,7 @@ function abaAvisosM(){const v=vistoAv();setTimeout(()=>{try{localStorage.setItem
   <div class="tw"><table><tr><th>Quando</th><th>Empresa</th><th>Unidade</th><th>Pessoa nova</th><th>Cadastrada por</th></tr>${c.map(a=>`<tr><td>${dh(a.criado_em)}${novo(a)}</td><td>${esc(a.empresa||"—")}</td><td>${esc(a.unidade||"—")}</td><td>${esc(PERFIL_R[a.perfil_novo]||a.perfil_novo)}${a.nome_novo?` · ${esc(a.nome_novo)}`:""}</td><td>${esc(PERFIL_R[a.por_perfil]||a.por_perfil||"—")}${a.por_nome?` · ${esc(a.por_nome)}`:""}${a.para=="matriz_principal"?` <span class="pill">só para você</span>`:""}</td></tr>`).join("")||`<tr><td colspan="5" class="muted">Nenhum cadastro novo nos últimos dias.</td></tr>`}</table></div></div>
  ${E.souP?`<div class="card"><h2>🔒 O que a equipe da Matriz fez</h2><p class="sub">Só você (★ titular) vê esta lista. Tudo o que um gerente ou ajudante da Matriz faz (cadastrar, alterar, encerrar, inativar, excluir) aparece aqui. Em destaque, o que muda situação, plano ou acesso.</p>
   <div class="tw"><table><tr><th>Quando</th><th>Quem</th><th>O que fez</th><th>Empresa / detalhe</th></tr>${t.map(a=>`<tr${a.importante?' style="background:color-mix(in srgb,var(--bad) 9%,transparent)"':""}><td>${dh(a.criado_em)}${novo(a)}</td><td>${esc(a.quem||"—")}</td><td>${a.importante?"⚠️ ":""}${esc(a.acao)}</td><td>${esc([a.empresa,a.detalhe].filter(Boolean).join(" · ")||"—")}</td></tr>`).join("")||`<tr><td colspan="4" class="muted">A equipe ainda não fez nenhuma ação.</td></tr>`}</table></div></div>`:""}`}
-async function salvarFicha(s){try{await DB.atualizarContratante(s,$("#fn").value,$("#fg").value,$("#fc").value);toast("Dados salvos.");await recarregar()}catch(e){E.msg=["err",e.message];render()}}
+async function salvarFicha(s){try{await DB.atualizarContratante(s,$("#fn").value,$("#fg").value,$("#fc").value);toast("Dados salvos.");await recarregar()}catch(e){falha(e.message)}}
 
 /* ---------- planos e limites ---------- */
 function abaPlanos(){const ed=E.editPl;
@@ -630,7 +657,7 @@ function abaPlanos(){const ed=E.editPl;
  <div class="g2"><div class="card"><h2>Regras dos planos</h2><ul style="margin:0;padding-left:18px;font-size:.9rem"><li>Free: 1 empresa, 1 ambiente, 50 bens, 1 usuário, 1 GB, só cadastro de bens, sem número de patrimônio.</li><li>Limites somam a empresa e todas as filiais.</li><li>Cada limite pode crescer no máximo 50% com adicionais; acima disso, muda de plano.</li><li>Implantação: R$ 990 / 2.490 / 4.990 + R$ 290 por filial. Plano anual = 11 mensalidades.</li><li>Verificação em duas etapas só nos planos pagos.</li></ul></div>
  <div class="card"><h2>Empresas por plano</h2>${hbar(E.planos.map(p=>[p.nome,E.cts.filter(c=>c.plano_id==p.id&&c.situacao!="encerrado").length]))}</div></div>`}
 async function salvarPlano(id){const v=i=>Number($("#"+i).value);if(!confirm("Salvar os novos valores deste plano? Vale para todas as empresas do plano."))return;
- try{await DB.salvarPlano({id,preco:v("pp"),filiais:v("pf"),ambientes:v("pa"),bens:v("pb"),usuarios:v("pu"),gb:v("pg")});E.editPl=null;toast("Plano atualizado.");await recarregar()}catch(e){E.msg=["err",e.message];render()}}
+ try{await DB.salvarPlano({id,preco:v("pp"),filiais:v("pf"),ambientes:v("pa"),bens:v("pb"),usuarios:v("pu"),gb:v("pg")});E.editPl=null;toast("Plano atualizado.");await recarregar()}catch(e){falha(e.message)}}
 
 /* ---------- adicionais de uso ---------- */
 const TADD={filial:["Filial a mais",390,"+1 filial"],usuario:["Usuário a mais",39,"+1 usuário"],ambientes:["Pacote de 50 ambientes",90,"+50 ambientes"],bens:["Pacote de 1.000 bens",90,"+1.000 bens"],gb:["Pacote de 50 GB",49,"+50 GB de fotos"],ia:["Assistente com IA",190,"resumos e sugestões"],whatsapp:["Avisos por WhatsApp",0,"custo da mensagem + 20%"]};
@@ -644,8 +671,8 @@ function abaMods(){const at=E.ads.filter(a=>!a.fim),cN=id=>(E.cts.find(c=>c.id==
  <div class="card"><h2>Tabela de adicionais</h2><div class="tw"><table><tr><th>Adicional</th><th>O que acrescenta</th><th>Valor</th></tr>${Object.values(TADD).map(t=>`<tr><td>${t[0]}</td><td>${t[2]}</td><td>${t[1]?brl(t[1]):"custo + 20%"}</td></tr>`).join("")}</table></div></div></div>
  <div class="card tw" style="padding:6px 10px"><table><tr><th>Empresa</th><th>Adicional</th><th>Qtd.</th><th>Mensal</th><th>Desde</th><th>Situação</th><th></th></tr>
  ${E.ads.map(a=>`<tr><td>${esc(cN(a.contratante_id))}</td><td>${TADD[a.tipo]?.[0]||esc(a.tipo)}</td><td>${a.quantidade}</td><td>${brl(a.quantidade*a.valor_unit)}</td><td>${dh(a.inicio).slice(0,8)}</td><td>${a.fim?"Encerrado":pill("Ativo","var(--ok)")}</td><td>${a.fim?"":`<button class="btn ghost sm" onclick="encerrarAd(${a.id})">Encerrar</button>`}</td></tr>`).join("")||`<tr><td colspan="7" class="muted">Nenhum adicional contratado.</td></tr>`}</table></div>`}
-async function incluirAd(){try{await DB.incluirAdicional($("#as").value,$("#at").value,Number($("#aq").value),Number($("#av").value));toast("Adicional incluído.");await recarregar()}catch(e){E.msg=["err",e.message];render()}}
-async function encerrarAd(id){if(!confirm("Encerrar este adicional? O limite da empresa volta ao do plano."))return;try{await DB.encerrarAdicional(id);toast("Adicional encerrado.");await recarregar()}catch(e){E.msg=["err",e.message];render()}}
+async function incluirAd(){try{await DB.incluirAdicional($("#as").value,$("#at").value,Number($("#aq").value),Number($("#av").value));toast("Adicional incluído.");await recarregar()}catch(e){falha(e.message)}}
+async function encerrarAd(id){if(!confirm("Encerrar este adicional? O limite da empresa volta ao do plano."))return;try{await DB.encerrarAdicional(id);toast("Adicional encerrado.");await recarregar()}catch(e){falha(e.message)}}
 
 /* ---------- design do painel ---------- */
 const FONTES={sistema:["Padrão do sistema",'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',""],sora:["Sora (marca Atalaia)",'"Sora",system-ui,sans-serif',"Sora:wght@400;600;700;800"],archivo:["Archivo",'"Archivo",system-ui,sans-serif',"Archivo:wght@400;600;700;800"],inter:["Inter",'"Inter",system-ui,sans-serif',"Inter:wght@400;600;700;800"],source:["Source Sans 3",'"Source Sans 3",system-ui,sans-serif',"Source+Sans+3:wght@400;600;700;800"]};
@@ -730,7 +757,7 @@ function abaAcessos(){return `<h1>Registro de acessos da Matriz</h1><p class="su
 /* ---------------- Ações ---------------- */
 aplicarDesign(lerDesign());
 async function iniciar(){try{if(await DB.sessao()){await posLogin(false);return}}catch(e){E.msg=["err",e.message]}E.tela="login";render()}
-async function entrar(){E.msg=null;try{await DB.entrar($("#em").value.trim(),$("#se").value);await posLogin(true)}catch(e){E.msg=["err",e.message];render()}}
+async function entrar(){E.msg=null;try{await DB.entrar($("#em").value.trim(),$("#se").value);await posLogin(true)}catch(e){falha(e.message)}}
 async function posLogin(novo){
   const u=await DB.usuario();E.email=u?.email||"";E.meuNome=(u&&u.user_metadata&&(u.user_metadata.nome||u.user_metadata.full_name))||"";
   if(!(await DB.souMatriz())){E.tela="negado";render();return}
@@ -739,36 +766,36 @@ async function posLogin(novo){
   if(n.currentLevel!="aal2"){E.tela="ativar";E.insc=null;E.msg=null;render();try{E.insc=await DB.inscrever()}catch(e){E.msg=["err",e.message]}render();return}
   E.tela="painel";E.msg=null;render();if(novo)DB.registrar("entrou no painel");await recarregar();
 }
-async function confirmarMfa(){try{const f=(await DB.fatores()).find(x=>x.status=="verified");await DB.verificar(f.id,$("#otp").value.trim());await posLogin(true)}catch(e){E.msg=["err",e.message];render()}}
-async function confirmarAtivacao(){try{await DB.verificar(E.insc.id,$("#otp").value.trim());E.insc=null;toast("Verificação em duas etapas ativada.");await posLogin(true);DB.registrar("ativou a verificação em duas etapas")}catch(e){E.msg=["err",e.message];render()}}
+async function confirmarMfa(){try{const f=(await DB.fatores()).find(x=>x.status=="verified");await DB.verificar(f.id,$("#otp").value.trim());await posLogin(true)}catch(e){falha(e.message)}}
+async function confirmarAtivacao(){try{await DB.verificar(E.insc.id,$("#otp").value.trim());E.insc=null;toast("Verificação em duas etapas ativada.");await posLogin(true);DB.registrar("ativou a verificação em duas etapas")}catch(e){falha(e.message)}}
 async function recarregar(){try{[E.ind,E.cts,E.acessos,E.infra,E.leads,E.tks,E.planos,E.ads,E.recAd]=await Promise.all([DB.indicadores(),DB.contratantes(),DB.meusAcessos(),DB.infra(),DB.interessados(),DB.chamados(),DB.planos(),DB.adicionais(),DB.receitaAdicionais()]);E.souP=!!(await DB.souPrincipalM().catch(()=>false));await carregarAvisosM()}catch(e){E.msg=["err",e.message]}render()}
 function irAba(k){if(k!="titular")E.tit=null;if(E.aba!==k)E.hist.push(E.aba);if(E.hist.length>20)E.hist.shift();E.aba=k;E.msg=null;render();scrollTo(0,0)}
 function voltar(){E.aba=E.hist.pop()||"visao";E.msg=null;render();scrollTo(0,0)}
 async function sair(){await DB.sair();Object.assign(E,{tela:"login",msg:null,ind:null,cts:[],acessos:[],aba:"visao"});render()}
 async function trocarPlano(s,sel){const novo=sel.value,c=E.cts.find(x=>x.sigla==s);
   if(!confirm(`Trocar o plano de ${c.nome} de ${c.plano_nome} para ${PLANOS.find(p=>p[0]==novo)[1]}?`)){sel.value=c.plano_id;return}
-  try{await DB.alterarPlano(s,novo);toast("Plano alterado.");await recarregar()}catch(e){sel.value=c.plano_id;E.msg=["err",e.message];render()}}
+  try{await DB.alterarPlano(s,novo);toast("Plano alterado.");await recarregar()}catch(e){sel.value=c.plano_id;falha(e.message)}}
 async function trocarSituacao(s,sel){const c=E.cts.find(x=>x.sigla==s);if(!confirm(`Mudar a situação de ${c.nome} para "${SIT[sel.value]}"?`)){sel.value=c.situacao;return}
-  try{await DB.alterarSituacao(s,sel.value);toast("Situação alterada.");await recarregar()}catch(e){sel.value=c.situacao;E.msg=["err",e.message];render()}}
-async function exigir2(s,cb){try{await DB.exigir2(s,cb.checked);toast(cb.checked?"Duas etapas exigidas do gestor e dos administradores.":"Duas etapas opcionais.");await recarregar()}catch(e){cb.checked=!cb.checked;E.msg=["err",e.message];render()}}
+  try{await DB.alterarSituacao(s,sel.value);toast("Situação alterada.");await recarregar()}catch(e){sel.value=c.situacao;falha(e.message)}}
+async function exigir2(s,cb){try{await DB.exigir2(s,cb.checked);toast(cb.checked?"Duas etapas exigidas do gestor e dos administradores.":"Duas etapas opcionais.");await recarregar()}catch(e){cb.checked=!cb.checked;falha(e.message)}}
 function sugerirSigla(n){const el=$("#cs");if(el.dataset.mexeu)return;const p=n.normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase().replace(/[^A-Z ]/g,"").split(/\s+/).filter(x=>x.length>2||/^[A-Z]{2}$/.test(x));el.value=(p.map(x=>x[0]).join("")||n.slice(0,2)).slice(0,4).toUpperCase()}
 document.addEventListener("input",e=>{if(e.target.id=="cs")e.target.dataset.mexeu="1"});
 async function cadastrar(){
   const d={nome:$("#cn").value.trim(),sigla:$("#cs").value.trim().toUpperCase(),segmento:$("#cg").value.trim(),cnpj:$("#cj").value.trim(),plano:$("#cp").value,ambiente:$("#ca").value.trim()};
   const email=$("#ue").value.trim(),nome=$("#un").value.trim();
-  if(!/^[A-Z]{2,4}$/.test(d.sigla)){E.msg=["err","A sigla precisa ter de 2 a 4 letras, sem acentos."];render();return}
-  try{await DB.criar(d)}catch(e){E.msg=["err",e.message];render();return}
+  if(!/^[A-Z]{2,4}$/.test(d.sigla)){falha("A sigla precisa ter de 2 a 4 letras, sem acentos.");return}
+  try{await DB.criar(d)}catch(e){falha(e.message);return}
   const lci=($("#cci")||{}).value?$("#cci").value.trim():"",luf=($("#cuf")||{}).value||"";
   if(lci||luf){try{const cs=await DB.contratantes();const c=(cs||[]).find(x=>x.sigla==d.sigla);if(c)await DB.localEmpresa(c.id,lci,luf)}catch(e){}}E.mapaD=null;E._mpLd=0;
   try{const cv=await convite(email,nome,"cliente");await DB.vincular(email,d.sigla,nome,"gestor");DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["ok",`Empresa ${d.nome} (${d.sigla}) cadastrada no plano ${d.plano} e ${email} ligado como Gestor (será o Gestor principal).${cv}`]}
   catch(e){DB.registrar("cadastrou empresa",d.sigla+" · "+d.plano);E.msg=["info",`A empresa ${d.sigla} foi criada, mas o Gestor não foi ligado: ${e.message} Use “Adicionar usuário a uma empresa existente” para tentar de novo.`]}
   await recarregar();}
-async function vincularExtra(){const s=$("#vs").value;try{const cv=await convite($("#ve").value.trim(),$("#vn").value.trim(),"cliente");const r=await DB.vincular($("#ve").value.trim(),s,$("#vn").value.trim(),$("#vp").value);DB.registrar("adicionou usuário",s);E.msg=["ok",r+cv];await recarregar()}catch(e){E.msg=["err",e.message];render()}}
+async function vincularExtra(){const s=$("#vs").value;try{const cv=await convite($("#ve").value.trim(),$("#vn").value.trim(),"cliente");const r=await DB.vincular($("#ve").value.trim(),s,$("#vn").value.trim(),$("#vp").value);DB.registrar("adicionou usuário",s);E.msg=["ok",r+cv];await recarregar()}catch(e){falha(e.message)}}
 async function salvarLead(){const f=E.lead;const d={empresa:$("#le").value.trim(),segmento:$("#lg").value.trim()||null,origem:$("#lo").value||null,contato:$("#lc").value.trim()||null,telefone:$("#lt").value.trim()||null,email:$("#lm").value.trim()||null,proximo_passo:$("#lp").value.trim()||null,plano:$("#ll").value,etapa:$("#la").value,observacao:$("#lb").value.trim()||null};if(f.id)d.id=f.id;
-  try{await DB.salvarInteressado(d);E.lead=null;toast("Interessado salvo.");E.leads=await DB.interessados();render()}catch(e){E.msg=["err",e.message];render()}}
-async function mudarEtapa(id,etapa){try{await DB.salvarInteressado({id,etapa});E.leads=await DB.interessados();toast("Etapa atualizada.");render()}catch(e){E.msg=["err",e.message];render()}}
+  try{await DB.salvarInteressado(d);E.lead=null;toast("Interessado salvo.");E.leads=await DB.interessados();render()}catch(e){falha(e.message)}}
+async function mudarEtapa(id,etapa){try{await DB.salvarInteressado({id,etapa});E.leads=await DB.interessados();toast("Etapa atualizada.");render()}catch(e){falha(e.message)}}
 function converter(id){const l=E.leads.find(x=>x.id==id);E.aba="cadastrar";render();$("#cn").value=l.empresa;sugerirSigla(l.empresa);$("#cg").value=l.segmento||"";$("#cp").value=l.plano||"atalaia";if(l.email)$("#ue").value=l.email;if(l.contato)$("#un").value=l.contato;scrollTo(0,0)}
-async function responder(id){const d={resposta:$("#tr").value.trim()||null,situacao:$("#ts").value,prioridade:$("#tp").value};try{await DB.responder(id,d);DB.registrar("respondeu chamado","Nº "+id);toast("Resposta salva. O cliente vê no aplicativo.");E.tks=await DB.chamados();render()}catch(e){E.msg=["err",e.message];render()}}
+async function responder(id){const d={resposta:$("#tr").value.trim()||null,situacao:$("#ts").value,prioridade:$("#tp").value};try{await DB.responder(id,d);DB.registrar("respondeu chamado","Nº "+id);toast("Resposta salva. O cliente vê no aplicativo.");E.tks=await DB.chamados();render()}catch(e){falha(e.message)}}
 iniciar();
 
 // Mostrar / ocultar senha em todos os campos de senha

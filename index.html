@@ -95,6 +95,9 @@ nav.tabs svg{width:22px;height:22px}
 :root[data-pal]:not([data-pal="classico"]) .chp[aria-pressed=true]{background:var(--p-pri);border-color:var(--p-pri)}
 :root[data-pal]:not([data-pal="classico"]) .card{border-color:transparent;box-shadow:0 1px 2px rgba(16,24,40,.05),0 4px 14px rgba(16,24,40,.06)}
 :root[data-pal]:not([data-pal="classico"]) h1{color:var(--p-tit)}
+
+.campo-erro{outline:2px solid #c0392b!important;outline-offset:1px;background:#fff5f4!important}
+.msg.err.fx{margin:8px 0 12px;font-weight:600}
 </style>
 </head>
 <body>
@@ -110,7 +113,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.25",
+  versao:"0.3.26",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -240,6 +243,30 @@ function aparelho(){const u=navigator.userAgent;return (/Mobi|Android|iPhone/.te
 
 /* ---------------- Estado e telas ---------------- */
 const E={tela:"carregando",aba:"bens",v:null,amb:[],bens:[],busca:"",fotos:{},msg:null,modal:null,modoSenha:"link",depois:null,fatores:[],insc:null,obrig:false,acessos:[],chamados:[],suporte:false};
+/* Aviso de erro sem perder o que foi digitado: mostra a mensagem no alto da janela (ou da página),
+   marca o campo com problema e devolve os botões. Não redesenha a tela. */
+function falha(msg,obj){msg=String(msg||"Não foi possível concluir.");if(obj)obj.erro=msg;else E.msg=["err",msg];
+  const box=document.querySelector(".modal .card")||document.querySelector("main")||document.querySelector("#app");if(!box)return;
+  let el=box.querySelector(".msg.err.fx");if(!el){el=document.createElement("div");el.className="msg err fx";el.setAttribute("role","alert");const fm=box.querySelector("form");const h=box.querySelector("h2,h1");if(fm&&fm.parentNode)fm.parentNode.insertBefore(el,fm);else if(h&&h.parentNode)h.parentNode.insertBefore(el,h.nextSibling);else box.prepend(el)}
+  box.querySelectorAll(".msg.err:not(.fx)").forEach(x=>{if(x.textContent.trim()==msg.trim())x.remove()});
+  el.innerHTML="⚠ "+String(msg).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))+'<div style="font-size:.8rem;margin-top:4px;opacity:.85">O que você já preencheu continua na tela. Corrija e tente de novo.</div>';
+  box.querySelectorAll("button[disabled]").forEach(b=>{const t=b.textContent.trim();if(/…$/.test(t)){b.disabled=false;b.textContent=t.replace(/ando…$/,"ar").replace(/endo…$/,"er").replace(/indo…$/,"ir").replace(/…$/,"")}});
+  box.querySelectorAll(".campo-erro").forEach(x=>x.classList.remove("campo-erro"));
+  const low=msg.toLowerCase();let alvo=null;
+  const LB=[...box.querySelectorAll("label")].map(l=>({l,f:l.querySelector("input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea"),t:(l.childNodes[0]&&l.childNodes[0].textContent||"").replace(/\*|\(.*?\)|:/g,"").trim().toLowerCase()})).filter(x=>x.f);
+  const STOP=/^(valor|inválido|invalido|campo|escolha|escreva|preencha|informe|precisa|pelo|menos|letras)$/;
+  const ruim=f=>{const v=String(f.value||"").trim(),lt=((f.closest("label")||{}).textContent||"").toLowerCase();return (f.required&&!v)||(v&&isNaN(Number(v.replace(",",".")))&&(f.type=="number"||/numeric|decimal/.test(f.inputMode||"")||/btu|\(kg\)|\(v\)|m²|ocupantes|r\$|meses|anos|qtd|°c/.test(lt)))};
+  alvo=(LB.find(x=>x.t.length>=4&&!STOP.test(x.t)&&low.includes(x.t))||{}).f||null;
+  if(!alvo)box.querySelectorAll("details").forEach(d=>{if(alvo)return;const sm=(d.querySelector("summary")||{}).textContent||"";const k=sm.replace(/[^\wÀ-ú ]/g," ").trim().toLowerCase().split(/\s+/).find(w=>w.length>=6);if(k&&low.includes(k)){d.open=true;alvo=[...d.querySelectorAll("input,select,textarea")].find(ruim)||null}});
+  if(!alvo){alvo=(LB.find(x=>x.t.split(/\s+/).filter(w=>w.length>=6&&!STOP.test(w)).some(w=>low.includes(w)))||{}).f||null}
+  if(!alvo)alvo=(LB.find(x=>ruim(x.f))||{}).f||null;
+  if(!alvo)alvo=[...box.querySelectorAll("input[required],select[required],textarea[required]")].find(f=>!String(f.value||"").trim());
+  if(alvo){alvo.classList.add("campo-erro");alvo.addEventListener("input",()=>alvo.classList.remove("campo-erro"),{once:true})}
+  el.scrollIntoView({behavior:"smooth",block:"center"});if(alvo)setTimeout(()=>{try{alvo.focus({preventScroll:true})}catch(e){}},400)}
+
+/* rede de segurança: qualquer erro não tratado vira aviso na tela, sem apagar o formulário */
+window.addEventListener("unhandledrejection",ev=>{try{const m=ev.reason&&ev.reason.message||String(ev.reason||"");if(m&&!/aborted|Load failed|NetworkError when attempting/i.test(m)){falha(typeof traduz=="function"?traduz(m):m,E.modal||null)}}catch(e){}});
+window.addEventListener("error",ev=>{try{const m=ev.error&&ev.error.message||"";if(m&&/inválid|Preencha|Escolha|Escreva|obrigat|Informe/i.test(m))falha(m,E.modal||null)}catch(e){}});
 function render(){
   const h=E.tela=="login"?telaLogin():E.tela=="senha"?telaSenha():E.tela=="mfa"?telaMfa():E.tela=="ativar2"?telaAtivar():E.tela=="semacesso"?telaSemAcesso():E.tela=="linkerro"?telaLinkErro():E.tela=="app"?telaApp():`<div class="center wrap"><p class="muted" style="text-align:center">Carregando…</p></div>`;
   $("#app").innerHTML=(DEMO?`<div class="demo">MODO DEMONSTRAÇÃO · os dados não são salvos</div>`:"")+h+(E.modal?modalHTML():"");
@@ -451,7 +478,7 @@ async function iniciar(){
   if(erroLink){E.msg=["err","O link venceu ou já foi usado. Peça um novo em “Esqueci minha senha”."];history.replaceState(null,"",location.pathname)}
   E.tela="login";render();
 }
-async function entrar(){E.msg=null;try{const cap=tokenCaptcha();await DB.entrar($("#em").value.trim(),$("#se").value,cap);await posLogin(true)}catch(e){resetCaptcha();E.msg=["err",e.message];render()}}
+async function entrar(){E.msg=null;try{const cap=tokenCaptcha();await DB.entrar($("#em").value.trim(),$("#se").value,cap);await posLogin(true)}catch(e){resetCaptcha();falha(e.message)}}
 async function esqueci(){const em=($("#em")?.value||"").trim();if(!em){E.msg=["info","Digite seu e-mail no campo acima e toque de novo em “Esqueci minha senha”."];render();return}
  try{const cap=tokenCaptcha();await DB.esqueci(em,cap);E.msg=["ok","Se o e-mail estiver cadastrado, você receberá um link para criar nova senha. O link vale por pouco tempo e só pode ser usado uma vez. Confira também a caixa de spam."]}catch(e){E.msg=["err",e.message]}resetCaptcha();render()}
 /* Depois da senha: pede o código (se a pessoa tiver duas etapas), exige senha pessoal no primeiro acesso e abre o app. */
@@ -467,11 +494,11 @@ async function confirmarMfa(){
     await DB.verificarCodigo(f.id,$("#otp").value.trim());E.msg=null;
     if(E.depois=="senha"){E.depois=null;E.tela="senha";render();return}
     const reg=E.depois=="app+reg";E.depois=null;await posLogin(reg);
-  }catch(e){E.msg=["err",e.message];render()}}
+  }catch(e){falha(e.message)}}
 async function salvarSenha(){
   const m=E.modoSenha,a=$("#s1").value,b=$("#s2").value;
-  if(a!==b){E.msg=["err","As duas senhas novas não são iguais."];render();return}
-  if(!senhaForte(a)){E.msg=["err","A senha ainda não cumpre todas as regras da lista."];render();chkSenha(a);return}
+  if(a!==b){falha("As duas senhas novas não são iguais.");return}
+  if(!senhaForte(a)){falha("A senha ainda não cumpre todas as regras da lista.");chkSenha(a);return}
   try{
     if(m=="trocar"){const atual=$("#s0").value;if(atual===a)throw new Error("A nova senha precisa ser diferente da atual.");await DB.conferirSenha(E.v.email,atual,tokenCaptcha())}
     const n=await DB.nivel();
@@ -480,10 +507,10 @@ async function salvarSenha(){
     const vinc=E.v||await DB.meuVinculo();if(vinc)DB.registrar(vinc.contratante_id,m=="link"?"criou nova senha pelo link":m=="primeiro"?"criou a senha pessoal":"trocou a senha",null);
     toast("Senha salva.");E.msg=null;
     if(m=="trocar"){E.tela="app";if(history.state&&history.state.atalaia){ignorarPop=true;history.back()}render()}else await abrirApp(true);
-  }catch(e){resetCaptcha();E.msg=["err",e.message];render()}}
+  }catch(e){resetCaptcha();falha(e.message)}}
 async function ativar2(){E.tela="ativar2";E.insc=null;E.msg=null;render();try{E.insc=await DB.inscrever()}catch(e){E.msg=["err",e.message]}render()}
 async function confirmarAtivacao(){try{await DB.verificarCodigo(E.insc.id,$("#otp").value.trim());E.insc=null;E.fatores=await DB.fatores();DB.registrar(E.v.contratante_id,"ativou a verificação em duas etapas",null);toast("Verificação em duas etapas ativada.");
-  if(E.obrig){E.obrig=false;await abrirApp(false);return}E.tela="app";E.msg=null;render()}catch(e){E.msg=["err",e.message];render()}}
+  if(E.obrig){E.obrig=false;await abrirApp(false);return}E.tela="app";E.msg=null;render()}catch(e){falha(e.message)}}
 async function desativar2(){if(!confirm("Desativar a verificação em duas etapas deixa a conta menos protegida. Deseja continuar?"))return;
   try{for(const f of E.fatores)await DB.removerFator(f.id);E.fatores=await DB.fatores();DB.registrar(E.v.contratante_id,"desativou a verificação em duas etapas",null);toast("Verificação em duas etapas desativada.");render()}catch(e){toast(e.message)}}
 async function abrirApp(registrar){
@@ -559,7 +586,7 @@ async function salvarBem(){
     if(cont&&!b.id){const seq=(E.modal.seq||0)+1,base={ambiente_id:d.ambiente_id,categoria:d.categoria,estado:d.estado,propriedade:d.propriedade,_empNome:$("#femp")?$("#femp").value:"",doador:d.doador,posse_ate:d.posse_ate,posicao:d.posicao,tipo:d.tipo,clima_tipo:d.clima_tipo,capacidade_btu:d.capacidade_btu,gas_refrigerante:d.gas_refrigerante,carga_gas_kg:d.carga_gas_kg,tensao_v:d.tensao_v,filtros:d.filtros};
       E.modal={bem:base,fotos:[],removidas:[],seq};DB.apagarFotos(rem);await recarregar();document.querySelector(".modal .sheet")?.scrollTo(0,0);scrollTo(0,0);setTimeout(()=>{const f=$("#fpt")||$("#fn");if(f)f.focus()},100);return}
     fecharSemVoltar();DB.apagarFotos(rem);await recarregar();
-  }catch(e){guardarForm();E.modal.erro=e.message;render()}
+  }catch(e){guardarForm();falha(e.message,E.modal)}
 }
 async function inativar(id){E.modal.baixando=id;E.modal.erro=null;render();setTimeout(()=>{const x=document.getElementById("bxa_c");if(x)x.scrollIntoView({behavior:"smooth",block:"center"})},50)}
 function baixaAppHTML(b){const terc=["locado","comodato","leasing","cessao","emprestimo","demonstracao","consignado"].includes(b.propriedade);
@@ -570,10 +597,10 @@ function baixaAppHTML(b){const terc=["locado","comodato","leasing","cessao","emp
   <label class="f">Detalhe do destino<input id="bxa_o" maxlength="200"></label><p class="note">O laudo técnico pode ser anexado depois pelo Gestor, na ficha do bem.</p>
   <div style="display:flex;gap:8px"><button type="button" class="btn" style="flex:1;background:var(--bad);color:#fff" onclick="enviarBaixaApp('${b.id}')">Pedir baixa</button><button type="button" class="btn ghost" style="flex:1" onclick="E.modal.baixando=null;render()">Cancelar</button></div></div>`}
 async function enviarBaixaApp(id){const b=E.bens.find(x=>x.id==id);const cl=$("#bxa_c").value,m=$("#bxa_m").value.trim(),d=$("#bxa_d").value,o=$("#bxa_o").value.trim();
-  try{const r=await DB.solicitarBaixa(id,cl,m,d,o);DB.registrar(E.v.contratante_id,"pediu baixa de bem",rot(b));toast(r);E.modal.baixando=null;fecharSemVoltar();await recarregar()}catch(e){E.modal.erro=e.message;render()}}
+  try{const r=await DB.solicitarBaixa(id,cl,m,d,o);DB.registrar(E.v.contratante_id,"pediu baixa de bem",rot(b));toast(r);E.modal.baixando=null;fecharSemVoltar();await recarregar()}catch(e){falha(e.message,E.modal)}}
 async function confirmarExclusao(id){const b=E.bens.find(x=>x.id==id);const m=($("#xm").value||"").trim();
   if(m.length<5){toast("Escreva o motivo da exclusão (pelo menos 5 letras).");return}
-  try{await DB.excluir("bens",id,m);E.desfazer={t:"bens",id,nome:rot(b),ate:Date.now()+115000};toast("Excluído. Você pode desfazer por 2 minutos.");fecharSemVoltar();await recarregar();setTimeout(render,116000)}catch(e){E.modal.erro=e.message;render()}}
+  try{await DB.excluir("bens",id,m);E.desfazer={t:"bens",id,nome:rot(b),ate:Date.now()+115000};toast("Excluído. Você pode desfazer por 2 minutos.");fecharSemVoltar();await recarregar();setTimeout(render,116000)}catch(e){falha(e.message,E.modal)}}
 async function desfazer(){const d=E.desfazer;if(!d)return;try{await DB.desfazer(d.t,d.id);E.desfazer=null;toast("Exclusão desfeita.");await recarregar()}catch(e){E.desfazer=null;toast(e.message);render()}}
 async function novoAmb(){const n=$("#na").value.trim();if(!n)return;const ex={};if($("#nu"))ex.estabelecimento_id=$("#nu").value;if($("#ng")&&$("#ng").value.trim())ex.grupo=$("#ng").value.trim();if($("#np")&&Number($("#np").value))ex.posicoes=Number($("#np").value);if($("#nt")&&$("#nt").value)ex.tipo_ronda=$("#nt").value;if($("#nr")&&$("#nr").value.trim())ex.responsavel_nome=$("#nr").value.trim();
   try{await DB.addAmbiente(E.v.contratante_id,n,ex);toast("Ambiente criado.");await recarregar()}catch(e){toast(e.message)}}
@@ -991,8 +1018,8 @@ async function fotoRonda(inp,i){const f=inp.files&&inp.files[0];if(!f)return;gua
     const blob=await carimbar(f,L);E.rv.foto[i]=await DB.subirFotoRonda(E.v.contratante_id,blob);toast("Foto anexada.");render()}catch(e){toast(e.message||"Não foi possível enviar a foto.")}inp.value=""}
 async function rondaParaC(t){const u=minhaUniC();if(t=="ambientes"&&E.ron.aberta)return E.ron.aberta;const id=await DB.iniRonda(u,t);if(t=="ambientes")E.ron.aberta=id;return id}
 async function fecharAmbC(){guardaDescC();const m=E.rv,a=(E.amb||[]).find(x=>x.id==m.a),I=itensDeC(a);const itens=I.map((t,i)=>({item:t,resultado:m.res[i],descricao:m.res[i]=="ocorrencia"?(m.desc[i]||"").trim():null,foto:m.res[i]=="ocorrencia"?(m.foto[i]||null):null}));
-  if(itens.some(x=>x.resultado=="ocorrencia"&&(!x.descricao||x.descricao.length<3))){m.erro="Descreva cada ocorrência.";render();return}
-  try{const r=await rondaParaC("ambientes");const res=await DB.regAmb(r,a.id,itens);toast(res&&res.ocorrencias?`Ambiente fechado. ${res.ocorrencias} chamado(s) aberto(s).`:"Ambiente fechado: tudo normal.");E.rt="home";E.rv=null;await carregarRon();carregarMan().then(render).catch(()=>{})}catch(e){m.erro=e.message;render()}}
+  if(itens.some(x=>x.resultado=="ocorrencia"&&(!x.descricao||x.descricao.length<3))){falha("Descreva cada ocorrência.",m);return}
+  try{const r=await rondaParaC("ambientes");const res=await DB.regAmb(r,a.id,itens);toast(res&&res.ocorrencias?`Ambiente fechado. ${res.ocorrencias} chamado(s) aberto(s).`:"Ambiente fechado: tudo normal.");E.rt="home";E.rv=null;await carregarRon();carregarMan().then(render).catch(()=>{})}catch(e){falha(e.message,m)}}
 async function fimRondaC(){try{await DB.fimRonda(E.ron.aberta);toast("Ronda concluída.");await carregarRon()}catch(e){toast(e.message)}}
 
 /* ---- medições: central de gases, geradores, caixa d'água, usina ---- */
@@ -1018,7 +1045,7 @@ async function salvarMedC(){const m=E.rm,a=(E.amb||[]).find(x=>x.id==m.a),t=a.ti
   else{P(a.nome,"pureza",{valor:v("us_pureza")});P(a.nome,"pressao_saida",{valor:v("us_pressao")});P(a.nome,"horimetro",{valor:v("us_hor")});P(a.nome,"compressor",{texto:v("us_comp")});P(a.nome,"secador",{texto:v("us_sec")});P(a.nome,"alarme",{texto:v("us_alarme")})}
   L.push({grupo:a.nome,amb:a.id,chave:"ambiente",texto:a.id});
   const tipoR=t=="gases"?"gases":t=="geradores"?"geradores":t;
-  try{const r=await DB.iniRonda(minhaUniC(),tipoR);const res=await DB.regMed(r,L,q);await DB.fimRonda(r);toast(res&&res.chamados&&res.chamados.length?`Registrado. Chamado(s) aberto(s): ${res.chamados.join(", ")}.`:"Medições registradas.");E.rt="home";E.rm=null;await carregarRon();carregarMan().then(render).catch(()=>{})}catch(e){m.erro=e.message;render()}}
+  try{const r=await DB.iniRonda(minhaUniC(),tipoR);const res=await DB.regMed(r,L,q);await DB.fimRonda(r);toast(res&&res.chamados&&res.chamados.length?`Registrado. Chamado(s) aberto(s): ${res.chamados.join(", ")}.`:"Medições registradas.");E.rt="home";E.rm=null;await carregarRon();carregarMan().then(render).catch(()=>{})}catch(e){falha(e.message,m)}}
 
 /* ======================= APP DO COLABORADOR · ETAPA 3 · LEITOR DE QR CODE ======================= */
 const JSQR={src:"https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js",sri:"sha384-b5Ya4Bq3qCyz39m2ISh+4DxjAIljdeFwK/BsXLuj9gugaNwAcj/ia15fxNZL9Nlx"};

@@ -1,1 +1,1 @@
-{"app": "0.3.25", "gestor": "0.9.36", "matriz": "0.3.15", "novidade": "Perfil do menu por segmento (Climatização, Predial/Facilities, Escritório/Comércio ou Completo): o menu mostra só o que a empresa usa, sem apagar nada."}
+{"app": "0.3.26", "gestor": "0.9.38", "matriz": "0.3.16", "novidade": "Avisos de erro não apagam mais o que foi digitado: a mensagem aparece no alto, o campo com problema fica marcado e o formulário continua preenchido."}
