@@ -1,1 +1,1 @@
-{"app": "0.3.26", "gestor": "0.9.38", "matriz": "0.3.16", "novidade": "Avisos de erro não apagam mais o que foi digitado: a mensagem aparece no alto, o campo com problema fica marcado e o formulário continua preenchido."}
+{"app": "0.3.27", "gestor": "0.9.39", "matriz": "0.3.16", "novidade": "Correções do teste: data de hoje pelo horário local (antes, depois das 20h saía o dia seguinte) e, no modo prestadora, sem o aviso de equipamento de terceiro nos chamados."}
