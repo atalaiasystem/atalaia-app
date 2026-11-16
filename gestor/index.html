@@ -218,7 +218,7 @@ label.f{display:grid;gap:5px;font-weight:600;font-size:.85rem;margin-bottom:10px
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.41"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.42"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1877,7 +1877,7 @@ function pgAmbiente(){const a=E.amb.find(x=>x.id==E.ambId);if(!a)return pgMonit(
 async function relatorioAmbiente(id){const a=E.amb.find(x=>x.id==id),s=statusAmb(a);try{
   if(!window.jspdf)await addScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
   const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,M=14;let y=0;
-  const topo=()=>{doc.setFillColor(29,31,35);doc.rect(0,0,W,20,"F");doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.text("ATALAIA SYSTEM",M,9);doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.text(E.v.contratantes.nome+" - Relatório do ambiente",M,15);doc.text(new Date().toLocaleDateString("pt-BR"),W-M,15,{align:"right"});doc.setTextColor(29,31,35);y=28};
+  const topo=()=>{pdfCab(doc,W,M,"Relatório do ambiente · "+(linhaEmpresa()||""));doc.setTextColor(29,31,35);y=28};
   const linha=(t,b)=>{if(y>280){doc.addPage();topo()}doc.setFont("helvetica",b?"bold":"normal");doc.setFontSize(b?11:9);doc.splitTextToSize(t,W-2*M).forEach(l=>{doc.text(l,M,y);y+=b?6:4.6})};
   topo();linha(a.nome+" - "+nomeUni(a.estabelecimento_id),true);linha(`Situação: ${COR[s.cor][2]} · ${s.bens.length} bem(ns) · ${s.ch.length} chamado(s) em aberto (${s.atr.length} atrasado(s)) · ${s.venc.length} calibração/preventiva vencida(s)`);y+=3;
   linha("Chamados (todos)",true);E.ch.filter(c=>c.ambiente_id==a.id).forEach(c=>linha(`nº ${c.numero} · ${dh(c.aberto_em)} · ${PRI[c.prioridade]||c.prioridade} · ${SIT[c.situacao]} · ${c.descricao}`));y+=3;
@@ -2164,7 +2164,7 @@ function pdfGrade(st,cols,rows,o={}){const {doc,M}=st,TW=st.W-2*M,fs=o.fs||7.6,l
   const f=TW/ws.reduce((s,x)=>s+x,0);ws=ws.map(x=>x*f);
   const desenha=(cells,cab,z)=>{doc.setFont("helvetica",cab?"bold":"normal");doc.setFontSize(fs);const T=cells.map((c,i)=>doc.splitTextToSize(c===""?(cab?"":"—"):c,ws[i]-2*pad).slice(0,o.maxLin||10)),h=Math.max(1,...T.map(t=>t.length))*lh+2*pad+0.4;
     if(st.y+h>lim){st.nova();if(!cab)desenha(C,true)}
-    if(cab){if((relCab()||estiloDe(E.v.contratantes.design))=="simples"){doc.setFillColor(236,236,236);doc.rect(M,st.y,TW,h,"F");doc.setTextColor(0,0,0)}else{doc.setFillColor(52,56,64);doc.rect(M,st.y,TW,h,"F");doc.setTextColor(255,255,255)}}else if(z){doc.setFillColor(244,242,238);doc.rect(M,st.y,TW,h,"F")}
+    if(cab){const ep=estPDF();if(ep=="classico"){doc.setFillColor(52,56,64);doc.rect(M,st.y,TW,h,"F");doc.setTextColor(255,255,255)}else{doc.setFillColor(ep=="simples"?236:241,ep=="simples"?236:242,ep=="simples"?236:244);doc.rect(M,st.y,TW,h,"F");doc.setTextColor(ep=="simples"?0:29,ep=="simples"?0:31,ep=="simples"?0:35)}}else if(z){doc.setFillColor(244,242,238);doc.rect(M,st.y,TW,h,"F")}
     let x=M;T.forEach((t,i)=>{const dir=numCol[i]&&!cab;if(dir)doc.text(t,x+ws[i]-pad,st.y+pad+fs*0.3,{align:"right"});else doc.text(t,x+pad,st.y+pad+fs*0.3);x+=ws[i]});doc.setTextColor(29,31,35);
     doc.setDrawColor(cab?52:190,cab?56:185,cab?64:176);doc.setLineWidth(0.15);doc.rect(M,st.y,TW,h);x=M;doc.setDrawColor(190,185,176);for(let i=0;i<ws.length-1;i++){x+=ws[i];doc.line(x,st.y,x,st.y+h)}st.y+=h};
   desenha(C,true);if(!R.length)desenha(C.map((c,i)=>i==0?"Nada neste período.":" "),false,false);R.forEach((r,k)=>desenha(r,false,k%2==1));doc.setFont("helvetica","normal");st.y+=5}
@@ -2981,7 +2981,7 @@ function blocoOperacional(){const u=E.iu,C=E.ch.filter(c=>!c.excluido_em&&ABERTO
    <div><h3 style="margin-bottom:4px">Equipamentos indisponíveis (${I.length})</h3><div class="tbl"><table>${I.slice(0,8).map(b=>`<tr class="click" onclick="abrirBem('${b.id}')"><td><span class="op-st at">⛔ indisponível</span></td><td>${esc((b.patrimonio?b.patrimonio+" · ":"")+b.nome)}</td><td>${esc(nomeAmbi(b.ambiente_id))}</td></tr>`).join("")||`<tr><td class="note">Nenhum. ✓</td></tr>`}</table></div></div></div></div>`}
 
 /* cabeçalho dos PDFs conforme o estilo */
-function pdfCab(doc,W,M,linha){const e=relCab()||estiloDe(E.v.contratantes.design),em="Emitido em "+new Date().toLocaleString("pt-BR"),lg=E.logoPDF,band=!["editorial","simples","executivo"].includes(e),op=e=="operacional",hh=band?(op?14:18):17;
+function pdfCab(doc,W,M,linha){const e=estPDF(),em="Emitido em "+new Date().toLocaleString("pt-BR"),lg=E.logoPDF,band=!["editorial","simples","executivo"].includes(e),op=e=="operacional",hh=band?(op?14:18):17;
   let X=M;if(lg){const bh=band?hh-5:11,bw=Math.min(34,bh*lg.w/lg.h),y0=band?2.5:3;if(band){doc.setFillColor(255,255,255);doc.roundedRect(M-1,y0-.8,bw+2,bh+1.6,1,1,"F")}try{doc.addImage(lg.d,"JPEG",M,y0,bw,bh)}catch(x){}X=M+bw+4}
   const lin=doc.splitTextToSize(linha||"Atalaia System · Sistema de Gestão de Patrimônio e Manutenção",W-X-M-58)[0];
   if(e=="editorial"){doc.setTextColor(29,31,35);doc.setFont("times","bold");doc.setFontSize(14);doc.text(E.v.contratantes.nome,X,10);doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(90,94,102);doc.text(lin,X,14.6);doc.text(em,W-M,14.6,{align:"right"});doc.setDrawColor(29,31,35);doc.setLineWidth(0.7);doc.line(M,17.2,W-M,17.2);doc.setLineWidth(0.2)}
@@ -2991,10 +2991,12 @@ function pdfCab(doc,W,M,linha){const e=relCab()||estiloDe(E.v.contratantes.desig
   doc.setTextColor(29,31,35)}
 /* logo da empresa nos PDFs (carregada uma vez) */
 async function prepLogoPDF(){const lp=(E.v.contratantes.design||{}).logo;if(!lp){E.logoPDF=null;return}if(E.logoPDF&&E.logoPDF.p==lp)return;try{const u=await DB.urlFoto(lp);if(!u){E.logoPDF=null;return}const im=await new Promise((ok,er)=>{const i=new Image();if(/^https?:/.test(u))i.crossOrigin="anonymous";i.onload=()=>ok(i);i.onerror=er;i.src=u});const k=Math.min(1,600/Math.max(im.width,im.height)),cv=document.createElement("canvas");cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,cv.width,cv.height);x.drawImage(im,0,0,cv.width,cv.height);E.logoPDF={d:cv.toDataURL("image/jpeg",.9),w:cv.width,h:cv.height,p:lp}}catch(x){E.logoPDF=null}}
+/* estilo efetivo do PDF: sem faixa por padrão; a faixa escura só sai quando escolhida em Relatórios */
+function estPDF(){const r=relCab();if(r)return r;const e=estiloDe(E.v.contratantes.design);return ["editorial","simples","executivo"].includes(e)?e:"executivo"}
 function relCab(){if(E.relCab===undefined){try{E.relCab=localStorage.getItem("atalaia_relcab")||""}catch(e){E.relCab=""}}return E.relCab}
 function mudarRelCab(v){E.relCab=v;try{localStorage.setItem("atalaia_relcab",v)}catch(e){}render()}
-function relCabHTML(){const v=relCab();return `<label>Cabeçalho do PDF<select onchange="mudarRelCab(this.value)">${[["","Do estilo da empresa"],["classico","Com faixa escura"],["executivo","Executivo (linha grossa, sem faixa)"],["editorial","Editorial (serifa, sem faixa)"],["simples","Simples (preto e branco, sem faixa)"]].map(([k,t])=>`<option value="${k}" ${v==k?"selected":""}>${t}</option>`).join("")}</select></label>`}
-const pdfFonteTit=()=>(relCab()||estiloDe(E.v.contratantes.design))=="editorial"?"times":"helvetica";
+function relCabHTML(){const v=relCab();return `<label>Cabeçalho do PDF<select onchange="mudarRelCab(this.value)">${[["","Padrão (sem faixa)"],["classico","Com faixa escura"],["executivo","Executivo (linha grossa, sem faixa)"],["editorial","Editorial (serifa, sem faixa)"],["simples","Simples (preto e branco, sem faixa)"]].map(([k,t])=>`<option value="${k}" ${v==k?"selected":""}>${t}</option>`).join("")}</select></label>`}
+const pdfFonteTit=()=>estPDF()=="editorial"?"times":"helvetica";
 /* ---------------- Itens 82, 84 e 85 · Radiologia, manutenção predial e odontologia ---------------- */
 const AREAS={
  radiologia:{nome:"Radiologia",ic:"☢",base:"RDC 611/2022 e IN 90/2021 (radiografia médica). Testes de aceitação e de constância feitos ou supervisionados por físico médico; levantamento radiométrico a cada 4 anos ou após mudança.",

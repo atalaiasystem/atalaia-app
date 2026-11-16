@@ -113,7 +113,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.30",
+  versao:"0.3.31",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -701,8 +701,8 @@ async function baixarPDF(){
   try{
     if(!window.jspdf)await carregarScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
     const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,H=297,M=14,c=E.v.contratantes,hoje=new Date().toLocaleDateString("pt-BR");
-    const topo=()=>{doc.setFillColor(29,31,35);doc.rect(0,0,W,20,"F");doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.text("ATALAIA SYSTEM",M,9);
-      doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.text("Relatório de bens - "+c.nome,M,15);doc.text(hoje,W-M,15,{align:"right"});doc.setTextColor(29,31,35)};
+    const topo=()=>{doc.setTextColor(29,31,35);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text(c.nome,M,9);
+      doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(90,94,102);doc.text("Relatório de bens · Atalaia System",M,13.8);doc.text(hoje,W-M,13.8,{align:"right"});doc.setDrawColor(29,31,35);doc.setLineWidth(1.2);doc.line(M,16.6,W-M,16.6);doc.setLineWidth(0.2);doc.setTextColor(29,31,35)};
     const rodape=(n,t)=>{doc.setFontSize(8);doc.setTextColor(107,112,120);doc.text("Atalaia System - Sistema de Gestão de Patrimônio e Manutenção",M,H-8);doc.text(`Página ${n} de ${t}`,W-M,H-8,{align:"right"});doc.setTextColor(29,31,35)};
     topo();let y=28;
     doc.setFont("helvetica","bold");doc.setFontSize(11);doc.text(`${E.bens.length} bem(ns) cadastrados`,M,y);
