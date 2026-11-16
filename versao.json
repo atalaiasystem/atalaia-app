@@ -1,1 +1,1 @@
-{"app": "0.3.27", "gestor": "0.9.39", "matriz": "0.3.16", "novidade": "Correções do teste: data de hoje pelo horário local (antes, depois das 20h saía o dia seguinte) e, no modo prestadora, sem o aviso de equipamento de terceiro nos chamados."}
+{"app": "0.3.28", "gestor": "0.9.40", "matriz": "0.3.16", "novidade": "Chamado: “Iniciar agora (estou no local)”, foto pela câmera com carimbo, “Aguardando peça” com retomar; corretiva da não conformidade já fica com quem registrou. Relatórios: novo Relatório geral e nomes mais claros."}

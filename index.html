@@ -113,7 +113,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.27",
+  versao:"0.3.28",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -816,6 +816,8 @@ function mockMan(){const w=ms=>new Promise(r=>setTimeout(r,ms)),agora=()=>new Da
   return {async chs(){return CH},async mems(){return [{user_id:"u-demo",nome:"Carlos Manutenção",perfil:"colaborador",estabelecimento_id:"e1"},{user_id:"u2",nome:"Diego Manutenção",perfil:"colaborador",estabelecimento_id:"e1"},{user_id:"u3",nome:"Bruno Administrador",perfil:"administrador",estabelecimento_id:"e1"}]},
    async eventosCh(id){return EV[id]||[]},async fotosCh(id){return FO[id]||[]},async ajudantes(id){return AJ[id]||[]},async assinaturas(id){return AS[id]||[]},
    async acaoCh(id,a,o){await w(200);o=o||{};const c=CH.find(x=>x.id==id);const ev=t=>(EV[id]=EV[id]||[]).push({etapa:t,em:agora(),quem:E.v.nome,nota:o.nota||null});
+     if(a=="aguardar"){Object.assign(c,{aguardando_desde:agora(),aguardando_motivo:o.nota,situacao:"em_atendimento",iniciado_em:c.iniciado_em||agora()});ev("aguardando");return {...c}}
+     if(a=="retomar"){c.tempo_aguardando_s=(c.tempo_aguardando_s||0)+Math.round((Date.now()-Date.parse(c.aguardando_desde))/1000);c.aguardando_desde=null;c.aguardando_motivo=null;ev("retomado");return {...c}}
      if(a=="aceitar"){if(c.situacao!="aberto")throw new Error("Este chamado já foi aceito.");Object.assign(c,{situacao:"aceito",aceito_em:agora(),responsavel_id:meuId()});ev("aceito")}
      else if(a=="atribuir"){Object.assign(c,{situacao:"aceito",aceito_em:c.aceito_em||agora(),responsavel_id:o.resp});ev("encaminhado")}
      else if(a=="iniciar"){Object.assign(c,{situacao:"em_atendimento",iniciado_em:agora()});ev("em_atendimento")}
@@ -891,9 +893,11 @@ function manItem(){const c=(E.chs||[]).find(x=>x.id==E.chSel);if(!c)return `<but
    <p class="muted" style="font-size:.78rem;margin:8px 0 0">Os horários são gravados pelo servidor e ninguém altera.</p></div>`;
   if((it.fo||[]).length)h+=`<div class="card"><b>Fotos</b><div class="fotos-ch">${it.fo.map(f=>`<figure>${E.fotos[f.path]?`<img src="${E.fotos[f.path]}" alt="Foto ${esc(ETAPAS_F[f.etapa]||f.etapa)}">`:`<div class="ph">…</div>`}<figcaption>${esc(ETAPAS_F[f.etapa]||f.etapa)}${f.na_hora===false?` · <span style="color:#c8372d">não tirada na hora</span>`:""}</figcaption></figure>`).join("")}</div></div>`;
   if(c.situacao=="aberto"&&!adm)h+=`<button class="btn amb full" onclick="acaoMan('aceitar')">Assumir este chamado</button><p class="muted" style="font-size:.85rem">Ao assumir, o chamado passa para o seu nome e os outros veem “com você”.</p>`;
-  if(c.situacao=="aberto"&&adm)h+=`<button class="btn amb full" onclick="acaoMan('aceitar')">Assumir eu mesmo</button>`;
+  if(c.situacao=="aberto"&&adm)h+=`<button class="btn amb full" onclick="acaoMan('iniciar_ja')">▶ Iniciar agora (estou no local)</button><button class="btn ghost full" onclick="acaoMan('aceitar')">Assumir eu mesmo (atendo depois)</button>`;
   if(["aberto","aceito"].includes(c.situacao)&&adm)h+=`<div class="card"><b>Passar o chamado</b><label style="margin-top:8px">Para<select id="mpass">${(E.mems||[]).filter(m=>m.perfil=="gestor"||m.estabelecimento_id==c.estabelecimento_id).map(m=>`<option value="${m.user_id}" ${c.responsavel_id==m.user_id?"selected":""}>${esc(m.nome)}</option>`).join("")}</select></label><button class="btn ghost sm" onclick="acaoMan('atribuir',{resp:$('#mpass').value})">Passar</button></div>`;
-  if(c.situacao=="aceito"&&(meu||adm))h+=`<button class="btn full" onclick="acaoMan('iniciar')">▶ Iniciar atendimento</button><p class="muted" style="font-size:.85rem">Marca a hora em que você começou o serviço.</p>`;
+  if(c.situacao=="aceito"&&!c.aguardando_desde&&(meu||adm))h+=`<button class="btn full" onclick="acaoMan('iniciar')">▶ Iniciar atendimento</button><p class="muted" style="font-size:.85rem">Marca a hora em que você começou o serviço.</p>`;
+  if(["aceito","em_atendimento"].includes(c.situacao)&&(meu||adm)){if(c.aguardando_desde)h+=`<div class="msg" style="background:#fff3cd;color:#5c3d00">⏸ <b>Aguardando:</b> ${esc(c.aguardando_motivo||"")} · desde ${new Date(c.aguardando_desde).toLocaleString("pt-BR")}</div><button class="btn full" onclick="acaoMan('retomar')">▶ Retomar atendimento</button>`;
+    else h+=`<details class="card"><summary><b>⏸ Aguardando peça / outro</b></summary><p class="muted" style="font-size:.85rem">O chamado continua aberto; o tempo parado fica registrado separado.</p><label>Aguardando o quê?<select id="magm"><option>Peça / compra</option><option>Aprovação do cliente</option><option>Terceiro / fabricante</option><option>Outro motivo</option></select></label><label>Detalhe (ex.: qual peça)<input id="magd" maxlength="250"></label><button class="btn ghost sm" onclick="acaoMan('aguardar',{nota:$('#magm').value+($('#magd').value.trim()?': '+$('#magd').value.trim():'')})">Colocar em espera</button></details>`}
   if(["aceito","em_atendimento"].includes(c.situacao)&&(meu||adm))h+=formConcluir(c,tem);
   if(["aceito","em_atendimento"].includes(c.situacao)&&!meu&&!adm)h+=ajudo?`<p class="muted">Você está como ajudante. Quem conclui é ${esc(nomeMem(c.responsavel_id)||"o responsável")}.</p>${formFotos(c,tem)}`:`<button class="btn ghost full" onclick="ajudarMan()">Entrar como ajudante</button><p class="muted" style="font-size:.85rem">Este chamado está com ${esc(nomeMem(c.responsavel_id)||"outro técnico")}. Como ajudante, o serviço conta também para você.</p>`;
   if(["concluido","confirmado"].includes(c.situacao)){const asT=(it.as||[]).find(a=>a.papel=="tecnico"),asS=(it.as||[]).find(a=>a.papel=="solicitante");
@@ -912,7 +916,7 @@ function formConcluir(c,tem){const ok=tem("antes")&&tem("depois"),d=E.mcd||{};
   <label>Custo em R$ (opcional)<input id="mcus" type="number" min="0" step="0.01" oninput="E.mcd={...E.mcd,cus:this.value}" value="${esc(d.cus||"")}"></label>
   <button class="btn full" style="background:#1f9a55" ${ok?"":"disabled"} onclick="concluirMan()">✔ Concluir chamado</button>
   <p class="muted" style="font-size:.85rem">${ok?"Depois vai para a confirmação de quem abriu o chamado.":"Só conclui com a foto de antes e a de depois."}</p></div>`}
-async function acaoMan(a,o){try{const r=await DB.acaoCh(E.chSel,a,o);const i=(E.chs||[]).findIndex(x=>x.id==E.chSel);if(i>=0)E.chs[i]={...E.chs[i],...r};toast({aceitar:"Chamado assumido.",atribuir:"Chamado passado.",iniciar:"Atendimento iniciado.",confirmar:"Serviço confirmado.",reabrir:"Chamado reaberto."}[a]||"Feito.");carregarItem()}catch(e){toast(e.message)}}
+async function acaoMan(a,o){try{let r;if(a=="iniciar_ja"){const c0=(E.chs||[]).find(x=>x.id==E.chSel);if(c0&&c0.situacao=="aberto")await DB.acaoCh(E.chSel,"aceitar",{});r=await DB.acaoCh(E.chSel,"iniciar",{})}else r=await DB.acaoCh(E.chSel,a,o);const i=(E.chs||[]).findIndex(x=>x.id==E.chSel);if(i>=0)E.chs[i]={...E.chs[i],...r};toast({aceitar:"Chamado assumido.",atribuir:"Chamado passado.",iniciar:"Atendimento iniciado.",iniciar_ja:"Atendimento iniciado. Você é o responsável.",aguardar:"Chamado em espera. Continua aberto.",retomar:"Atendimento retomado.",confirmar:"Serviço confirmado.",reabrir:"Chamado reaberto."}[a]||"Feito.");carregarItem()}catch(e){toast(e.message)}}
 async function ajudarMan(){try{await DB.ajudar(E.chSel);toast("Você entrou como ajudante.");carregarItem()}catch(e){toast(e.message)}}
 async function concluirMan(){const sol=($("#msol").value||"").trim(),mat=($("#mmat").value||"").trim(),cus=$("#mcus").value;if(sol.length<5){toast("Descreva o que foi feito (pelo menos 5 letras).");return}
   const aj=(E.it.aj||[]).map(a=>a.nome).filter(Boolean),txt=sol+(mat?` · Material: ${mat}`:"")+(aj.length?` · Ajudante(s): ${aj.join(", ")}`:"");
