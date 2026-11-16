@@ -113,7 +113,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.28",
+  versao:"0.3.29",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -957,17 +957,19 @@ function manNaHora(){const d=E.mnh||{},amb=d.amb||((E.amb||[])[0]||{}).id,bens=(
   return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Realizar manutenção</h1><p class="sub">Para o serviço que você identificou e resolveu na hora, sem chamado aberto. Fica registrado em seu nome, com fotos e horário do servidor.</p>
   <div class="card"><label>Ambiente *<select id="nha" onchange="E.mnh={...E.mnh,amb:this.value,bem:''};render()">${optsAmb(amb)}</select></label>
   <label>Bem (opcional)<select id="nhb" onchange="E.mnh={...E.mnh,bem:this.value}"><option value="">Nenhum bem específico</option>${bens.map(b=>`<option value="${b.id}" ${d.bem==b.id?"selected":""}>${esc((b.patrimonio?b.patrimonio+" · ":"")+b.nome)}</option>`).join("")}</select></label>
-  <label>Tipo de serviço<select id="nht" onchange="E.mnh={...E.mnh,tipo:this.value}">${tipos.map(t=>`<option ${d.tipo==t?"selected":""}>${t}</option>`).join("")}</select></label>
+  <label>Tipo de serviço<select id="nht" onchange="E.mnh={...E.mnh,tipo:this.value};render()">${tipos.map(t=>`<option ${d.tipo==t?"selected":""}>${t}</option>`).join("")}<option value="__esc" ${d.tipo=="__esc"?"selected":""}>✏️ Escrever outro tipo…</option></select></label>
+  ${d.tipo=="__esc"||d.tipo=="Outro"?`<label>${d.tipo=="__esc"?"Qual tipo de serviço? *":"Qual? (opcional)"}<input id="nhto" maxlength="40" value="${esc(d.tipoTxt||"")}" oninput="E.mnh={...E.mnh,tipoTxt:this.value}" placeholder="Ex.: Pintura, Serralheria, Jardinagem, Gases medicinais"></label>`:""}
   <label>O que você identificou *<textarea id="nhd" rows="3" maxlength="500" oninput="E.mnh={...E.mnh,desc:this.value}" placeholder="Ex.: parafuso do assento solto">${esc(d.desc||"")}</textarea></label>
   <button class="btn amb full" onclick="comecarNaHora()">Começar e registrar fotos</button><p class="muted" style="font-size:.85rem">O sistema cria o registro já em seu nome. Na tela seguinte você tira a foto de antes, faz o serviço, tira a de depois e conclui.</p></div>`}
-async function comecarNaHora(){const amb=$("#nha").value,bem=$("#nhb").value||null,tipo=$("#nht").value,desc=($("#nhd").value||"").trim();if(desc.length<5){toast("Descreva o que você identificou (pelo menos 5 letras).");return}
+async function comecarNaHora(){const amb=$("#nha").value,bem=$("#nhb").value||null,desc=($("#nhd").value||"").trim();let tipo=$("#nht").value;const tx=($("#nhto")&&$("#nhto").value||"").trim().replace(/[\[\]]/g,"");if(tipo=="__esc"){if(tx.length<3){toast("Escreva o tipo de serviço (pelo menos 3 letras).");return}tipo=tx}else if(tipo=="Outro"&&tx)tipo=tx;if(desc.length<5){toast("Descreva o que você identificou (pelo menos 5 letras).");return}
   try{const c=await DB.abrirChM(amb,`[${tipo}] ${desc}`,"baixa",bem,"na_hora");let r=await DB.acaoCh(c.id,"aceitar");r=await DB.acaoCh(c.id,"iniciar");E.chs=[{...c,...r},...(E.chs||[]).filter(x=>x.id!=c.id)];E.mnh={};E.mt="item";E.chSel=c.id;toast("Registro criado. Tire a foto de antes.");carregarItem()}catch(e){toast(e.message)}}
 
 /* ---- como usar ---- */
 function manAjuda(){const P=[["Assumir um chamado",["Toque em Painel de manutenções (ou na notificação de novo chamado).","Abra o chamado e toque em Assumir este chamado.","O chamado passa para o seu nome."]],
   ["Atender e concluir",["Toque em Iniciar atendimento quando começar.","Tire a foto de antes (obrigatória).","Faça o serviço; se quiser, tire a foto durante.","Tire a foto de depois (obrigatória).","Escreva o que foi feito e toque em Concluir chamado."]],
   ["Ajudar um colega",["Abra o chamado que está com outro técnico.","Toque em Entrar como ajudante. O serviço conta também para você."]],
-  ["Manutenção feita na hora",["Toque em Realizar manutenção.","Escolha o ambiente, o bem (se houver) e descreva o problema.","Toque em Começar, tire as fotos e conclua."]],
+  ["Manutenção feita na hora",["Toque em Realizar manutenção (serviço do dia a dia, resolvido na hora).","Escolha o ambiente, o bem (se houver) e o tipo; se não estiver na lista, toque em Escrever outro tipo.","Descreva o problema, toque em Começar, tire as fotos e conclua."]],
+  ["Preventiva, calibração e inspeção",["Ficam em Manutenções programadas: são as agendadas no plano (por exemplo, a preventiva de todos os ar-condicionados da unidade).","Abra a programada, faça o checklist e registre.","Se encontrar defeito, o sistema abre a corretiva separada."]],
   ["Assinar a ordem de serviço",["Depois de concluir, abra o chamado.","Toque em Assinar como técnico e assine com o dedo.","Peça ao solicitante para assinar em Assinatura do solicitante."]]];
   return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Como usar</h1>${P.map(([t,L])=>`<div class="card"><b>${t}</b><ol style="margin:8px 0 0;padding-left:20px">${L.map(x=>`<li style="margin:4px 0">${x}</li>`).join("")}</ol></div>`).join("")}`}
 
