@@ -145,7 +145,7 @@ td select{padding:5px 8px;font-size:.84rem;min-width:110px}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.17"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.18"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -364,37 +364,40 @@ function grafM(tipo,dados,cor,w,h){const cv=document.createElement("canvas"),S=2
     dados.forEach((r,i)=>{if(!r[1])return;const e=an+r[1]/tot*Math.PI*2;x.beginPath();x.moveTo(cx,cy);x.arc(cx,cy,R,an,e);x.closePath();x.fillStyle=cs[i%4];x.fill();an=e});x.beginPath();x.arc(cx,cy,R*.58,0,Math.PI*2);x.fillStyle="#fff";x.fill();
     x.fillStyle="#1d1f23";x.textAlign="center";x.font="bold 20px Arial";x.fillText(String(dados.reduce((s,r)=>s+r[1],0)),cx,cy);x.font="11px Arial";dados.forEach((r,i)=>{const ly=16+i*20;x.fillStyle=cs[i%4];x.fillRect(h+14,ly-6,12,12);x.fillStyle="#1d1f23";x.textAlign="left";x.fillText(r[0],h+32,ly);x.textAlign="right";x.fillText(String(r[1]),w-8,ly)})}
   return cv.toDataURL("image/png")}
-async function matPDF(){const mes=(document.getElementById("mrm")||{}).value||new Date().toISOString().slice(0,7),D=matDados(mes),cor=corM();try{
+async function matPDF(){const mes=(document.getElementById("mrm")||{}).value||new Date().toISOString().slice(0,7),D=matDados(mes),cor={...corM(),k1:"#123a3c",k2:"#1d6b6e",k3:"#a5813a",k4:"#b03a32",soft:"#eef2f1"};try{
   if(!window.jspdf)await addScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
   const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,H=297,M=12;let y=0;const rgb=hexRGBm,T=(t,xx,yy,o)=>doc.text(String(t).replace(/[^\x00-\xFF·–—“”…]/g,""),xx,yy,o);
-  const topo=()=>{const A=rgb(cor.h1),B=rgb(cor.h2);for(let i=0;i<20;i++){const t=i/19;doc.setFillColor(...A.map((v,k)=>Math.round(v+(B[k]-v)*t)));doc.rect(i*W/20,0,W/20+.3,24,"F")}doc.setTextColor(...rgb(cor.hink));doc.setFont("helvetica","bold");doc.setFontSize(13);T("Atalaia System · Painel da Matriz",M,10);doc.setFont("helvetica","normal");doc.setFontSize(9);T(D.titulo,M,16);doc.setFontSize(7.5);T("Emitido em "+new Date().toLocaleString("pt-BR"),W-M,16,{align:"right"});doc.setTextColor(29,31,35);y=32};
+  const cod=`MTZ-${mes.replace("-","")}-DASH-${Math.random().toString(16).slice(2,6).toUpperCase()}`,perL=new Date(mes+"-15").toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
+  const topo=()=>{rmCab(doc,W,M,"Dashboard do mês",perL);y=32};
   const quebra=hh=>{if(y+hh>H-14){doc.addPage();topo();return true}return false};topo();
-  const cw=(W-2*M-9)/4,ch=24,cs=[cor.k1,cor.k2,cor.k3,cor.k4];D.K.forEach(([l,v,c],i)=>{const col=i%4,row=Math.floor(i/4),xx=M+col*(cw+3),yy=y+row*(ch+3),k=rgb(cs[col]);doc.setFillColor(...k.map(q=>Math.round(q*.1+255*.9)));doc.roundedRect(xx,yy,cw,ch,2.5,2.5,"F");doc.setFillColor(...k);doc.rect(xx,yy+1,1.4,ch-2,"F");
-    doc.setFont("helvetica","normal");doc.setFontSize(7.4);doc.setTextColor(90,94,102);T(doc.splitTextToSize(l,cw-6)[0],xx+4,yy+5.5);doc.setFont("helvetica","bold");doc.setFontSize(String(v).length>12?11:15);doc.setTextColor(...k);T(v,xx+4,yy+14);doc.setFont("helvetica","normal");doc.setFontSize(6.8);doc.setTextColor(110,114,120);T(doc.splitTextToSize(c||"",cw-6)[0]||"",xx+4,yy+20)});
-  y+=2*(ch+3)+6;doc.setTextColor(29,31,35);const gw=(W-2*M-6)/2,gh=50;doc.setFont("helvetica","bold");doc.setFontSize(10.5);T("Novas empresas por mês",M,y);T("Empresas por plano",M+gw+6,y);y+=3;
+  const cw=(W-2*M-15)/4,ch=20;D.K.forEach(([l,v,c],i)=>{const col=i%4,row=Math.floor(i/4),xx=M+col*(cw+5),yy=y+row*(ch+3);doc.setDrawColor(...RM_INK);doc.setLineWidth(.6);doc.line(xx,yy,xx+cw,yy);doc.setLineWidth(.2);
+    doc.setFont("helvetica","normal");doc.setFontSize(7.2);doc.setTextColor(...RM_INK2);T(doc.splitTextToSize(l,cw)[0],xx,yy+4);doc.setFont("times","bold");doc.setFontSize(String(v).length>12?12:15);doc.setTextColor(...RM_INK);T(v,xx,yy+11);doc.setFont("helvetica","normal");doc.setFontSize(6.8);doc.setTextColor(...RM_INK2);T(doc.splitTextToSize(c||"",cw)[0]||"",xx,yy+15.5)});
+  y+=2*(ch+3)+6;doc.setTextColor(...RM_INK);const gw=(W-2*M-6)/2,gh=50;doc.setFont("helvetica","bold");doc.setFontSize(10.5);T("Novas empresas por mês",M,y);T("Empresas por plano",M+gw+6,y);y+=3;
   doc.addImage(grafM("barras",D.serie,cor,gw*3.2,gh*3.2),"PNG",M,y,gw,gh);doc.addImage(grafM("rosca",D.PL,cor,gw*3.2,gh*3.2),"PNG",M+gw+6,y,gw,gh);y+=gh+6;
   if(D.ac.length){quebra(50);doc.setFont("helvetica","bold");doc.setFontSize(10.5);T("Usuários ativos por dia no mês",M,y);y+=3;doc.addImage(grafM("barras",D.ac.map(d=>[d.dia,d.usuarios]),cor,(W-2*M)*3.2,45*3.2),"PNG",M,y,W-2*M,45);y+=51}
   quebra(20);doc.setFont("helvetica","bold");doc.setFontSize(10.5);T("Contratantes",M,y);y+=6;doc.setFontSize(7.6);const cols=["Empresa","Sigla","Plano","Situação","Bens","Usuários","Ativos 30 d","Último acesso"],ws=[52,16,20,20,16,18,18,26];
   const cab=()=>{doc.setFillColor(...rgb(cor.soft||"#efece6"));doc.rect(M,y-3.6,W-2*M,5.6,"F");doc.setFont("helvetica","bold");let xx=M;cols.forEach((c,i)=>{T(c,xx+1,y);xx+=ws[i]});y+=5.6;doc.setFont("helvetica","normal")};cab();
   D.CT.forEach(l=>{if(quebra(5.6))cab();let xx=M;l.forEach((v,i)=>{T(doc.splitTextToSize(String(v),ws[i]-2)[0],xx+1,y);xx+=ws[i]});doc.setDrawColor(230,228,224);doc.line(M,y+2,W-M,y+2);y+=5.4});
-  const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFontSize(7.5);doc.setTextColor(107,112,120);T("Atalaia System · a Matriz vê apenas quantidades de uso (LGPD)",M,H-6);T(`Página ${i} de ${n}`,W-M,H-6,{align:"right"})}
+  rmRodape(doc,W,H,M,cod,E.rmWm||"meia");
   baixarArq(doc.output("blob"),`dashboard_matriz_${mes}.pdf`);toast("Relatório do mês baixado.")}catch(e){toast(e.message||"Não foi possível gerar o PDF.")}}
 function matExcel(){const mes=(document.getElementById("mrm")||{}).value||new Date().toISOString().slice(0,7),D=matDados(mes);
   baixarArq(planilhaXlsx([{nome:"Indicadores",cab:true,linhas:[["Indicador","Valor","Observação"],...D.K]},{nome:"Por plano",cab:true,linhas:[["Plano","Empresas ativas"],...D.PL]},{nome:"Novas por mês",cab:true,linhas:[["Mês","Novas empresas"],...D.serie]},{nome:"Contratantes",cab:true,linhas:[["Empresa","Sigla","Plano","Situação","Bens","Usuários","Ativos 30 dias","Último acesso"],...D.CT]}]),`dashboard_matriz_${mes}.xlsx`);toast("Planilha do mês baixada.")}
 
 /* ================= RELATÓRIOS DA MATRIZ (exclusivos · marca d'água do "A") ================= */
-const RELM=[["conselho","Painel do Conselho","1 página por mês: estamos crescendo, os clientes estão usando, a operação está saudável e quais são os riscos"],
+const RELM=[["geral","📚 Relatório geral da Matriz","Tudo de uma vez: Painel do Conselho, Financeiro do mês e Carteira de clientes no mesmo documento"],["conselho","Painel do Conselho","1 página por mês: estamos crescendo, os clientes estão usando, a operação está saudável e quais são os riscos"],
  ["financeiro","Financeiro do mês","Receita recorrente por plano e por segmento, adicionais, empresas novas, em teste, bloqueadas e lista de pagantes"],
  ["dossie","Dossiê da empresa cliente","A ficha de uma empresa: plano, limites, nota de saúde, uso dos últimos 30 dias, unidades e atendimentos"],
  ["carteira","Carteira de clientes","Empresas por região, segmento e plano, saúde de cada uma e quem precisa de atenção"]];
-const RM_COD={conselho:"CONS",financeiro:"FIN",dossie:"DOS",carteira:"CART"};
+const RM_COD={geral:"GERAL",conselho:"CONS",financeiro:"FIN",dossie:"DOS",carteira:"CART"};
 const RM_INK=[18,58,60],RM_INK2=[67,88,90],RM_BRASS=[165,129,58],RM_LINE=[213,221,220],RM_TEAL=[29,107,110];
 function rmMes(){return E.rmMes||new Date().toISOString().slice(0,7)}
 function rmUF(cid){const L=(E.mapaD||[]).filter(r=>r.contratante_id==cid);const e=L.find(r=>r.tipo=="empresa"&&r.uf)||L.find(r=>r.uf);return e?{uf:e.uf,cidade:e.cidade||""}:{uf:"",cidade:""}}
 function rmRegiao(uf){const u=(MAPA_BR.uf||[]).find(x=>x[0]==uf);return u?REG_BR[u[2]]||u[2]:"Sem estado"}
 function rmCodigo(k){const m=rmMes().replace("-","");return `MTZ-${m}-${RM_COD[k]}-${Math.random().toString(16).slice(2,6).toUpperCase()}`}
 /* dados de cada modelo: {titulo, sub, nota, blocos:[{q|t, kpis|cols+linhas}]} */
-function rmDados(k){const mes=rmMes(),[a,b]=mes.split("-").map(Number),noMes=d=>d&&String(d).slice(0,7)==mes,lab=new Date(a,b-1,15).toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
+function rmDados(k){if(k=="geral"){const P=[["conselho","Conselho"],["financeiro","Financeiro"],["carteira","Carteira"]].map(([x,t])=>[t,rmDados(x)]),c=P[0][1];
+    return {titulo:"Relatório geral da Matriz",sub:c.sub+" · Conselho, Financeiro e Carteira",nota:c.nota,blocos:P.flatMap(([t,d])=>d.blocos.map(bl=>bl.q?{...bl,q:`${t} · ${bl.q}`}:{...bl,t:`${t} · ${bl.t}`}))}}
+  const mes=rmMes(),[a,b]=mes.split("-").map(Number),noMes=d=>d&&String(d).slice(0,7)==mes,lab=new Date(a,b-1,15).toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
   const at=E.cts.filter(c=>c.situacao!="encerrado"),pag=at.filter(c=>c.situacao=="ativo"&&Number(c.preco_mensal)>0),rec=c=>Number(c.preco_mensal||0)+Number(c.adicionais_valor||0);
   const mrr=pag.reduce((s,c)=>s+rec(c),0),novas=E.cts.filter(c=>noMes(c.criado_em)),enc=E.cts.filter(c=>c.situacao=="encerrado"),blo=E.cts.filter(c=>c.situacao=="leitura"),tes=E.cts.filter(c=>c.situacao=="teste");
   const ativ30=at.filter(c=>{const d=diasDesde(c.ultimo_acesso);return d!=null&&d<=30}),usu=at.reduce((s,c)=>s+Number(c.usuarios||0),0),usuA=at.reduce((s,c)=>s+Number(c.usuarios_ativos_30d||0),0),bens=at.reduce((s,c)=>s+Number(c.bens||0),0);
@@ -453,12 +456,15 @@ function rmMarca(doc,W,H,wm,cod){if(wm=="sem")return;const quem=(E.meuNome||E.em
   else if(wm=="conf"){doc.saveGraphicsState();doc.setGState(new doc.GState({opacity:.08,"stroke-opacity":.08}));doc.setTextColor(...RM_INK);doc.setFont("helvetica","bold");doc.setFontSize(30);for(let i=0;i<6;i++)doc.text("CONFIDENCIAL · MATRIZ ATALAIA",-30+i*8,70+i*52,{angle:32});doc.restoreGraphicsState()}
   else if(wm=="ras"){doc.saveGraphicsState();doc.setGState(new doc.GState({opacity:.10}));doc.setTextColor(...RM_INK);doc.setFont("helvetica","normal");doc.setFontSize(8);const t=`Emitido por ${quem} · ${new Date().toLocaleString("pt-BR")} · ${cod}`;for(let yy=30;yy<H;yy+=34)for(let xx=-20;xx<W;xx+=92)doc.text(t,xx,yy,{angle:24});doc.restoreGraphicsState()}
   doc.setTextColor(...RM_INK)}
+/* cabeçalho e rodapé padrão de TODOS os PDFs da Matriz (sem faixa, "A" da Atalaia) */
+function rmCab(doc,W,M,nome,per){const T=(t,x,y,o)=>doc.text(String(t).replace(/[^\x00-\xFF·–—“”‘’…]/g,""),x,y,o),emit=new Date().toLocaleDateString("pt-BR");rmA(doc,M,9,11);doc.setTextColor(...RM_INK);doc.setFont("times","bold");doc.setFontSize(13.5);T("Atalaia System · Matriz",M+14,14);doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(...RM_INK2);T(nome.toUpperCase(),M+14,18.6,{charSpace:.4});
+  T(per.charAt(0).toUpperCase()+per.slice(1),W-M,13.6,{align:"right"});T("Emitido em "+emit,W-M,18,{align:"right"});doc.setDrawColor(...RM_INK);doc.setLineWidth(.35);doc.line(M,22,W-M,22);doc.setDrawColor(...RM_BRASS);doc.setLineWidth(1);doc.line(M,23.3,M+34,23.3);doc.setLineWidth(.2);doc.setTextColor(...RM_INK)}
+function rmRodape(doc,W,H,M,cod,marca){const n=doc.getNumberOfPages(),quem=(E.meuNome||E.email||"").split("@")[0],T=(t,x,y,o)=>doc.text(String(t).replace(/[^\x00-\xFF·–—“”‘’…]/g,""),x,y,o);for(let i=1;i<=n;i++){doc.setPage(i);if(marca)rmMarca(doc,W,H,marca,cod);doc.setDrawColor(...RM_LINE);doc.line(M,H-12,W-M,H-12);doc.setFont("helvetica","normal");doc.setFontSize(7);doc.setTextColor(110,125,126);T(`Uso interno da Matriz · só quantidades das empresas (LGPD)${quem?" · emitido por "+quem:""}`,M,H-8);doc.setFont("courier","normal");T(`${cod} · p. ${i}/${n}`,W-M,H-8,{align:"right"})}}
 async function rmPDF(){const k=E.rmK||"conselho";try{if(!E.mapaD){await carregaMapaM()}const D=rmDados(k),wm=E.rmWm||"meia",cod=rmCodigo(k);
   if(!window.jspdf)await addScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
   const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,H=297,M=16;let y=0;const T=(t,xx,yy,o)=>doc.text(Array.isArray(t)?t.map(v=>String(v).replace(/[^\x00-\xFF·–—“”‘’…]/g,"")):String(t).replace(/[^\x00-\xFF·–—“”‘’…]/g,""),xx,yy,o);
   const nome=RELM.find(r=>r[0]==k)[1],emit=new Date().toLocaleDateString("pt-BR"),per=k=="dossie"?`Situação em ${emit}`:new Date(rmMes()+"-15").toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
-  const topo=()=>{rmMarca(doc,W,H,wm,cod);rmA(doc,M,9,11);doc.setTextColor(...RM_INK);doc.setFont("times","bold");doc.setFontSize(13.5);T("Atalaia System · Matriz",M+14,14);doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(...RM_INK2);T(nome.toUpperCase(),M+14,18.6,{charSpace:.4});
-    T(per.charAt(0).toUpperCase()+per.slice(1),W-M,13.6,{align:"right"});T("Emitido em "+emit,W-M,18,{align:"right"});doc.setDrawColor(...RM_INK);doc.setLineWidth(.35);doc.line(M,22,W-M,22);doc.setDrawColor(...RM_BRASS);doc.setLineWidth(1);doc.line(M,23.3,M+34,23.3);doc.setLineWidth(.2);doc.setTextColor(...RM_INK);y=33};
+  const topo=()=>{rmMarca(doc,W,H,wm,cod);rmCab(doc,W,M,nome,per);y=33};
   const nova=()=>{doc.addPage();topo()},quebra=h=>{if(y+h>H-18){nova();return true}return false};
   topo();doc.setFont("times","bold");doc.setFontSize(17);T(doc.splitTextToSize(D.titulo,W-2*M)[0],M,y);y+=5.5;doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.setTextColor(...RM_INK2);T(D.sub,M,y);doc.setTextColor(...RM_INK);y+=6;
   if(D.nota){const nl=doc.splitTextToSize(D.nota,W-2*M-8);doc.setFillColor(248,244,234);doc.rect(M,y-3.6,W-2*M,nl.length*4+3.4,"F");doc.setDrawColor(...RM_BRASS);doc.setLineWidth(.8);doc.line(M,y-3.6,M,y-3.6+nl.length*4+3.4);doc.setLineWidth(.2);doc.setFontSize(8.6);T(nl,M+4,y);y+=nl.length*4+5}
@@ -468,7 +474,7 @@ async function rmPDF(){const k=E.rmK||"conselho";try{if(!E.mapaD){await carregaM
     const cab=()=>{doc.setFont("helvetica","bold");doc.setFontSize(7.4);doc.setTextColor(...RM_INK2);let x=M;cols.forEach((c,i)=>{T(doc.splitTextToSize(c,ws[i]-2)[0],x+1,y);x+=ws[i]});doc.setDrawColor(...RM_INK);doc.setLineWidth(.35);doc.line(M,y+1.6,W-M,y+1.6);doc.setLineWidth(.2);doc.setTextColor(...RM_INK);y+=5.2};
     cab();if(!bl.linhas.length){doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(...RM_INK2);T("Nada no período.",M+1,y);doc.setTextColor(...RM_INK);y+=6;continue}
     doc.setFont("helvetica","normal");doc.setFontSize(8);for(const l of bl.linhas){const cl=l.map((v,i)=>doc.splitTextToSize(String(v??""),ws[i]-2).slice(0,3)),h=Math.max(...cl.map(c=>c.length))*3.5+1.6;if(quebra(h+2)){cab();doc.setFont("helvetica","normal");doc.setFontSize(8)}let x=M;cl.forEach((c,i)=>{T(c,x+1,y);x+=ws[i]});doc.setDrawColor(...RM_LINE);doc.line(M,y+h-2.6,W-M,y+h-2.6);y+=h}y+=3}
-  const n=doc.getNumberOfPages(),quem=(E.meuNome||E.email||"").split("@")[0];for(let i=1;i<=n;i++){doc.setPage(i);doc.setDrawColor(...RM_LINE);doc.line(M,H-12,W-M,H-12);doc.setFont("helvetica","normal");doc.setFontSize(7);doc.setTextColor(110,125,126);T(`Uso interno da Matriz · só quantidades das empresas (LGPD)${quem?" · emitido por "+quem:""}`,M,H-8);doc.setFont("courier","normal");T(`${cod} · p. ${i}/${n}`,W-M,H-8,{align:"right"})}
+  rmRodape(doc,W,H,M,cod,null);
   baixarArq(doc.output("blob"),`matriz_${k}_${k=="dossie"?(D.empresa&&(D.empresa.sigla||"empresa")):rmMes()}.pdf`);try{DB.registrar&&DB.registrar("baixou relatório da matriz",nome)}catch(e){}toast("Relatório baixado · código "+cod)}catch(e){toast(e.message||"Não foi possível gerar o PDF.")}}
 function rmExcel(){const k=E.rmK||"conselho",D=rmDados(k),nome=RELM.find(r=>r[0]==k)[1];
   const abas=[{nome:"Resumo",cab:true,linhas:[["Relatório","Valor"],["Modelo",nome],["Título",D.titulo],["Referência",D.sub],["Comentário",D.nota||""],["Emitido em",new Date().toLocaleString("pt-BR")]]}];

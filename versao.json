@@ -1,1 +1,1 @@
-{"app": "0.3.31", "gestor": "0.9.42", "matriz": "0.3.17", "novidade": "Matriz: nova aba Relatórios (Painel do Conselho, Financeiro, Dossiê da empresa, Carteira) com marca d'água do “A” da Atalaia, código em cada página, PDF e Excel. Gestor e app: PDFs sem a faixa preta por padrão."}
+{"app": "0.3.31", "gestor": "0.9.42", "matriz": "0.3.18", "novidade": "Matriz: todos os PDFs no mesmo formato (Dashboard do mês com o “A” da Atalaia e marca d'água) e novo Relatório geral da Matriz (Conselho + Financeiro + Carteira de uma vez)."}
