@@ -218,7 +218,7 @@ label.f{display:grid;gap:5px;font-weight:600;font-size:.85rem;margin-bottom:10px
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.45"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.46"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -430,9 +430,10 @@ async acao(id,a,o){o=o||{};return chk(await sb.rpc("chamado_acao",{p_id:id,p_aca
     async finalizarAud(id){return chk(await sb.rpc("finalizar_auditoria",{p_auditoria:id}))},
     async sla(c){return chk(await sb.from("prazos_sla").select("*").eq("contratante_id",c))},
     async salvarSla(c,linhas){return chk(await sb.from("prazos_sla").upsert(linhas.map(l=>({...l,contratante_id:c}))))},
+    async entradas(c){const ini=new Date(Date.now()-30*864e5).toISOString();return chk(await sb.from("registro_acessos").select("criado_em,acao,aparelho,user_id").eq("contratante_id",c).in("acao",["entrou","abriu o app"]).gte("criado_em",ini).order("criado_em",{ascending:false}).limit(1000))},
     async acessos(c){return chk(await sb.from("registro_acessos").select("criado_em,acao,detalhe,aparelho,user_id").eq("contratante_id",c).order("criado_em",{ascending:false}).limit(200))},
     async salvarDesign(c,d){return chk(await sb.rpc("salvar_design",{p_contratante:c,p_design:d}))},
-    async registrar(c,a,d){try{await sb.from("registro_acessos").insert({contratante_id:c,acao:a,detalhe:d||null,aparelho:"Computador · Painel do Gestor"})}catch(e){}}
+    async registrar(c,a,d){try{await sb.from("registro_acessos").insert({contratante_id:c,acao:a,detalhe:d||null,aparelho:aparelhoId("Painel")})}catch(e){}}
   };
 }
 function mockDB(){
@@ -497,6 +498,7 @@ function mockDB(){
     async bens(){return B.filter(b=>b.ativo&&ve(b))},async addBem(b){const am=A.find(a=>a.id==b.ambiente_id)||A[0];const n={...b,id:"b"+Date.now(),estabelecimento_id:am.estabelecimento_id,patrimonio:b.patrimonio||fmtPat(SEQ.n++),criado_em:new Date().toISOString(),ativo:true};if(b.patrimonio){const e=ET.find(x=>x.numero==b.patrimonio&&x.situacao=="livre");if(!e)throw new Error("A etiqueta "+b.patrimonio+" não está livre (já usada, inutilizada ou não gerada).");e.situacao="usada"}B.unshift(n);return n},async updBem(id,b){Object.assign(B.find(x=>x.id==id),b)},
     async foto(c,blob){return "demo/"+URL.createObjectURL(blob)},async urlFoto(p){return p?.startsWith("demo/")?p.slice(5):null},
     async membros(){return M.filter(m=>!comoAdm||m.estabelecimento_id==ADMU||m.user_id==meu.user_id)},async atualizarMembro(u,p,un,at){Object.assign(M.find(m=>m.user_id==u),{perfil:p,estabelecimento_id:p=="gestor"?null:un,ativo:at})},
+    async entradas(){const h=Date.now();return [{criado_em:new Date(h-6e5).toISOString(),acao:"entrou",aparelho:"Celular · Chrome · #K7P2",user_id:"u-colab"},{criado_em:new Date(h-36e5*3).toISOString(),acao:"entrou",aparelho:"Computador · Edge · Painel · #Q9W4",user_id:"u-adm"},{criado_em:new Date(h-36e5*30).toISOString(),acao:"entrou",aparelho:"Computador · Edge · Painel · #Q9W4",user_id:"u-adm"},{criado_em:new Date(new Date().setHours(2,14,0,0)-864e5).toISOString(),acao:"abriu o app",aparelho:"Celular · Chrome · #Z1Z1",user_id:"u-colab"}]},
     async acessos(){return [{criado_em:new Date().toISOString(),acao:"entrou",aparelho:"Computador · Painel"},{criado_em:new Date(Date.now()-864e5).toISOString(),acao:"cadastrou bem",detalhe:"Autoclave",aparelho:"Celular · Chrome"}]},
     async salvarDesign(cid,d){c.design=d;return d},async registrar(){},
     async chamados(){return CH.filter(x=>!x.excluido_em&&ve(x))},
@@ -955,7 +957,7 @@ async function posLogin(novo){
   E.v=await DB.vinculo();if(E.v){try{E.v.dados=await DB.empresaDados(E.v.contratante_id)}catch(e){E.v.dados={}}}
   if(!E.v){const ina=await DB.acessoInativo();if(ina){apagarDadosLocais(DEMO?"atalaia-painel-demo":"atalaia-painel");E.tela="negado";E.negMsg="Seu acesso foi desativado";E.negSub=`A empresa ${ina.empresa||""} desativou o seu acesso${ina.inativado_em?" em "+new Date(ina.inativado_em).toLocaleDateString("pt-BR"):""}. Se for um engano, fale com o Gestor ou o Administrador da sua unidade.`;render();return}E.tela="negado";E.negMsg="Acesso ainda não liberado";E.negSub="Seu e-mail não está ligado a uma empresa.";render();return}
   if(!["administrador","gestor","cliente"].includes(E.v.perfil)){E.tela="negado";E.negMsg="O painel é para o Gestor, os Administradores e os clientes";E.negSub="Colaboradores usam o aplicativo do celular no dia a dia.";render();return}
-  aplicarDesign(E.v.contratantes.design);E.tela="painel";if(novo)DB.registrar(E.v.contratante_id,"entrou",null);await recarregar();
+  aplicarDesign(E.v.contratantes.design);E.tela="painel";if(novo)DB.registrar(E.v.contratante_id,"entrou",null);await recarregar();if(ADMIN())DB.entradas(E.v.contratante_id).then(r=>{E.entradas=r||[];render()}).catch(()=>{});
 }
 async function confirmarMfa(){try{const f=(await DB.fatores()).find(x=>x.status=="verified");await DB.verificar(f.id,$("#otp").value.trim());await posLogin(E.novo)}catch(e){falha(e.message)}}
 async function recarregar(){const c=E.v.contratante_id;try{[E.est,E.amb,E.bens,E.mem,E.aces]=await Promise.all([DB.estab(c),DB.amb(c),DB.bens(c),DB.membros(c),DB.acessos(c).catch(()=>[])]);
@@ -1715,6 +1717,7 @@ function modalRondaDet(){const m=E.modal,r=m.r;const porAmb={};m.reg.forEach(x=>
 /* ---------------- Avisos ---------------- */
 function pgAvisos(){const AL=alertas(),cor={alta:"atraso",media:"pri media",baixa:"note"};return `<div class="top"><div><h1>Avisos e alertas</h1><p class="sub">A central de alertas é montada sozinha com o que precisa de atenção agora. Os avisos são mensagens do sistema e do Gestor.</p></div></div>
   <div class="card"><h2 style="margin:0 0 6px">Central de alertas (${AL.length})</h2>${AL.map(a=>`<div style="padding:8px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><div><span class="${cor[a[0]]}">${a[0]=="alta"?"Urgente":a[0]=="media"?"Atenção":"Informativo"}</span> <b>${esc(a[1])}</b><div class="note">${esc(a[2])}</div></div>${a[3]?`<button class="btn ghost sm" onclick="${a[4]||""}ir('${a[3]}')">Abrir</button>`:""}</div>`).join("")||`<p class="note">Nada pedindo atenção agora. ✓</p>`}</div>
+  ${ADMIN()?cardEntradas():""}
   <h2 style="margin:14px 0 6px">Avisos</h2><div class="card">${E.avisos.map(a=>`<div style="padding:10px 0;border-top:1px solid var(--line);${a.lido_em?"opacity:.6":""}"><b>${esc(a.titulo)}</b><div class="note">${dh(a.criado_em)}${a.de_nome?" · de "+esc(a.de_nome):""}</div><p style="margin:4px 0">${esc(a.texto||"")}</p>${a.lido_em?"":`<button class="btn ghost sm" onclick="lerAviso(${a.id})">Marcar como lido</button>`}${a.link?` <button class="btn sm" onclick="ir('${esc(a.link)}')">Abrir</button>`:""}</div>`).join("")||`<p class="note">Nenhum aviso.</p>`}</div>`}
 async function lerAviso(id){try{await DB.lerAviso(id);E.avisos=await DB.avisos();render()}catch(e){toast(e.message)}}
 
@@ -3215,7 +3218,26 @@ function alertas(){const A=[],h=hojeISO(),d7=new Date(Date.now()+7*864e5).toISOS
   const ped=(E.peds||[]).filter(p=>p.situacao=="pendente");if(ped.length)A.push(["baixa",`${ped.length} pedido(s) de acesso aguardando a equipe Atalaia`,ped.map(p=>p.nome).join(" · "),"cad","E.cadTab='col';"]);
   const av=(E.avs||[]).filter(a=>!a.resposta&&a.tipo=="reclamacao");if(av.length)A.push(["media",`${av.length} reclamação(ões) do Avalie sem resposta`,"responda o que foi feito","aval"]);
   const o={alta:0,media:1,baixa:2};return A.sort((a,b)=>o[a[0]]-o[b[0]])}
-function nSino(){return (E.avisos||[]).filter(a=>!a.lido_em).length+alertas().filter(a=>a[0]!="baixa").length}
+/* ---- entradas no sistema (segurança): quem entrou, quando e por qual aparelho ---- */
+function aparelhoId(extra){const u=navigator.userAgent;let id="";try{id=localStorage.getItem("atalaia_disp")||"";if(!id){id=Math.random().toString(36).slice(2,6).toUpperCase();localStorage.setItem("atalaia_disp",id)}}catch(e){}return [(/Mobi|Android|iPhone/.test(u)?"Celular":"Computador"),(/Edg\//.test(u)?"Edge":/Chrome\//.test(u)?"Chrome":/Safari\//.test(u)?"Safari":/Firefox\//.test(u)?"Firefox":"Navegador"),extra,id?"#"+id:""].filter(Boolean).join(" · ")}
+function entVisto(){try{return Number(localStorage.getItem("atalaia.gestor.entradas_visto")||0)}catch(e){return 0}}
+function entradasInfo(){const L=(E.entradas||[]).slice().sort((a,b)=>a.criado_em.localeCompare(b.criado_em)),vist={},out=[];
+  for(const a of L){const k=(a.user_id||"")+"|"+(a.aparelho||"");const novo=!vist[k]&&L.some(x=>x.user_id==a.user_id&&x!==a&&x.criado_em<a.criado_em);vist[k]=1;const h=new Date(a.criado_em).getHours();out.push({...a,novoAp:novo,madrugada:h<6||h>=22})}
+  return out.reverse()}
+function nEntradasNovas(){const v=entVisto();return entradasInfo().filter(a=>a.user_id!=E.uid&&Date.parse(a.criado_em)>v&&a.acao=="entrou").length}
+function cardEntradas(){const nm=id=>id==E.uid?"Você":((E.mem||[]).find(m=>m.user_id==id)||{}).nome||"Pessoa da empresa",pf=id=>{const m=(E.mem||[]).find(x=>x.user_id==id);return m?(NOMEP[m.perfil]||m.perfil)+(m.estabelecimento_id?" · "+nomeUni(m.estabelecimento_id):""):""},v=entVisto(),f=E.entF||{};
+  if(!E.entradas){DB.entradas(E.v.contratante_id).then(r=>{E.entradas=r||[];if(E.pag=="avisos")render()}).catch(()=>{E.entradas=[];if(E.pag=="avisos")render()});return `<div class="card"><h2 style="margin:0">🔐 Entradas no sistema</h2><p class="note">Carregando…</p></div>`}
+  setTimeout(()=>{try{localStorage.setItem("atalaia.gestor.entradas_visto",String(Date.now()))}catch(e){}},1500);
+  const T=entradasInfo(),L=T.filter(a=>(!f.u||a.user_id==f.u)&&(!f.s||(f.s=="novo"?a.novoAp:f.s=="mad"?a.madrugada:true))),pes=[...new Set(T.map(a=>a.user_id).filter(Boolean))];
+  const hoje=hojeISO(),nHoje=T.filter(a=>a.criado_em.slice(0,10)==hoje||dt(a.criado_em)==dt(new Date().toISOString())).length;
+  return `<div class="card"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline"><h2 style="margin:0">🔐 Entradas no sistema</h2><span class="note">últimos 30 dias · fica registrado e não pode ser apagado</span></div>
+   <p class="note" style="margin:4px 0 8px">Toda vez que alguém entra no painel ou no aplicativo, fica guardado quem foi, quando e por qual aparelho. Em destaque: <b>aparelho novo</b> (a pessoa entrou por um aparelho que ainda não tinha usado) e <b>fora de hora</b> (entre 22h e 6h).${GESTOR()?"":" Você vê as entradas da sua unidade."}</p>
+   <div class="grid g4">${kpi("Entradas hoje",num(nHoje))}${kpi("Pessoas que entraram",num(pes.length),"nos últimos 30 dias")}${kpi("Aparelho novo",num(T.filter(a=>a.novoAp).length),"conferir se foi a própria pessoa")}${kpi("Fora de hora",num(T.filter(a=>a.madrugada).length),"entre 22h e 6h")}</div>
+   <div class="filters"><label>Pessoa<select onchange="E.entF={...(E.entF||{}),u:this.value};render()"><option value="">Todas</option>${pes.map(u=>`<option value="${u}" ${f.u==u?"selected":""}>${esc(nm(u))}</option>`).join("")}</select></label><label>Mostrar<select onchange="E.entF={...(E.entF||{}),s:this.value};render()">${[["","Todas as entradas"],["novo","Só aparelho novo"],["mad","Só fora de hora"]].map(([k,t])=>`<option value="${k}" ${(f.s||"")==k?"selected":""}>${t}</option>`).join("")}</select></label>
+    <button class="btn ghost sm" onclick="baixarArq(planilhaXlsx([{nome:'Entradas no sistema',cab:true,linhas:[['Data e hora','Pessoa','Perfil e unidade','Como','Aparelho','Aparelho novo','Fora de hora'],...entradasInfo().map(a=>[dh(a.criado_em),((E.mem||[]).find(m=>m.user_id==a.user_id)||{}).nome||'',((E.mem||[]).find(m=>m.user_id==a.user_id)||{}).perfil||'',a.acao=='entrou'?'Entrou (login)':'Abriu o app',a.aparelho||'',a.novoAp?'sim':'',a.madrugada?'sim':''])]}]),'entradas_no_sistema.xlsx')">Exportar Excel</button></div>
+   <div class="tbl"><table><tr><th>Quando</th><th>Pessoa</th><th>Como</th><th>Aparelho</th><th></th></tr>${L.slice(0,150).map(a=>`<tr><td>${dh(a.criado_em)}${Date.parse(a.criado_em)>v&&a.user_id!=E.uid?` <span class="pill">novo</span>`:""}</td><td><b>${esc(nm(a.user_id))}</b><div class="note">${esc(pf(a.user_id))}</div></td><td>${a.acao=="entrou"?"Entrou (login)":"Abriu o app"}</td><td class="note">${esc(a.aparelho||"—")}</td><td>${a.novoAp?`<span class="atraso" title="Primeira vez neste aparelho">⚠ aparelho novo</span> `:""}${a.madrugada?`<span class="pri media">🌙 fora de hora</span>`:""}</td></tr>`).join("")||`<tr><td colspan="5" class="note">Nenhuma entrada nos últimos 30 dias.</td></tr>`}</table></div>
+   <p class="note" style="margin-top:6px">Se alguém entrou por um aparelho que não reconhece, peça para a pessoa trocar a senha e usar “Sair de todos os aparelhos”. O Gestor pode desativar o acesso na tela Equipe.</p></div>`}
+function nSino(){return (E.avisos||[]).filter(a=>!a.lido_em).length+alertas().filter(a=>a[0]!="baixa").length+nEntradasNovas()}
 
 /* ---- Estoque de peças ---- */
 function pgEstoque(){const P=(E.pecas||[]).filter(p=>okU(p,"fuE")),q=(E.qE||"").toLowerCase(),L=P.filter(p=>!q||(p.nome+" "+(p.codigo||"")+" "+(p.categoria||"")).toLowerCase().includes(q)),M=(E.estMov||[]).filter(m=>okU(m,"fuE")),mes=new Date().toISOString().slice(0,7);

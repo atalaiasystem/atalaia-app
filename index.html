@@ -113,7 +113,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.34",
+  versao:"0.3.35",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -239,7 +239,7 @@ function traduz(m){
   if(m&&m.includes("row-level security"))return "Sem permissão para esta ação.";
   return m||"Erro inesperado.";
 }
-function aparelho(){const u=navigator.userAgent;return (/Mobi|Android|iPhone/.test(u)?"Celular":"Computador")+" · "+(/Edg\//.test(u)?"Edge":/Chrome\//.test(u)?"Chrome":/Safari\//.test(u)?"Safari":/Firefox\//.test(u)?"Firefox":"Navegador")}
+function aparelho(){const u=navigator.userAgent;return (/Mobi|Android|iPhone/.test(u)?"Celular":"Computador")+" · "+(/Edg\//.test(u)?"Edge":/Chrome\//.test(u)?"Chrome":/Safari\//.test(u)?"Safari":/Firefox\//.test(u)?"Firefox":"Navegador")+(()=>{try{let id=localStorage.getItem("atalaia_disp");if(!id){id=Math.random().toString(36).slice(2,6).toUpperCase();localStorage.setItem("atalaia_disp",id)}return " · #"+id}catch(e){return ""}})()}
 
 /* ---------------- Estado e telas ---------------- */
 const E={tela:"carregando",aba:"bens",v:null,amb:[],bens:[],busca:"",fotos:{},msg:null,modal:null,modoSenha:"link",depois:null,fatores:[],insc:null,obrig:false,acessos:[],chamados:[],suporte:false};
