@@ -113,7 +113,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.33",
+  versao:"0.3.34",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -282,6 +282,8 @@ const cab=(sub)=>E.v&&E.tela=="app"?`<header><div class="wrap">${E.logoUrl?`<img
    <button class="mc-item" onclick="E.menuConta=false;E.aba='plano';abrirNivel();render();setTimeout(()=>document.getElementById('conta')?.scrollIntoView({behavior:'smooth'}),50)">🔒 Conta e segurança</button>
    <button class="mc-item" onclick="E.menuConta=false;E.modoSenha='trocar';E.tela='senha';E.msg=null;abrirNivel();render()">🔑 Trocar senha</button>
    <button class="mc-item" onclick="E.menuConta=false;E.aba='plano';abrirNivel();render();setTimeout(()=>document.getElementById('suporte')?.scrollIntoView({behavior:'smooth'}),50)">💬 Suporte Atalaia System</button>
+   <a class="mc-item" href="/privacidade/" target="_blank" rel="noopener" style="text-decoration:none">🔒 Política de Privacidade</a>
+   <a class="mc-item" href="/termos/" target="_blank" rel="noopener" style="text-decoration:none">📄 Termos de Uso</a>
    <button class="mc-item" style="color:var(--bad)" onclick="E.menuConta=false;sair()">⎋ Sair</button></div>`:""}</header>`
  :`<header><div class="wrap">${LOGO}<div><b>ATALAIA SYSTEM</b><small>${sub||"Sistema de Gestão de Patrimônio e Manutenção"}</small></div></div></header>`;
 const iniciais=n=>String(n||"?").trim().split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase();
