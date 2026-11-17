@@ -113,7 +113,7 @@ nav.tabs svg{width:22px;height:22px}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.32",
+  versao:"0.3.33",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -287,7 +287,7 @@ const cab=(sub)=>E.v&&E.tela=="app"?`<header><div class="wrap">${E.logoUrl?`<img
 const iniciais=n=>String(n||"?").trim().split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase();
 function telaLogin(){return cab()+`<div class="wrap center"><div class="card"><h1 style="margin-top:0">Entrar</h1><p class="sub">Use o e-mail e a senha cadastrados. No primeiro acesso, entre com a senha provisória: o sistema vai pedir que você crie a sua.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
  <form onsubmit="event.preventDefault();entrar()"><label>E-mail<input id="em" type="email" autocomplete="username" required></label><label>Senha<input id="se" type="password" autocomplete="current-password" required></label>${captchaHTML()}<button class="btn full">Entrar</button></form>
- <p style="text-align:center;margin:14px 0 0"><button class="btn ghost sm" onclick="esqueci()">Esqueci minha senha</button></p></div><p class="muted" style="text-align:center">Versão ${CONFIG.versao}</p></div>`}
+ <p style="text-align:center;margin:14px 0 0"><button class="btn ghost sm" onclick="esqueci()">Esqueci minha senha</button></p></div><p class="muted" style="text-align:center">Versão ${CONFIG.versao}</p><p class="muted" style="text-align:center;font-size:.82rem;margin:8px 0 0"><a href="/privacidade/" target="_blank" rel="noopener">Política de Privacidade</a> · <a href="/termos/" target="_blank" rel="noopener">Termos de Uso</a></p></div>`}
 const REGRAS=[[x=>x.length>=10,"10 caracteres ou mais"],[x=>/[a-z]/.test(x),"letra minúscula"],[x=>/[A-Z]/.test(x),"letra maiúscula"],[x=>/[0-9]/.test(x),"número"],[x=>/[^A-Za-z0-9]/.test(x),"símbolo (! @ # $ % …)"]];
 const senhaForte=x=>REGRAS.every(([f])=>f(x));
 function chkSenha(v){const ul=$("#chk");if(ul)ul.innerHTML=REGRAS.map(([f,t])=>`<li class="${f(v)?"ok":""}">${t}</li>`).join("")}

@@ -84,7 +84,7 @@ function formulario(erro){const a=S.a;
   <label>Seu nome (opcional)<input id="n" maxlength="80" autocomplete="name"></label>
   <label>Telefone ou setor para contato (opcional)<input id="c" maxlength="80"></label>
   <button class="btn" id="env">Enviar chamado</button></form>
-  <p class="muted" style="margin-top:10px">Não escreva dados de pacientes. Use só a descrição do problema.</p></div>${meusHTML()}</div>`+rod}
+  <p class="muted" style="margin-top:10px">Não escreva dados de pacientes. Use só a descrição do problema. Nome e contato são opcionais e servem só para dar retorno sobre este pedido (<a href="/privacidade/" target="_blank" rel="noopener">Política de Privacidade</a>).</p></div>${meusHTML()}</div>`+rod}
 let _vt=null;
 function pararVolta(){clearInterval(_vt);_vt=null;const v=$("#volta");if(v)v.remove()}
 function contagem(n){clearInterval(_vt);_vt=setInterval(()=>{n--;const e=$("#vs");if(!e){clearInterval(_vt);return}e.textContent=n;if(n<=0)voltarInicio()},1000)}
@@ -107,7 +107,7 @@ function telaAvalie(erro){const a=S.a;S.tp=S.tp||"";
   <label>Sua mensagem *<textarea id="at" rows="4" maxlength="1000" required></textarea></label>
   <label>Seu nome (opcional)<input id="an" maxlength="80" autocomplete="name"></label>
   <label>Telefone ou e-mail para retorno (opcional)<input id="ac2" maxlength="80"></label>
-  <button class="btn" id="aenv">Enviar</button></form><p class="muted" style="margin-top:10px">Para um problema que precisa de conserto, use Abrir chamado. Não escreva dados de pacientes.</p></div></div>`+rod}
+  <button class="btn" id="aenv">Enviar</button></form><p class="muted" style="margin-top:10px">Para um problema que precisa de conserto, use Abrir chamado. Não escreva dados de pacientes. Nome e contato são opcionais e servem só para dar retorno sobre este pedido (<a href="/privacidade/" target="_blank" rel="noopener">Política de Privacidade</a>).</p></div></div>`+rod}
 async function enviarAvalie(){const t=$("#at").value.trim();if(!S.tp)return telaAvalie("Escolha reclamação, sugestão ou elogio.");if(t.length<5)return telaAvalie("Escreva a sua mensagem (pelo menos 5 letras).");
   const b=$("#aenv");b.disabled=true;b.textContent="Enviando…";
   try{const r=await DB.avalie(P.get("t"),S.tp,t,$("#an").value.trim(),$("#ac2").value.trim());S.tp="";
