@@ -130,17 +130,18 @@ const RX=new RegExp("("+Object.keys(M).join("|")+")\\uFE0F?","gu"),RT=new RegExp
 let css="i.ic{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.16em;background:currentColor;font-style:normal;-webkit-mask:var(--im) center/contain no-repeat;mask:var(--im) center/contain no-repeat;flex:none}i.ic.ic-r{background:#B91C1C}i.ic.ic-a{background:#B45309}i.ic.ic-g{background:#9CA3AF}";
 for(const k in P)css+=`i.ic-${k}{--im:url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+P[k]+'</svg>')}")}`;
 let ob=null,ligado=false;
-function texto(n){const p=n.parentNode;if(!p||PULA[p.nodeName])return;const t=n.nodeValue;if(!t||!RT.test(t))return;
+const PLR=/([A-Za-zÀ-ÿ]+)\((s|es|ões)\)/g,PLT=/[A-Za-zÀ-ÿ]\((?:s|es|ões)\)/;
+function numAntes(t,i,n){const a=t.slice(0,i),c=a.split(/[.;:·|•\n]/).pop(),m=c.match(/(\d+(?:[.,]\d+)?)(?!.*\d)/);if(m)return m[1];if(c.trim()==""||/^[\s()A-Za-zÀ-ÿ]*$/.test(c)){const p=n.previousSibling;if(p&&p.textContent){const q=p.textContent.match(/(\d+(?:[.,]\d+)?)\s*$/);if(q&&c.split(/\s+/).filter(Boolean).length<=3)return q[1]}}return null}
+function plural(n){const t=n.nodeValue;if(!t||!PLT.test(t))return;const v=t.replace(PLR,(m,w,suf,i)=>{const k=numAntes(t,i,n),um=k!=null&&/^0*1$/.test(k.replace(/[.,]0+$/,""));if(suf=="ões")return um?w:w.replace(/ção$/,"ções").replace(/são$/,"sões");return um?w:w+suf});if(v!=t)n.nodeValue=v}
+function texto(n){const p=n.parentNode;if(!p||PULA[p.nodeName])return;plural(n);if(!ligado)return;const t=n.nodeValue;if(!t||!RT.test(t))return;
   if(p.nodeName=="OPTION"||p.nodeName=="OPTGROUP"){n.nodeValue=t.replace(RX,"").replace(/^\s+/,"");return}
   const f=document.createDocumentFragment();let u=0;t.replace(RX,(m,e,i)=>{if(i>u)f.appendChild(document.createTextNode(t.slice(u,i)));const el=document.createElement("i");el.className="ic ic-"+M[e];el.setAttribute("aria-hidden","true");f.appendChild(el);u=i+m.length;return m});
   if(u<t.length)f.appendChild(document.createTextNode(t.slice(u)));p.replaceChild(f,n)}
-function varrer(r){if(!r)return;if(r.nodeType==3)return texto(r);if(r.nodeType!=1||PULA[r.nodeName])return;if(!RT.test(r.textContent||""))return;
-  const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT),l=[];let n;while(n=w.nextNode())if(RT.test(n.nodeValue))l.push(n);l.forEach(texto)}
-window.atalaiaIcones=function(on){on=!!on;if(on==ligado)return;ligado=on;document.documentElement.classList.toggle("ic-on",on);
-  if(on){if(!document.getElementById("ic-css")){const s=document.createElement("style");s.id="ic-css";s.textContent=css;document.head.appendChild(s)}
-    const go=()=>{varrer(document.body);ob=new MutationObserver(ms=>{for(const m of ms){if(m.type=="characterData")texto(m.target);else m.addedNodes.forEach(varrer)}});ob.observe(document.body,{childList:true,subtree:true,characterData:true})};
-    document.body?go():document.addEventListener("DOMContentLoaded",go,{once:true})}
-  else if(ob){ob.disconnect();ob=null}};
+function varrer(r){if(!r)return;if(r.nodeType==3)return texto(r);if(r.nodeType!=1||PULA[r.nodeName])return;const tc=r.textContent||"";if(!(ligado&&RT.test(tc))&&!PLT.test(tc))return;
+  const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT),l=[];let n;while(n=w.nextNode())if((ligado&&RT.test(n.nodeValue))||PLT.test(n.nodeValue))l.push(n);l.forEach(texto)}
+function iniciar(){if(ob)return;const go=()=>{if(ob)return;varrer(document.body);ob=new MutationObserver(ms=>{for(const m of ms){if(m.type=="characterData")texto(m.target);else m.addedNodes.forEach(varrer)}});ob.observe(document.body,{childList:true,subtree:true,characterData:true})};document.body?go():document.addEventListener("DOMContentLoaded",go,{once:true})}
+window.atalaiaIcones=function(on){on=!!on;document.documentElement.classList.toggle("ic-on",on);if(on&&!document.getElementById("ic-css")){const s=document.createElement("style");s.id="ic-css";s.textContent=css;document.head.appendChild(s)}const mudou=on!=ligado;ligado=on;iniciar();if(mudou&&on&&document.body)varrer(document.body)};
+iniciar();
 })();
 
 atalaiaIcones(true);</script>
@@ -158,7 +159,7 @@ atalaiaIcones(true);</script>
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.36",
+  versao:"0.3.37",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
