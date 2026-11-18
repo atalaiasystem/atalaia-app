@@ -30,6 +30,12 @@ nav.menu button .lk{margin-left:auto;font-size:.75rem;opacity:.7}
 nav.menu button[aria-current=true]{background:var(--client-soft);color:var(--ink)}
 nav.menu button[aria-current=true] svg{color:var(--ink)}
 nav.menu .sep{height:1px;background:var(--line);margin:8px 4px}
+.acao-hoje .ah-lista{display:grid}.acao-hoje .ah-it{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}.acao-hoje .ah-dot{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:none}.acao-hoje .ah-it .btn{flex:none}
+:root[data-estilo="corporativo"] th{text-transform:none;letter-spacing:0;font-size:.8rem;font-weight:600;background:var(--soft);color:var(--muted)}
+:root[data-estilo="corporativo"] td{padding:10px 8px}
+:root[data-estilo="corporativo"] tbody tr:hover td,:root[data-estilo="corporativo"] table tr:hover td{background:color-mix(in srgb,var(--soft) 60%,transparent)}
+:root[data-estilo="corporativo"] tr.click:hover td{background:var(--cp-soft)}
+td.nw{white-space:nowrap}
 nav.menu .grp{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:12px 10px 3px}
 main{padding:20px 22px 48px;min-width:0}
 .wrap{max-width:1240px;margin:0 auto;display:grid;gap:16px}
@@ -259,9 +265,9 @@ const RX=new RegExp("("+Object.keys(M).join("|")+")\\uFE0F?","gu"),RT=new RegExp
 let css="i.ic{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.16em;background:currentColor;font-style:normal;-webkit-mask:var(--im) center/contain no-repeat;mask:var(--im) center/contain no-repeat;flex:none}i.ic.ic-r{background:#B91C1C}i.ic.ic-a{background:#B45309}i.ic.ic-g{background:#9CA3AF}";
 for(const k in P)css+=`i.ic-${k}{--im:url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+P[k]+'</svg>')}")}`;
 let ob=null,ligado=false;
-const PLR=/([A-Za-zÀ-ÿ]+)\((s|es|ões)\)/g,PLT=/[A-Za-zÀ-ÿ]\((?:s|es|ões)\)/;
+const PLR=/([A-Za-zÀ-ÿ]+)\((s|es|ões|ns)\)/g,PLT=/[A-Za-zÀ-ÿ]\((?:s|es|ões|ns)\)/;
 function numAntes(t,i,n){const a=t.slice(0,i),c=a.split(/[.;:·|•\n]/).pop(),m=c.match(/(\d+(?:[.,]\d+)?)(?!.*\d)/);if(m)return m[1];if(c.trim()==""||/^[\s()A-Za-zÀ-ÿ]*$/.test(c)){const p=n.previousSibling;if(p&&p.textContent){const q=p.textContent.match(/(\d+(?:[.,]\d+)?)\s*$/);if(q&&c.split(/\s+/).filter(Boolean).length<=3)return q[1]}}return null}
-function plural(n){const t=n.nodeValue;if(!t||!PLT.test(t))return;const v=t.replace(PLR,(m,w,suf,i)=>{const k=numAntes(t,i,n),um=k!=null&&/^0*1$/.test(k.replace(/[.,]0+$/,""));if(suf=="ões")return um?w:w.replace(/ção$/,"ções").replace(/são$/,"sões");return um?w:w+suf});if(v!=t)n.nodeValue=v}
+function plural(n){const t=n.nodeValue;if(!t||!PLT.test(t))return;const v=t.replace(PLR,(m,w,suf,i)=>{const k=numAntes(t,i,n),um=k!=null&&/^0*1$/.test(k.replace(/[.,]0+$/,""));if(suf=="ns")return um?w:w.replace(/m$/,"ns");if(suf=="ões")return um?w:w.replace(/ção$/,"ções").replace(/são$/,"sões");return um?w:w+suf});if(v!=t)n.nodeValue=v}
 function texto(n){const p=n.parentNode;if(!p||PULA[p.nodeName])return;plural(n);if(!ligado)return;const t=n.nodeValue;if(!t||!RT.test(t))return;
   if(p.nodeName=="OPTION"||p.nodeName=="OPTGROUP"){n.nodeValue=t.replace(RX,"").replace(/^\s+/,"");return}
   const f=document.createDocumentFragment();let u=0;t.replace(RX,(m,e,i)=>{if(i>u)f.appendChild(document.createTextNode(t.slice(u,i)));const el=document.createElement("i");el.className="ic ic-"+M[e];el.setAttribute("aria-hidden","true");f.appendChild(el);u=i+m.length;return m});
@@ -283,14 +289,14 @@ if(document.documentElement.dataset.estilo=="corporativo")atalaiaIcones(true);
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.48"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.49"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $=s=>document.querySelector(s);
 const brl=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const num=v=>Number(v||0).toLocaleString("pt-BR");
-const dh=d=>d?new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"—";
+const dh=d=>d?new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}).replace(",",""):"—";
 const dt=d=>!d?"—":(String(d).length>10?new Date(d).toLocaleDateString("pt-BR"):String(d).slice(0,10).split("-").reverse().join("/"));
 function toast(t){const e=document.createElement("div");e.className="toast";e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),3200)}
 const LOGO=`<svg viewBox="0 0 100 100" width="24" height="24" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -749,6 +755,21 @@ function resumoUnidades(){if(!GESTOR()||E.est.length<2)return "";if(TEM("avalie"
   return `<div class="card"><div class="top"><div><h2 style="margin:0">Resumo por unidade</h2><p class="note" style="margin:2px 0 0">Toque em uma unidade para ver o Início só dela. ${E.iu?`Mostrando: <b>${esc(nomeUni(E.iu))}</b>.`:"Mostrando: todas."}</p></div>${E.iu?`<button class="btn ghost sm" onclick="E.iu='';E.uni=null;recarregar()">Ver todas</button>`:""}</div></div>
   <div class="grid g3">${U.map(card).join("")}</div>
   <div class="grid g3"><div class="card">${tit("Chamados em aberto","E.chF={...E.chF,sit:'abertos',uni:''};ir('chamados')")}${hbar(U.map(x=>[x.u.nome,x.ab.length,"E.chF={...E.chF,sit:'abertos',uni:'"+x.u.id+"'};ir('chamados')"]))}</div><div class="card">${tit("Atrasados e vencidos","ir('avisos')")}${hbar(U.map(x=>[x.u.nome,x.atr.length+x.venc.length,"E.chF={...E.chF,sit:'atrasados',uni:'"+x.u.id+"'};ir('chamados')"]))}</div><div class="card">${tit("Valor dos bens","E.busca='';E.fA='';E.fE='';E.fC='';E.fAno='';E.fUB='';E.pgB=0;E.cadTab='bens';ir('cad')")}${hbar(U.map(x=>[x.u.nome,x.valor,"E.busca='';E.fA='';E.fE='';E.fC='';E.fAno='';E.pgB=0;E.cadTab='bens';E.fUB='"+x.u.id+"';ir('cad')"]),brl)}</div></div>`}
+/* Dashboard Corporativo · "Precisa de ação hoje" (o que pede ação vem primeiro, como nos CMMS do mercado) */
+function acaoHoje(){try{const hoje=hojeISO(),u=E.iu||null,ab=(E.ch||[]).filter(c=>ABERTO(c)&&(!u||c.estabelecimento_id==u)),agora=Date.now();
+  const atr=ab.filter(c=>c.prazo_resolver&&agora>Date.parse(c.prazo_resolver)).sort((a,b)=>Date.parse(a.prazo_resolver)-Date.parse(b.prazo_resolver)),
+    sem=ab.filter(c=>c.situacao=="aberto"&&!c.responsavel_id),urg=sem.filter(c=>c.prioridade=="urgente"),
+    bemU=id=>{const b=(E.bens||[]).find(x=>x.id==id);return b?b.estabelecimento_id:null},
+    venc=(E.prog||[]).filter(p=>p.proxima&&p.proxima<hoje&&(!u||bemU(p.bem_id)==u)),
+    par=(E.bens||[]).filter(b=>(!u||b.estabelecimento_id==u)&&b.estado=="em manutenção");
+  const L=[];
+  if(TEM("chamados")&&atr.length)L.push(["bad",`${num(atr.length)} chamado(s) atrasado(s)`,atr.slice(0,3).map(c=>`<a href="#" onclick="abrirChamadoDet('${c.id}');return false">#${c.numero} ${esc((c.descricao||"").slice(0,48))}</a> <span class="note">· ${esc(nomeUni(c.estabelecimento_id))}</span>`).join("<br>"),"E.chF={...E.chF,sit:'atrasados',uni:E.iu||''};ir('chamados')"]);
+  if(TEM("chamados")&&sem.length)L.push([urg.length?"bad":"warn",`${num(sem.length)} chamado(s) sem responsável`+(urg.length?` · ${num(urg.length)} urgente(s)`:""),"Aguardando alguém da equipe assumir.","E.chF={...E.chF,sit:'aberto',uni:E.iu||''};ir('chamados')"]);
+  if(TEM("calibracoes")&&venc.length)L.push(["warn",`${num(venc.length)} calibração(ões) ou preventiva(s) vencida(s)`,"Passaram da data programada.","E.calTab='lista';ir('cal')"]);
+  if(par.length)L.push(["neutro",`${num(par.length)} bem(ns) em manutenção`,"Equipamentos parados no momento.","E.busca='';E.fE='em manutenção';E.fUB=E.iu||'';E.pgB=0;E.cadTab='bens';ir('cad')"]);
+  const cor={bad:"#B91C1C",warn:"#B45309",neutro:"#6B7280"};
+  return `<div class="card acao-hoje"><div class="top"><div><h2 style="margin:0">Precisa de ação hoje</h2><p class="note" style="margin:2px 0 0">${L.length?"Em ordem de prioridade. Toque para abrir.":"Tudo em dia: nenhum atraso, nenhum chamado sem responsável e nenhuma programação vencida."}</p></div></div>
+   ${L.length?`<div class="ah-lista">${L.map(([k,t,d,go])=>`<div class="ah-it"><span class="ah-dot" style="background:${cor[k]}"></span><div style="min-width:0;flex:1"><b>${t}</b><div class="note" style="margin-top:2px">${d}</div></div><button class="btn ghost sm" onclick="${go}">Ver</button></div>`).join("")}</div>`:""}</div>`}catch(e){return ""}}
 function pgInicio(){
   const p=PL(),B=E.bens.filter(b=>!E.iu||b.estabelecimento_id==E.iu),AMB=E.amb.filter(a=>!E.iu||a.estabelecimento_id==E.iu),inv=B.reduce((s,b)=>s+Number(b.valor||0),0),ant=E.aces.filter(a=>a.acao=="entrou")[1];
   const hoje=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
@@ -763,7 +784,7 @@ function pgInicio(){
   return `<div class="hero"><div><span class="eyebrow">Dashboard · ${E.iu?esc(nomeUni(E.iu)):"empresa toda"}</span><h1>Olá, ${esc(E.v.nome.split(" ")[0])}</h1><p>${hoje.charAt(0).toUpperCase()+hoje.slice(1)}${ant?` · acesso anterior: ${dh(ant.criado_em)}`:""}</p></div>
    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost hero-rel" ${CLIENTE()?'style="display:none"':""} onclick="abrirDashRel()">🖨 Relatório do Dashboard</button><button class="btn ghost" onclick="abrirBaixarApp()">📲 Baixar o app</button>${ADMIN()?`<button class="btn amb" onclick="E.pag='cad';E.cadTab='bens';abrirBem()">+ Cadastrar bem</button>`:""}</div></div>
   ${ADMIN()&&(E.bens.length==0||E.amb.length==0)?`<div class="card" style="border-color:var(--amb)"><div class="top"><div><h2 style="margin:0">Comece por aqui</h2><p class="note" style="margin:2px 0 0">O sistema ainda está vazio. Veja a ordem recomendada para montar tudo.</p></div><button class="btn" onclick="ir('passos')">Primeiros passos</button></div></div>`:""}
-  ${blocoEstilo()}${cardMapaDash()}
+  ${blocoEstilo()}${estiloAtual()=="corporativo"?acaoHoje():cardMapaDash()}
   <div class="grid g4 dash-k">${L1.join("")}</div>
   ${L2?`<div class="grid g4 dash-k dash-k2">${L2.join("")}</div>`:""}
   ${bannerDia()}
@@ -771,6 +792,7 @@ function pgInicio(){
   ${graficosInicio("topo")}
   <div class="grid g2"><div class="card">${tit("Bens por estado",GB)}${rosca(agrupa(B,"estado"),n=>GB.replace("ir('cad')","E.fE='"+jsq(n)+"';ir('cad')"))}</div><div class="card">${tit("Bens por categoria",GB)}${hbar(agrupa(B,"categoria").slice(0,8),null,n=>GB.replace("ir('cad')","E.fC='"+jsq(n)+"';ir('cad')"))}</div></div>
   ${inicioChamados(true)}
+  ${estiloAtual()=="corporativo"?cardMapaDash():""}
   ${graficosInicio("link")}
   <details class="mais-ind" ${aberto?"open":""} ontoggle="try{localStorage.setItem('atalaia.maisInd',this.open?'1':'0')}catch(e){}"><summary>Mais indicadores <span class="note">prazos, pendências, calibrações, equipamentos que mais falham, ambientes, Avalie, investimento, últimos cadastros e plano</span></summary>
   ${graficosInicio("resto")}
@@ -919,10 +941,11 @@ function cfgDesign(){
   const ok=Math.max(cw,cb)>=4.5;
   return `<div class="grid g2"><div class="card"><h2>Design do painel</h2><p class="note">Muda as cores, a fonte e a logo do Painel do Gestor para todos os usuários da empresa.${ADMIN()?"":" Somente administradores podem alterar."}</p>
    ${perfilOpcHTML(d)}${estiloOpcHTML(d)}
+   ${estiloDe(d)=="corporativo"?`<p class="note" style="margin:0 0 14px">No visual Corporativo as cores são fixas, como nos sistemas profissionais: a sua empresa aparece pela logo, no topo e no cabeçalho dos PDFs. A paleta de cores e a cor principal voltam a aparecer se escolher outro estilo, como o Clássico.</p>`:""}<div ${estiloDe(d)=="corporativo"?"hidden":""}>
    <div class="f" style="margin-bottom:14px"><b>Paleta de cores do painel e do app</b> <span class="muted">· menu, topo, indicadores e gráficos</span>
     ${["Claras","Escuras"].map(g=>`<div class="note" style="margin-top:8px;font-weight:700">${g}</div><div class="palc">${Object.entries(PALS).filter(([k,v])=>v[1]==g).map(([k,[n,,p]])=>`<button type="button" aria-pressed="${(d.paleta||PAL_PADRAO)==k}" onclick="E.rascunho.paleta='${k}';previa();render()" title="${n}"><span class="pv"><i style="background:linear-gradient(180deg,${p.s1},${p.s2});${p.s1=="#ffffff"?"border-right:1px solid #e3e0da":""}"></i><div style="background:${p.bg}"><span class="hd" style="background:linear-gradient(120deg,${p.h1},${p.h2})"></span><span class="ks"><span style="background:${p.k1}"></span><span style="background:${p.k2}"></span><span style="background:${p.k3}"></span><span style="background:${p.k4}"></span></span></div></span><b>${n}${k==PAL_PADRAO?" · padrão":""}</b></button>`).join("")}</div>`).join("")}</div>
    <div class="f" style="margin-bottom:12px"><b>Cor principal</b> <span class="muted">· opcional: a cor da sua marca nos botões e no topo. ${d.cor?`<button type="button" class="btn ghost sm" onclick="delete E.rascunho.cor;previa();render()">Usar a cor da paleta</button>`:"Sem cor própria: usa a da paleta."}</span> <span class="muted">· atual ${cor}</span>${paletaHTML(cor,"E.rascunho.cor='COR';render()")}<div class="pal-outra">Qualquer outra cor: <input type="color" value="${cor}" onchange="E.rascunho.cor=this.value;render()" style="width:56px;height:40px;padding:2px"></div></div>
-   <div id="ctr" class="msg ${ok?"ok":"err"}">Contraste do texto sobre a cor: ${Math.max(cw,cb).toFixed(1)} : 1 ${ok?"· bom para leitura":"· baixo: escolha uma cor mais escura ou mais clara"} (mínimo 4,5 : 1).</div>
+   <div id="ctr" class="msg ${ok?"ok":"err"}">Contraste do texto sobre a cor: ${Math.max(cw,cb).toFixed(1)} : 1 ${ok?"· bom para leitura":"· baixo: escolha uma cor mais escura ou mais clara"} (mínimo 4,5 : 1).</div></div>
    <label class="f">Tema<select onchange="E.rascunho.tema=this.value;previa()">${[["claro","Claro"],["escuro","Escuro"],["auto","Automático (segue o aparelho)"]].map(([k,t])=>`<option value="${k}" ${(d.tema||"claro")==k?"selected":""}>${t}</option>`).join("")}</select></label>
    <label class="f">Fonte<select onchange="E.rascunho.fonte=this.value;previa()">${Object.entries(FONTES).map(([k,f])=>`<option value="${k}" ${(d.fonte||"sistema")==k?"selected":""}>${f[0]}</option>`).join("")}</select></label>
    <label class="f">Logo da empresa (PNG ou JPG, até 1 MB)<input type="file" accept="image/png,image/jpeg" onchange="trocarLogo(this)" ${ADMIN()?"":"disabled"}></label>
@@ -1258,7 +1281,7 @@ function pgChamados(){const F=E.chF,q=F.q.toLowerCase();
    <label>Buscar<input value="${esc(F.q)}" placeholder="Nº, protocolo, OS, descrição, ambiente, solicitante" oninput="E.chF.q=this.value;render();const i=document.querySelectorAll('.filters input')[0];i.focus();i.setSelectionRange(i.value.length,i.value.length)"></label>
    <span class="note">${L.length} chamado(s)</span></div>
   <div class="tbl"><table><tr><th>Nº</th><th>Aberto em</th><th>Ambiente</th>${GESTOR()?"<th>Unidade</th>":""}<th>Descrição</th><th>Prioridade</th><th>Situação</th><th>Responsável</th><th>Prazo</th><th>Origem</th></tr>
-  ${L.map(c=>`<tr class="click" onclick="abrirChamadoDet('${c.id}')"><td><b>${c.numero}</b>${c.os_numero?`<div class="note">OS ${c.os_numero}</div>`:""}</td><td>${dh(c.aberto_em)}</td><td>${esc(nomeAmbi(c.ambiente_id))}</td>${GESTOR()?`<td>${esc(nomeUni(c.estabelecimento_id))}</td>`:""}<td>${esc(c.descricao.length>60?c.descricao.slice(0,60)+"…":c.descricao)}</td><td><span class="pri ${c.prioridade}">${PRI[c.prioridade]}</span></td><td>${sitTxt(c)}</td><td>${c.responsavel_id?esc(nomePessoa(c.responsavel_id)):"—"}</td><td>${prazoTxt(c)}</td><td>${ORI[c.origem]||esc(c.origem)}</td></tr>`).join("")||`<tr><td colspan="10" class="note">Nenhum chamado com esses filtros.</td></tr>`}</table></div></div>
+  ${L.map(c=>`<tr class="click" onclick="abrirChamadoDet('${c.id}')"><td><b>${c.numero}</b>${c.os_numero?`<div class="note">OS ${c.os_numero}</div>`:""}</td><td class="nw">${dh(c.aberto_em)}</td><td>${esc(nomeAmbi(c.ambiente_id))}</td>${GESTOR()?`<td class="nw">${esc(nomeUni(c.estabelecimento_id))}</td>`:""}<td>${esc(c.descricao.length>60?c.descricao.slice(0,60)+"…":c.descricao)}</td><td><span class="pri ${c.prioridade}">${PRI[c.prioridade]}</span></td><td>${sitTxt(c)}</td><td>${c.responsavel_id?esc(nomePessoa(c.responsavel_id)):"—"}</td><td class="nw">${prazoTxt(c)}</td><td class="nw">${ORI[c.origem]||esc(c.origem)}</td></tr>`).join("")||`<tr><td colspan="10" class="note">Nenhum chamado com esses filtros.</td></tr>`}</table></div></div>
   ${E.desfazer&&E.desfazer.t=="chamados"&&Date.now()<E.desfazer.ate?barraDesfazer():""}`}
 async function abrirChamadoDet(id){const c=E.ch.find(x=>x.id==id);E.modal={tipo:"chamado",c,ev:[],fotos:[]};render();
   try{const [ev,fo]=await Promise.all([DB.eventos(id),DB.fotosCh(id)]);E.modal.ev=ev;E.modal.fotos=fo;try{E.modal.osa=await DB.assinaturasOS(id)}catch(e){E.modal.osa=[]}try{E.modal.avt=await DB.avisosTerc(id)}catch(e){E.modal.avt=[]}for(const f of fo)f.url=await DB.urlFoto(f.path);if(E.modal&&E.modal.c&&E.modal.c.id==id)render()}catch(e){}}
