@@ -6,7 +6,7 @@
 <title>Atalaia System · Abrir chamado</title>
 <meta name="theme-color" content="#1d1f23">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src https://ipwleoawvxmzvofcccjn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://ipwleoawvxmzvofcccjn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d1f23%27/%3E%3Cpath d=%27M50 18 L24 82 M50 18 L76 82%27 stroke=%27white%27 stroke-width=%2710%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3Cpath d=%27M35 58 L46 67 L67 44%27 stroke=%27%23f2a33a%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 fill=%27none%27/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
 <style>
@@ -34,13 +34,20 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--amb);border-colo
 .estrelas{display:flex;gap:6px;justify-content:center;margin:8px 0 12px}.estrelas button{font-size:2rem;background:none;border:0;cursor:pointer;color:#c9c4ba}.estrelas button.on{color:var(--amb)}
 .muted{color:var(--mut);font-size:.84rem}
 footer{text-align:center;color:var(--mut);font-size:.78rem;padding:8px 16px 24px}
+/* Visual Corporativo */
+:root{--ink:#111827;--mut:#4B5563;--line:#E5E7EB;--bg:#F6F7F9;--amb:#1F4E79;--ok:#15803D;--bad:#B91C1C}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important}
+.card{border-radius:8px!important}input,select,textarea{border-radius:8px!important;border-width:1px!important}
+.btn{border-radius:8px!important}.btn.amb{background:var(--amb)!important;color:#fff!important}.btn.ghost{border:1px solid #D1D5DB!important}
+.urg button{border-radius:8px!important;border-width:1px!important}
 </style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 </head>
 <body>
 <div id="app"><div class="wrap"><p class="muted">Carregando…</p></div></div>
 <script>
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.1.1"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.1.2"};
 const P=new URLSearchParams(location.search),DEMO=P.has("demo");
 const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const dh=d=>d?new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
