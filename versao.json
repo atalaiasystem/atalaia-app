@@ -1,1 +1,1 @@
-{"app": "0.3.39", "gestor": "0.9.50", "matriz": "0.3.23", "novidade": "Indicadores de manutenção usados pelo mercado no Dashboard e no PDF: Manutenção planejada (%), Backlog, MTTR (tempo médio de reparo) e MTBF (tempo médio entre falhas). Gráficos começam no primeiro mês com dados e trazem a conclusão no título."}
+{"app": "0.3.39", "gestor": "0.9.50", "matriz": "0.3.24", "novidade": "Matriz: níveis de acesso da equipe (Só leitura, Com aprovação do titular, Acesso total), pedidos para o titular aprovar em Avisos, trava da raiz e dados do titular ocultos para a equipe."}
