@@ -1,1 +1,1 @@
-{"app": "0.3.39", "gestor": "0.9.51", "matriz": "0.3.26", "novidade": "Menos informação na tela: paleta de cores e cor principal ficam ocultas para os clientes, e o Design do painel da Matriz fica só com o titular. Tudo guardado para liberar no futuro."}
+{"app": "0.3.39", "gestor": "0.9.51", "matriz": "0.3.27", "novidade": "Matriz com visual profissional: três opções (A clara, padrão; B escura; C mista com menu escuro), Dashboard com números numa faixa, “Precisa de atenção”, gráfico em linha e tabela de empresas com situação. O titular escolhe em Design do painel."}
