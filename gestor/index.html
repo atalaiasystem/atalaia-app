@@ -310,7 +310,7 @@ document.body?ini():document.addEventListener("DOMContentLoaded",ini,{once:true}
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.61"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.62"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2593,10 +2593,10 @@ const TUT={
   ["Avalie","",["No topo da página do QR, toque em Avalie.","Escolha Reclamação, Sugestão ou Elogio e escreva a mensagem (nome opcional)."]]]}};
 /* ================= POPs · Procedimentos Operacionais Padrão do sistema ================= */
 /* [código, página, título, perfis, objetivo, quando, passos, registros, cuidados, referências] */
-const POP_REV={n:"00",data:"2026-11-14"};
+const POP_REV={n:"01",data:"2026-11-20"};
 const POPS=[
-["POP-01","inicio","Acompanhar o Dashboard","Gestor e Administrador","Ver, logo ao entrar, a situação da empresa ou da unidade: bens, chamados, prazos, valor investido e o que pede atenção.","Todo dia, no início do expediente, e antes de reuniões de resultado.",
- ["Entre no painel com e-mail, senha e, se pedido, o código de duas etapas.","O Dashboard abre sozinho. Confira os cartões do alto: bens cadastrados, chamados em aberto, atendidos no prazo e bens que pedem atenção.","Clique em qualquer cartão para abrir a lista completa daquele número.","No bloco Hoje, veja se a ronda do dia foi feita e quantos chamados estão abertos e urgentes. Use Abrir a ronda ou Ver o mapa quando precisar.","O Gestor confere o Resumo por unidade e clica numa unidade para ver o Dashboard só dela.","Desça até os gráficos (chamados por mês, preventiva x corretiva, bens por estado e por categoria) e clique no título de um gráfico para ver o detalhe.","Para levar os números a uma reunião, clique em Relatório do Dashboard e baixe o PDF."],
+["POP-01","inicio","Acompanhar o Dashboard","Gestor e Administrador","Ver, logo ao entrar, o que precisa de ação e a situação da empresa ou da unidade.","Todo dia, no início do expediente, e antes de reuniões de resultado.",
+ ["Entre no painel com e-mail, senha e, se pedido, o código de duas etapas.","Leia os comunicados da equipe Atalaia System no alto da tela e toque em Li, pode esconder.","Se aparecer pedido de acesso de suporte ou aviso de fatura, trate antes (POP-35 e POP-36).","Comece por Precisa de ação hoje: chamados atrasados, sem responsável, programações e documentos vencidos. Toque em Ver para abrir cada item.","Confira os números principais e os indicadores de manutenção (PMP, backlog, MTTR e MTBF). Clique num número para abrir a lista.","O Gestor confere o Resumo por unidade e clica no nome de uma unidade para ver o Dashboard só dela.","Use Personalizar painel para escolher quais quadros aparecem e em que ordem (fica guardado no aparelho).","Para levar os números a uma reunião, clique em Relatório do Dashboard e baixe o PDF."],
  "Nenhum registro novo: o Dashboard só lê os dados. O PDF baixado fica no registro de acessos.",
  ["Os números usam as datas e horas gravadas pelo servidor; não há como alterá-los na tela.","O valor investido só aparece para o Gestor.","O Administrador vê apenas a própria unidade."],
  "ISO 55001:2024 (gestão de ativos) · ONA (indicadores de manutenção)"],
@@ -2615,8 +2615,8 @@ const POPS=[
  "Cada etapa (abertura, aceite, início, conclusão, confirmação) grava data, hora do servidor e quem fez. As fotos levam número, ambiente, hora e localização.",
  ["Os horários não podem ser alterados; o SLA é calculado só com eles.","Quem concluiu não pode confirmar o próprio chamado quando a segregação estiver ligada.","Chamado de ambiente ou bem crítico aberto pelo QR Code entra como urgente."],
  "RDC Anvisa 509/2021 (gerenciamento de tecnologias em saúde) · NBR 5674 (manutenção de edificações)"],
-["POP-05","monit","Usar o Monitoramento e mapa","Gestor e Administrador","Ver a situação de cada ambiente por cor e abrir tudo o que acontece nele num só lugar.","Diariamente e durante rondas e auditorias.",
- ["Abra Monitoramento e mapa no menu.","Veja a cor de cada ambiente: ela mostra chamados abertos, atrasos e pendências.","Clique num ambiente para abrir o resumo.","No resumo, veja chamados, inventário, calibrações, termo de responsabilidade e relatório daquele ambiente.","Use os botões do resumo para ir direto à tela de cada assunto."],
+["POP-05","monit","Usar o Monitoramento e mapa","Gestor e Administrador","Ver a situação de cada ambiente por cor, abrir tudo o que acontece nele e localizar as unidades no mapa.","Diariamente e durante rondas e auditorias.",
+ ["Abra Monitoramento e mapa no menu.","Na aba Ambientes e chamados, veja a cor de cada ambiente: ela mostra chamados abertos, atrasos e pendências.","Clique num ambiente para abrir o resumo: chamados, inventário, calibrações, termo de responsabilidade e relatório.","Use os botões do resumo para ir direto à tela de cada assunto.","Na aba Mapa das unidades (Gestor), veja onde ficam as unidades e a situação de cada uma."],
  "Nenhum registro novo: a tela só lê os dados.",
  ["O Administrador vê apenas os ambientes da sua unidade."],
  "—"],
@@ -2696,32 +2696,32 @@ const POPS=[
  ["Equipamento novo deve ter treinamento antes do uso."],
  "RDC Anvisa 509/2021, art. 11 · ONA"],
 ["POP-21","equipe","Convidar e gerenciar a equipe","Gestor (e Administrador para Colaboradores e Clientes)","Dar acesso a cada pessoa com o perfil e a unidade certos, e tirar o acesso de quem sai.","Na admissão, mudança de função ou saída de alguém.",
- ["Abra Equipe e clique em convidar.","Informe nome e e-mail e escolha o perfil (Administrador, Colaborador ou Cliente só consulta) e a unidade.","Envie: a pessoa recebe o e-mail e cria a senha.","Para mudar perfil ou unidade, abra a pessoa e altere.","Quando alguém sair, clique em inativar e escreva o motivo."],
- "Convites, mudanças e inativações ficam no registro de acessos.",
- ["Nunca compartilhe login: cada pessoa tem o seu.","Inative no mesmo dia em que a pessoa sair."],
+ ["Abra Equipe e clique em convidar.","Informe nome e e-mail e escolha o perfil (Administrador, Colaborador ou Cliente só consulta) e a unidade.","Envie: a pessoa recebe o e-mail e cria a senha.","Para mudar perfil ou unidade, abra a pessoa e altere.","Quando alguém sair, clique em Inativar e escreva o motivo.","Cadastro feito por engano (pessoa que nunca entrou no sistema): use Excluir. Quem já entrou só pode ser inativado, para não perder o histórico."],
+ "Convites, mudanças, inativações e exclusões ficam no registro de acessos e no histórico da equipe.",
+ ["Nunca compartilhe login: cada pessoa tem o seu.","Inative no mesmo dia em que a pessoa sair.","A empresa precisa ter sempre pelo menos um Gestor."],
  "LGPD (Lei 13.709/2018)"],
 ["POP-22","rel","Gerar relatórios","Gestor e Administrador","Tirar relatórios confiáveis em PDF e Excel para gestão, auditoria e prestação de contas.","Mensalmente, em auditorias e quando pedido.",
- ["Abra Relatórios.","Escolha o período (este mês, mês passado, 90 dias ou personalizado).","Escolha o relatório.","Se quiser, filtre os equipamentos.","Clique em Baixar PDF ou Baixar Excel."],
+ ["Abra Relatórios.","Escolha o período (este mês, mês passado, 90 dias ou personalizado).","Escolha o relatório (entre eles: indicadores, SLA, preventivas, registro de serviços e depreciação dos bens).","Se quiser, filtre os equipamentos.","Clique em Baixar PDF ou Baixar Excel."],
  "Cada relatório baixado fica no registro de acessos.",
- ["Só o Gestor e o Administrador geram relatórios.","Os números vêm dos registros com hora do servidor."],
- "ONA · RDC Anvisa 509/2021"],
+ ["Só o Gestor e o Administrador geram relatórios.","Os números vêm dos registros com hora do servidor.","A depreciação é uma estimativa linear pela vida útil da categoria; o valor contábil oficial é o da contabilidade."],
+ "ONA · RDC Anvisa 509/2021 · NBC TG 27 (depreciação)"],
 ["POP-23","aval","Responder ao Avalie","Gestor e Administrador","Tratar reclamações, sugestões e elogios enviados pelo QR Code.","Sempre que chegar uma mensagem.",
  ["Abra Avalie.","Leia a mensagem, o ambiente e a data.","Tome a providência necessária (abra chamado se for o caso).","Responda o que foi feito."],
  "Mensagem e resposta ficam registradas e não podem ser apagadas.",
  ["Responda com fatos e sem expor dados pessoais."],
  "ONA (escuta do usuário)"],
-["POP-24","leg","Consultar legislação e normas","Todos os perfis","Saber quais leis e normas se aplicam e onde ler o texto oficial.","Ao montar procedimentos e antes de auditorias.",
- ["Abra Legislação e normas.","Leia o resumo em linguagem simples.","Clique no link para abrir o texto oficial.","Confira sempre a versão vigente no site do órgão."],
- "Nenhum registro.",
- ["O resumo não substitui o texto oficial."],
+["POP-24","leg","Consultar normas e documentos","Todos os perfis (documentos: Gestor e Administrador)","Saber quais leis e normas se aplicam, onde ler o texto oficial e manter os documentos obrigatórios em dia.","Ao montar procedimentos, antes de auditorias e quando um documento vencer.",
+ ["Abra Normas e documentos.","No alto, confira Documentos obrigatórios (veja o POP-37).","Leia o resumo de cada norma em linguagem simples.","Clique no link para abrir o texto oficial.","Confira sempre a versão vigente no site do órgão."],
+ "Nenhum registro ao consultar. Documentos enviados ficam guardados com data, validade e quem enviou.",
+ ["O resumo não substitui o texto oficial.","As exigências mudam por município e estado."],
  "—"],
 ["POP-25","excl","Consultar Excluídos e histórico e restaurar","Gestor","Ver tudo o que foi excluído ou alterado, por quem e quando, e restaurar o que foi apagado por engano.","Quando houver dúvida sobre uma alteração ou exclusão.",
  ["Abra Excluídos e histórico.","Filtre por unidade, tipo ou período.","Veja quem excluiu, quando e o motivo.","Para desfazer, clique em restaurar no item."],
  "A restauração também fica registrada.",
  ["Nada é apagado de verdade; só o Gestor vê esta tela."],
  "—"],
-["POP-26","cfg","Configurar o sistema","Gestor","Ajustar o sistema à empresa: dados, aparência, prazos, numeração, avisos e automações.","Na implantação e quando uma regra da empresa mudar.",
- ["Abra Configurações.","Dados da empresa: complete os dados que saem nos documentos e escolha o tipo de empresa (própria ou prestadora).","Design: perfil do menu por segmento (Completo, Climatização, Predial/Facilities ou Escritório/Comércio; esconde o que a empresa não usa, sem apagar), cores, logotipo e estilo do painel.","Prazos de SLA: prazos de atendimento e solução por prioridade.","Número de patrimônio: padrão do número antes do primeiro lote de etiquetas.","Avisos e automações: e-mails, expediente, feriados, plantão e regras automáticas.","Salve cada aba."],
+["POP-26","cfg","Configurar o sistema","Gestor","Ajustar o sistema à empresa: dados, aparência, prazos, numeração, avisos, automações, LGPD e conta.","Na implantação e quando uma regra da empresa mudar.",
+ ["Abra Configurações.","Dados da empresa: complete os dados que saem nos documentos, o segmento (define a lista de documentos obrigatórios) e o tipo de empresa (própria ou prestadora).","Design: perfil do menu por segmento (esconde o que a empresa não usa, sem apagar), logotipo e estilo do painel.","Prazos de SLA: prazos para aceitar e resolver por prioridade.","Número de patrimônio: padrão do número antes do primeiro lote de etiquetas.","Avisos e automações: e-mails, expediente, feriados, plantão e regras automáticas.","LGPD: baixar todos os dados e ver os acessos de suporte da equipe Atalaia System.","Conta: sua conta e as faturas do Atalaia System.","Salve cada aba."],
  "Cada alteração fica no registro de acessos.",
  ["Mudanças de prazo valem para os chamados abertos depois da mudança."],
  "—"],
@@ -2764,7 +2764,22 @@ const POPS=[
  ["Entre no painel pelo celular. No alto aparecem os botões Ler QR / etiqueta, + Bem e + Serviço.","Para mapear um ambiente, toque em Ler QR / etiqueta e aponte a câmera para o QR Code fixado na entrada.","Aparece o ambiente com os equipamentos já cadastrados. Toque em + Cadastrar equipamento neste ambiente.","Tire a foto, leia a etiqueta de patrimônio pelo botão da câmera, preencha nome, categoria e situação. Os demais campos ficam em Mais detalhes.","Toque em Salvar (o botão fica fixo embaixo da tela). Repita para cada equipamento do ambiente.","Para registrar uma manutenção, leia a etiqueta do equipamento e toque em Registrar serviço (ou use + Serviço e busque o equipamento).","Escolha o tipo, preencha o checklist, o serviço executado, as peças trocadas e os instrumentos usados, anexe as fotos de antes e depois e toque em Registrar."],
  "Cadastros e serviços ficam gravados com data e hora do servidor, igual ao computador.",
  ["No iPhone o navegador pode não ler código pela câmera: digite o número da etiqueta.","Em local sem internet, aguarde o sinal antes de salvar."],
- "—"]];
+ "—"],
+["POP-35","inicio","Autorizar o acesso de suporte e ler os comunicados","Gestor (comunicados: todos)","Decidir quando a equipe Atalaia System pode ver os dados da empresa para ajudar, e acompanhar os avisos dela.","Quando aparecer um pedido de acesso ou um comunicado no Dashboard.",
+ ["Leia o comunicado no alto do Dashboard (ou do aplicativo) e toque em Li, pode esconder.","Se aparecer A equipe Atalaia System pediu acesso de suporte, leia o motivo e o tempo pedido.","Toque em Autorizar para liberar a consulta pelo tempo pedido, ou em Negar.","Enquanto o acesso estiver ativo, o Dashboard mostra até quando vale e quantas consultas foram feitas. Toque em Encerrar agora quando quiser.","Veja o histórico em Configurações › LGPD › Acessos de suporte."],
+ "Pedido, decisão, cada consulta e o encerramento ficam no registro de acessos da empresa.",
+ ["A equipe só consulta: não altera nada.","Dados pessoais da equipe da empresa não aparecem na consulta.","Só autorize quando houver um motivo combinado com você."],
+ "LGPD (Lei 13.709/2018), art. 37 a 39 (operador)"],
+["POP-36","cfg","Acompanhar as faturas do Atalaia System","Gestor","Saber o que está em aberto e evitar que a empresa fique em só leitura.","Todo mês, no vencimento, e quando aparecer aviso de atraso.",
+ ["Abra Configurações › Conta e veja Faturas do Atalaia System: mês, valor, vencimento e situação.","Pague pelo meio combinado com a equipe Atalaia System.","Se aparecer Fatura em atraso no Dashboard, confira a data em que a empresa entraria em só leitura.","Depois que a equipe registra o pagamento, o aviso some e, se a empresa estava em só leitura, volta ao normal na hora."],
+ "As faturas e os pagamentos são registrados pela equipe Atalaia System.",
+ ["Em só leitura a empresa continua vendo e baixando todos os dados; nada é apagado por atraso.","Os prazos de aviso e de só leitura estão nos Termos de Uso."],
+ "Termos de Uso do Atalaia System · Código de Defesa do Consumidor (arrependimento)"],
+["POP-37","leg","Manter os documentos obrigatórios em dia","Gestor e Administrador","Guardar e acompanhar alvarás, licenças, laudos e planos que o segmento da empresa costuma exigir.","Na implantação, a cada renovação e quando aparecer aviso de vencimento.",
+ ["Confira se o segmento está preenchido em Configurações › Dados da empresa.","Abra Normas e documentos e veja Documentos obrigatórios: em dia, vencendo, vencido ou não enviado.","Toque em Enviar (ou Atualizar), anexe o arquivo e informe a validade e a unidade.","O Gestor marca Não se aplica quando o documento não vale para a empresa.","Acompanhe os vencidos e os que vencem em até 60 dias em Precisa de ação hoje."],
+ "Cada documento fica guardado com data de envio, validade, unidade e quem enviou. Os avisos de 60 e 30 dias saem por e-mail.",
+ ["A lista é uma referência: confirme no município e no estado o que é exigido.","Guarde sempre a versão vigente do documento."],
+ "Lei 13.589/2018 (PMOC) · RDC Anvisa 222/2018, 509/2021 e 611/2022 · NBR 5419 · NR-10 · NR-13"]];
 const popPorPag=k=>POPS.find(p=>p[1]==k);
 function pgPops(){const q=(E.pq||"").toLowerCase(),sel=E.psel&&POPS.find(p=>p[0]==E.psel);
   if(sel)return popVer(sel);
