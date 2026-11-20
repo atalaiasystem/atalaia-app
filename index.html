@@ -167,7 +167,7 @@ document.body?ini():document.addEventListener("DOMContentLoaded",ini,{once:true}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.43",
+  versao:"0.3.44",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -1434,7 +1434,7 @@ function manTrocas(){const T=(E.trocas||[]).filter(t=>souAdm()&&(E.v.perfil=="ge
   const card=t=>{const b=bn(t.bem_id);return `<div class="card"><b>${esc(b.nome||"Equipamento")}${t.posicao?" · "+esc(t.posicao):""}</b><p class="muted" style="margin:2px 0 6px">${esc(nomeAmbC(t.ambiente_id)||"")}</p>
    <dl class="dl"><dt>No cadastro</dt><dd>Patr. ${esc(b.patrimonio||"—")}${b.numero_serie?" · série "+esc(b.numero_serie):""}</dd><dt>Na etiqueta</dt><dd>${t.patrimonio_informado?`Patr. <b>${esc(t.patrimonio_informado)}</b>`:""}${t.serie_informada?` · série ${esc(t.serie_informada)}`:""}${t.modelo_informado?` · ${esc(t.modelo_informado)}`:""}</dd><dt>Informado</dt><dd>${esc(t.informado_por||"")} · ${hm(t.informado_em)}${t.origem?" · "+esc(t.origem):""}</dd>${t.observacao?`<dt>Obs.</dt><dd>${esc(t.observacao)}</dd>`:""}${t.situacao!="pendente"?`<dt>Decisão</dt><dd>${t.situacao=="confirmada"?"Troca confirmada":"Descartada"} por ${esc(t.decidido_por||"")} · ${hm(t.decidido_em)}${t.motivo?" · "+esc(t.motivo):""}</dd>`:""}</dl>
    ${t.situacao=="pendente"?`<div style="display:grid;gap:6px;margin-top:8px"><button class="btn amb" onclick="decidirTrocaC('${t.id}',true)">✔ Confirmar troca</button><label style="margin:0">Motivo para descartar<input id="trm_${t.id}" placeholder="Ex.: leitura errada da etiqueta"></label><button class="btn ghost" onclick="decidirTrocaC('${t.id}',false)">Descartar</button></div>`:""}</div>`};
-  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Trocas de equipamento</h1><p class="sub">Quando alguém informa que os números na etiqueta são diferentes do cadastro, o aviso chega aqui. Ao confirmar, o equipamento novo passa para a posição e o que saiu fica “em manutenção”. A calibração acompanha cada equipamento.</p>
+  return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Trocas de equipamento</h1><p class="sub">Etiqueta diferente do cadastro? Ao confirmar, o equipamento novo assume a posição e o que saiu fica “em manutenção”.</p>
   <h2 style="font-size:1rem">Aguardando decisão (${P.length})</h2>${P.map(card).join("")||`<div class="card"><p class="muted">Nenhuma troca pendente. Para informar uma, abra a ficha do equipamento e toque em “Os números da etiqueta são diferentes”.</p></div>`}
   ${D.length?`<h2 style="font-size:1rem">Já decididas</h2>${D.map(card).join("")}`:""}`}
 async function decidirTrocaC(id,ok){const mo=ok?"":(($("#trm_"+id)||{}).value||"").trim();if(!ok&&mo.length<3){toast("Escreva o motivo para descartar.");return}
@@ -1447,7 +1447,7 @@ function abrirAud(amb){E.aud=null;E.audRes=null;E.audAmb=amb||E.audAmb||"";irMan
 function manAud(){if(!temAud())return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Auditoria do ambiente</h1><div class="msg info">${!temF("auditoria")?"A auditoria está nos planos pagos.":"A auditoria é feita pelo Gestor ou pelo Administrador da unidade. Se encontrar um bem fora do lugar, abra um chamado ou avise o administrador."}</div>`;
   if(E.audRes)return audResumoHTML();
   if(!E.aud){const A=(E.amb||[]).filter(a=>E.v.perfil=="gestor"||!E.v.estabelecimento_id||a.estabelecimento_id==E.v.estabelecimento_id);
-    return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Auditoria do ambiente</h1><p class="sub">Confira os bens com a câmera: leia a etiqueta de patrimônio (QR ou código de barras) de cada item. No fim, o sistema mostra o que foi localizado, o que está em outro ambiente, o que não tem cadastro e o que não foi encontrado.</p>
+    return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Auditoria do ambiente</h1><p class="sub">Leia a etiqueta de cada bem com a câmera. No fim, o sistema mostra o que foi localizado, o que está em outro lugar e o que faltou.</p>
     <div class="card" style="display:grid;gap:4px"><label>Ambiente *<select id="audA"><option value="">Escolha…</option>${A.map(a=>`<option value="${a.id}" ${E.audAmb==a.id?"selected":""}>${esc(a.nome)}${nomeUni(a.estabelecimento_id)?" · "+esc(nomeUni(a.estabelecimento_id)):""} (${(E.bens||[]).filter(b=>b.ambiente_id==a.id).length} bens)</option>`).join("")}</select></label>
     <label>Nome do auditor *<input id="audN" value="${esc(E.v.nome||"")}" maxlength="80"></label>
     <button class="btn amb full" onclick="iniciarAudC()">Iniciar auditoria</button></div>`}
@@ -1491,7 +1491,7 @@ function manResp(){const a=(E.amb||[]).find(x=>x.id==E.ambSel);if(!a||!souAdm())
   <label>Substituto (folgas e férias)<input id="ras" value="${v("s","substituto_nome")}" maxlength="80"></label>
   ${temF("termos")?`<label class="chk" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="rat" ${f.t===false?"":"checked"}> Gerar o termo de responsabilidade com a lista de bens do ambiente</label>`:""}
   <button class="btn amb full" onclick="salvarRespC()">Salvar responsável</button></div>
-  <div class="card"><b>Como funciona a confirmação</b><p class="muted">Quando um serviço é concluído, o responsável recebe as fotos de antes e depois e responde “confirmo” ou “não ficou bom”. Sem resposta, o sistema lembra depois de 24 horas. Depois de 72 horas, o chamado fecha como “concluído sem confirmação”, e isso aparece no relatório.</p>
+  <div class="card"><b>Como funciona a confirmação</b><p class="muted">O responsável vê as fotos e responde “confirmo” ou “não ficou bom”. Sem resposta, lembramos em 24 horas; em 72 horas fecha como “concluído sem confirmação”.</p>
   <p class="muted">Se o ambiente não tiver responsável, confirma quem abriu o chamado (se deixou contato); se não deixou, o administrador confere pela foto do depois.</p>
   <p class="muted">Ao definir o responsável, o sistema gera o termo de responsabilidade com a lista de bens do ambiente. A assinatura é feita pelo link do termo no painel do computador.</p></div>`}
 async function salvarRespC(){const g=id=>(($("#"+id)||{}).value||"").trim();E.raF={n:g("ran"),f:g("raf"),w:g("raw"),e:g("rae"),s:g("ras"),t:$("#rat")?$("#rat").checked:false};const f=E.raF;
