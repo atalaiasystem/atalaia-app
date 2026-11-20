@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Atalaia System: patrimônio e manutenção. Painel do Gestor e do Administrador.">
 <title>Atalaia System · Painel do Gestor</title>
 <meta name="theme-color" content="#1d1f23">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://ipwleoawvxmzvofcccjn.supabase.co; connect-src https://ipwleoawvxmzvofcccjn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d1f23%27/%3E%3Cpath d=%27M50 18 L24 82 M50 18 L76 82%27 stroke=%27white%27 stroke-width=%2710%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3Cpath d=%27M35 58 L46 67 L67 44%27 stroke=%27%23f2a33a%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 fill=%27none%27/%3E%3C/svg%3E">
-<link id="gf" rel="stylesheet"><link id="gf2" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link id="gf" rel="stylesheet"><link id="gf2" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
 <style>
 :root{--bg:#f5f3ef;--surface:#fff;--ink:#1d1f23;--muted:#6b7078;--line:#e3e0da;--soft:#efece6;--client:#1d1f23;--client-ink:#fff;--client-soft:#ecebe8;--amb:#f2a33a;--ok:#1f9a55;--warn:#b7791f;--bad:#c8372d;--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
@@ -36,6 +37,19 @@ nav.menu .sep{height:1px;background:var(--line);margin:8px 4px}
 :root[data-estilo="corporativo"] tbody tr:hover td,:root[data-estilo="corporativo"] table tr:hover td{background:color-mix(in srgb,var(--soft) 60%,transparent)}
 :root[data-estilo="corporativo"] tr.click:hover td{background:var(--cp-soft)}
 td.nw{white-space:nowrap}
+:root[data-estilo="corporativo"] .hero{background:transparent!important;border:0!important;padding:0 0 4px!important;box-shadow:none!important}
+:root[data-estilo="corporativo"] .hero .eyebrow{text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)!important;opacity:1;font-size:.8rem}
+:root[data-estilo="corporativo"] .hero h1{font-size:1.4rem}
+:root[data-estilo="corporativo"] .grid.g4.dash-k{gap:0!important;background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+:root[data-estilo="corporativo"] .grid.g4.dash-k>.kpi{border:0!important;border-left:1px solid var(--line)!important;border-radius:0!important;margin:0!important;background:transparent!important}
+:root[data-estilo="corporativo"] .grid.g4.dash-k>.kpi:first-child{border-left:0!important}
+@media (max-width:860px){:root[data-estilo="corporativo"] .grid.g4.dash-k>.kpi{border-left:0!important;border-top:1px solid var(--line)!important}}
+:root[data-estilo="corporativo"] .kpi .kic{display:none!important}
+:root[data-estilo="corporativo"] .topo-nome{display:none}
+:root[data-estilo="corporativo"] nav.menu .grp{text-transform:none;letter-spacing:0;font-size:.75rem;font-weight:500}
+:root[data-estilo="corporativo"] .brand span{text-transform:none;letter-spacing:0;font-size:.75rem}
+:root[data-estilo="corporativo"] .acao-hoje a{color:var(--ink);text-decoration:none}:root[data-estilo="corporativo"] .acao-hoje a:hover{text-decoration:underline}
+.sec-h{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:6px 0 8px}.sec-h h2{margin:0}
 nav.menu .grp{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:12px 10px 3px}
 main{padding:20px 22px 48px;min-width:0}
 .wrap{max-width:1240px;margin:0 auto;display:grid;gap:16px}
@@ -216,8 +230,8 @@ label.f{display:grid;gap:5px;font-weight:600;font-size:.85rem;margin-bottom:10px
 .campo-erro{outline:2px solid #c0392b!important;outline-offset:1px;background:#fff5f4!important}
 .msg.err.fx{margin:8px 0 12px;font-weight:600}
 /* ===== Visual Corporativo (padrão desde 0.9.47): fundo neutro, texto em uma cor, um destaque só; cor só para situação ===== */
-:root[data-estilo="corporativo"]{--cp:#1F4E79;--cp-ink:#fff;--cp-soft:#EEF3F8;--font:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--ok:#15803D;--warn:#B45309;--bad:#B91C1C;--amb:var(--cp)!important;--client:#111827!important;--client-ink:#fff!important;--p-pri:var(--cp)!important;--p-acc:var(--cp)!important;--p-str:var(--cp)!important;--p-k1:#1F4E79!important;--p-k2:#5B8DB8!important;--p-k3:#C2862B!important;--p-k4:#374151!important;--p-icon:var(--muted)!important}
-:root[data-estilo="corporativo"]:not([data-theme="escuro"]){--bg:#F6F7F9!important;--surface:#fff!important;--ink:#111827!important;--muted:#4B5563!important;--line:#E5E7EB!important;--soft:#F3F4F6!important;--client-soft:var(--cp-soft)!important;--p-bg:#F6F7F9!important;--p-line:#E5E7EB!important;--p-soft:#F3F4F6!important;--p-s1:#fff!important;--p-s2:#fff!important;--p-sact:var(--cp-soft)!important;--p-sink:#111827!important;--p-smut:#4B5563!important;--p-tit:#111827!important;--p-h1:#fff!important;--p-h2:#fff!important;--p-hink:#111827!important}
+:root[data-estilo="corporativo"]{--cp:#1F5FA8;--cp-ink:#fff;--cp-soft:#EEF2F7;--font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--ok:#1E7F45;--warn:#B26A00;--bad:#C0362C;--amb:var(--cp)!important;--client:#111827!important;--client-ink:#fff!important;--p-pri:var(--cp)!important;--p-acc:var(--cp)!important;--p-str:var(--cp)!important;--p-k1:#1F5FA8!important;--p-k2:#5B8DB8!important;--p-k3:#C2862B!important;--p-k4:#374151!important;--p-icon:var(--muted)!important}
+:root[data-estilo="corporativo"]:not([data-theme="escuro"]){--bg:#F6F7F9!important;--surface:#fff!important;--ink:#1A1D21!important;--muted:#5B6470!important;--line:#E3E6EA!important;--soft:#F3F4F6!important;--client-soft:var(--cp-soft)!important;--p-bg:#F6F7F9!important;--p-line:#E5E7EB!important;--p-soft:#F3F4F6!important;--p-s1:#fff!important;--p-s2:#fff!important;--p-sact:var(--cp-soft)!important;--p-sink:#111827!important;--p-smut:#4B5563!important;--p-tit:#111827!important;--p-h1:#fff!important;--p-h2:#fff!important;--p-hink:#111827!important}
 @media (prefers-color-scheme:dark){:root[data-estilo="corporativo"][data-theme="auto"]{--bg:#111316!important;--surface:#1a1d21!important;--ink:#e8e9eb!important;--muted:#a0a5ad!important;--line:#2c3036!important;--soft:#23272c!important;--cp:#7FB0DA;--cp-ink:#0b1620;--cp-soft:#1d2a36}}
 :root[data-estilo="corporativo"][data-theme="escuro"]{--cp:#7FB0DA;--cp-ink:#0b1620;--cp-soft:#1d2a36;--client-soft:var(--cp-soft)!important}
 :root[data-estilo="corporativo"] body{font-family:var(--font);letter-spacing:-.003em}
@@ -290,7 +304,7 @@ if(document.documentElement.dataset.estilo=="corporativo")atalaiaIcones(true);
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.51"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.52"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -718,7 +732,7 @@ function render(){
    <div class="brand"><div class="lg">${E.logoUrl?`<img src="${esc(E.logoUrl)}" alt="">`:LOGO}</div><b>${esc(c.nome)}</b><span>Atalaia System · ${esc(PL().nome.replace("Atalaia ",""))}</span></div>
    <nav class="menu">${MENU.filter(m=>m[0]=="grp"||!(m[3]&&m[3].gestor&&!GESTOR())&&!(CLIENTE()&&m[0]!="sep"&&!CLI_PAGS.has(m[0]))&&!menuOculto(m[0])).filter((m,i,L)=>m[0]!="grp"||(L[i+1]&&L[i+1][0]!="grp"&&L[i+1][0]!="sep")).map(m=>m[0]=="grp"?`<div class="grp">${m[1]}</div>`:m[0]=="sep"?`<div class="sep"></div>`:`<button aria-current="${E.pag==m[0]||(m[0]=="monit"&&E.pag=="ambiente")}" onclick="ir('${m[0]}')">${ic(m[1])}<span>${m[0]=="unidades"&&PRESTADORA()?(GESTOR()?"Empresa e clientes":"Meu cliente"):m[3]&&m[3].nomeAdm&&!GESTOR()?m[3].nomeAdm:(rotPerfil(m[0])||MENU_CURTO[m[0]]||m[2])}</span>${m[3]&&m[3].f&&!TEM(m[3].f)?`<span class="lk" title="Disponível nos planos pagos">🔒</span>`:""}</button>`).join("")}</nav>
    <div class="sep" style="height:1px;background:var(--line);margin:12px 4px"></div><button class="btn ghost sm" style="margin:0 8px 8px" onclick="ir('avisos')">🔔 Avisos e alertas${nSino()?` <b style="background:var(--bad);color:#fff;border-radius:99px;padding:0 6px">${nSino()}</b>`:""}</button><p class="note" style="padding:0 8px">${esc(E.v.nome)}<br><b>${NOMEP[E.v.perfil]||esc(E.v.perfil)}</b>${E.v.perfil!="gestor"?` · ${esc(minhaUnidade())}`:" · empresa toda"}</p><div style="padding:8px"><button class="btn ghost sm" onclick="sair()">Sair</button></div></aside>
-   <main><div class="topo"><button class="btn sm so-cel" onclick="E.menuAberto=true;render()" aria-label="Abrir o menu">☰ Menu</button><span class="note">Atalaia System · Sistema de Gestão de Patrimônio e Manutenção</span>
+   <main><div class="topo"><button class="btn sm so-cel" onclick="E.menuAberto=true;render()" aria-label="Abrir o menu">☰ Menu</button><span class="note topo-nome">Atalaia System · Sistema de Gestão de Patrimônio e Manutenção</span>
    ${E.pilha&&E.pilha.length?`<button class="btn ghost sm" onclick="voltarPag()" title="Voltar para a tela anterior">← Voltar</button>`:""}
    ${GESTOR()&&(E._full?E._full.est:E.est).length>1?`<select class="visao" onchange="mudarVisao(this.value)" title="Ver o painel como o Administrador de uma unidade" style="max-width:230px"><option value="">👁 Visão: empresa toda</option>${(E._full?E._full.est:E.est).map(u=>`<option value="${u.id}" ${E.visao==u.id?"selected":""}>👁 Painel de ${esc(u.nome)}</option>`).join("")}</select>`:""}
    <a class="btn ghost sm" href="../" style="text-decoration:none;white-space:nowrap" title="Abrir a versão do aplicativo (celular)">📱 Modo app</a>
@@ -782,7 +796,7 @@ function pgInicio(){
     kR=kpi("Bens que pedem atenção",num(ruins),"estado ruim ou em manutenção",GB.replace("ir('cad')","E.fE='atencao';ir('cad')"),"⚠");
   const KC=kpisChamados(),L1=KC?[kB,KC[0],KC[1],kR]:[kB,kV,kA,kR],L2=KC?[kV,kA,KC[2],KC[3]]:null;
   let aberto=false;try{aberto=localStorage.getItem("atalaia.maisInd")=="1"}catch(e){}
-  return `<div class="hero"><div><span class="eyebrow">Dashboard · ${E.iu?esc(nomeUni(E.iu)):"empresa toda"}</span><h1>Olá, ${esc(E.v.nome.split(" ")[0])}</h1><p>${hoje.charAt(0).toUpperCase()+hoje.slice(1)}${ant?` · acesso anterior: ${dh(ant.criado_em)}`:""}</p></div>
+  return `<div class="hero"><div><span class="eyebrow">Dashboard · ${E.iu?esc(nomeUni(E.iu)):"empresa toda"}</span><h1>${estiloAtual()=="corporativo"?`Visão geral · ${new Date().toLocaleDateString("pt-BR",{month:"long",year:"numeric"})}`:`Olá, ${esc(E.v.nome.split(" ")[0])}`}</h1><p>${hoje.charAt(0).toUpperCase()+hoje.slice(1)}${ant?` · acesso anterior: ${dh(ant.criado_em)}`:""}</p></div>
    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ghost hero-rel" ${CLIENTE()?'style="display:none"':""} onclick="abrirDashRel()">🖨 Relatório do Dashboard</button><button class="btn ghost" onclick="abrirBaixarApp()">📲 Baixar o app</button>${ADMIN()?`<button class="btn amb" onclick="E.pag='cad';E.cadTab='bens';abrirBem()">+ Cadastrar bem</button>`:""}</div></div>
   ${ADMIN()&&(E.bens.length==0||E.amb.length==0)?`<div class="card" style="border-color:var(--amb)"><div class="top"><div><h2 style="margin:0">Comece por aqui</h2><p class="note" style="margin:2px 0 0">O sistema ainda está vazio. Veja a ordem recomendada para montar tudo.</p></div><button class="btn" onclick="ir('passos')">Primeiros passos</button></div></div>`:""}
   ${blocoEstilo()}${estiloAtual()=="corporativo"?acaoHoje():cardMapaDash()}
@@ -1137,7 +1151,7 @@ function exportar(){const et=PL().funcoes.includes("etiquetas"),cab=[...(et?["Pa
 const mesAtual=()=>hojeISO().slice(0,7);
 function fimMes(m){const [a,b]=m.split("-").map(Number);return new Date(a,b,0).toISOString().slice(0,10)}
 function mesesAteDe(m,n){const [a,b]=m.split("-").map(Number);return [...Array(n)].map((_,i)=>{const d=new Date(a,b-1-(n-1-i),15);return d.toISOString().slice(0,7)})}
-function corPal(){const r=document.documentElement;if(r.dataset.estilo=="corporativo")return {k:"corporativo",pri:"#1F4E79",k1:"#1F4E79",k2:"#5B8DB8",k3:"#C2862B",k4:"#374151",h1:"#111827",h2:"#111827",hink:"#ffffff",soft:"#F3F4F6"};const k=r.dataset.pal&&PALS[r.dataset.pal]?r.dataset.pal:"classico",p=PALS[k][2],cs=getComputedStyle(r);
+function corPal(){const r=document.documentElement;if(r.dataset.estilo=="corporativo")return {k:"corporativo",pri:"#1F5FA8",k1:"#1F5FA8",k2:"#5B8DB8",k3:"#C2862B",k4:"#374151",h1:"#111827",h2:"#111827",hink:"#ffffff",soft:"#F3F4F6"};const k=r.dataset.pal&&PALS[r.dataset.pal]?r.dataset.pal:"classico",p=PALS[k][2],cs=getComputedStyle(r);
   const cli=(cs.getPropertyValue("--client")||"").trim();return {k,pri:r.dataset.herogr=="1"?p.pri:(cli||p.pri),k1:k=="classico"?"#1d1f23":p.k1,k2:k=="classico"?"#2f6fd6":p.k2,k3:k=="classico"?"#f2a33a":p.k3,k4:k=="classico"?"#c8372d":p.k4,h1:k=="classico"?"#1d1f23":p.h1,h2:k=="classico"?"#1d1f23":p.h2,hink:k=="classico"?"#ffffff":p.hink,soft:p.soft}}
 const hexRGB=h=>{h=String(h||"#000").replace("#","");if(h.length==3)h=h.split("").map(x=>x+x).join("");const n=parseInt(h,16);return [n>>16&255,n>>8&255,n&255]};
 /* Indicadores do setor (MaintainX, UpKeep): manutenção planejada, backlog, MTTR, MTBF */
@@ -1152,8 +1166,8 @@ function indSetor(o){const {mes,CH,RT,PG,B,ref,emAb,venc,concMes}=o,noMes=d=>d&&
    ["MTTR · tempo médio de reparo",mttr==null?"—":h(mttr),mttr==null?"nenhum chamado concluído no mês":`da abertura à conclusão · ${num(tm.length)} chamado(s)`],
    ["MTBF · tempo médio entre falhas",mtbf==null?"—":d(mtbf),mtbf==null?"nenhuma falha registrada no mês":`por bem · ${num(falhas)} falha(s) em ${num(B.length)} bem(ns)`]]}
 function cardIndSetor(){try{const D=dashDados(mesAtual());if(!D.IS)return "";
-  return `<div class="card"><div class="top"><div><h2 style="margin:0">Indicadores de manutenção · ${new Date(D.mes+"-15").toLocaleDateString("pt-BR",{month:"long"})}</h2><p class="note" style="margin:2px 0 0">Os mesmos indicadores usados pelos sistemas de manutenção do mercado.</p></div><button class="btn ghost sm" onclick="ir('ind')">Ver detalhes</button></div>
-   <div class="grid g4 dash-k">${D.IS.map(([l,v,c])=>`<div class="kpi" style="padding:12px 14px;border:1px solid var(--line);border-radius:8px"><div class="lab">${l}</div><div class="val">${v}</div><div class="cmp">${c}</div></div>`).join("")}</div></div>`}catch(e){return ""}}
+  return `<div class="sec-h"><div><h2>Indicadores de manutenção · ${new Date(D.mes+"-15").toLocaleDateString("pt-BR",{month:"long"})}</h2><p class="note" style="margin:2px 0 0">Os mesmos indicadores usados pelos sistemas de manutenção do mercado.</p></div><button class="btn ghost sm" onclick="ir('ind')">Ver detalhes</button></div>
+   <div class="grid g4 dash-k" style="margin-bottom:16px">${D.IS.map(([l,v,c])=>`<div class="kpi" style="padding:12px 14px"><div class="lab">${l}</div><div class="val">${v}</div><div class="cmp">${c}</div></div>`).join("")}</div>`}catch(e){return ""}}
 /* gráficos: começa no primeiro mês com dados; título com a conclusão */
 function mesesComDados(M,tem){const i=M.findIndex(tem);return i<0?M.slice(-2):M.slice(Math.min(i,M.length-2))}
 function conclMes(M,vals,palavra){const n=vals.length;if(n<1)return "";const a=vals[n-1],b=n>1?vals[n-2]:null,nm=new Date(M[n-1]+"-15").toLocaleDateString("pt-BR",{month:"long"}),pm=n>1?new Date(M[n-2]+"-15").toLocaleDateString("pt-BR",{month:"long"}):"";
@@ -3083,7 +3097,7 @@ async function pmocPDF(u){try{carregarClima();const e=u?E.est.find(x=>x.id==u):E
   st.fim(`PMOC_${(e.nome||"unidade").replace(/[^\w-]/g,"_")}.pdf`);DB.registrar(E.v.contratante_id,"gerou documento PMOC",e.nome||"");toast("Documento PMOC baixado. Confira com o responsável técnico antes de assinar.")}catch(er){toast(er.message||"Não foi possível gerar o PDF.")}}
 /* ---------------- Item 89 · estilos do painel e dos relatórios (o Clássico continua) ---------------- */
 const ESTILOS={corporativo:["Corporativo","Fundo neutro, texto em uma cor e um destaque só; a cor aparece só para situação (verde, âmbar, vermelho) com ícone e palavra."],classico:["Clássico","O visual antigo: cartões, rosca e barras coloridas."],executivo:["Executivo","Realizado x meta x mês anterior, com o desvio em verde ou vermelho (padrão IBCS). Para a diretoria."],editorial:["Editorial","O título já conta a conclusão; fonte com serifa e réguas finas. Para relatórios e reuniões."],operacional:["Operacional","Fila do dia com prazo, tabelas densas, ícone e texto junto da cor. Para a equipe de manutenção."],simples:["Simples","Tudo claro: fundo branco e letras pretas, sem cores. O vermelho aparece só em atraso e erro."]};
-const EST_GF={corporativo:"family=Inter:wght@400;500;600;700",executivo:"family=IBM+Plex+Sans:wght@400;500;600;700",editorial:"family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700",operacional:"family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600"};
+const EST_GF={corporativo:"family=IBM+Plex+Sans:wght@400;500;600;700",executivo:"family=IBM+Plex+Sans:wght@400;500;600;700",editorial:"family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700",operacional:"family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600"};
 function estiloDe(d){d=d||{};return ESTILOS[d.estilo]?d.estilo:"corporativo"}
 function estiloAtual(){return estiloDe(E.rascunho||(E.v&&E.v.contratantes&&E.v.contratantes.design))}
 function aplicarEstilo(d){const e=estiloDe(d),r=document.documentElement,l=document.getElementById("gf2");r.dataset.estilo=e;try{window.atalaiaIcones&&atalaiaIcones(e=="corporativo")}catch(er){}if(l){if(EST_GF[e])l.href="https://fonts.googleapis.com/css2?"+EST_GF[e]+"&display=swap";else l.removeAttribute("href")}}

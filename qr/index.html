@@ -35,19 +35,19 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--amb);border-colo
 .muted{color:var(--mut);font-size:.84rem}
 footer{text-align:center;color:var(--mut);font-size:.78rem;padding:8px 16px 24px}
 /* Visual Corporativo */
-:root{--ink:#111827;--mut:#4B5563;--line:#E5E7EB;--bg:#F6F7F9;--amb:#1F4E79;--ok:#15803D;--bad:#B91C1C}
-body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important}
+:root{--ink:#111827;--mut:#4B5563;--line:#E5E7EB;--bg:#F6F7F9;--amb:#1F5FA8;--ok:#15803D;--bad:#B91C1C}
+body{font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif!important}
 .card{border-radius:8px!important}input,select,textarea{border-radius:8px!important;border-width:1px!important}
 .btn{border-radius:8px!important}.btn.amb{background:var(--amb)!important;color:#fff!important}.btn.ghost{border:1px solid #D1D5DB!important}
 .urg button{border-radius:8px!important;border-width:1px!important}
 </style>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 </head>
 <body>
 <div id="app"><div class="wrap"><p class="muted">Carregando…</p></div></div>
 <script>
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.1.2"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.1.3"};
 const P=new URLSearchParams(location.search),DEMO=P.has("demo");
 const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const dh=d=>d?new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
