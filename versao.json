@@ -1,1 +1,1 @@
-{"app": "0.3.41", "gestor": "0.9.53", "matriz": "0.3.27", "novidade": "PDFs da empresa sem “(s)”: OS, histórico do bem, PMOC, Registro do mês, Prestação de contas e relatórios saem com “1 chamado”, “3 chamados”."}
+{"app": "0.3.41", "gestor": "0.9.54", "matriz": "0.3.28", "novidade": "Excluir cadastro feito por engano (Equipe da Matriz, Gestor e Administrador; só para quem nunca entrou) e Excluir empresa de teste na Matriz (só o titular, mostra o que será apagado e confirma com a sigla; JA Nails protegida)."}
