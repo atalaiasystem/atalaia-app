@@ -1,1 +1,1 @@
-{"app": "0.3.41", "gestor": "0.9.54", "matriz": "0.3.28", "novidade": "Excluir cadastro feito por engano (Equipe da Matriz, Gestor e Administrador; só para quem nunca entrou) e Excluir empresa de teste na Matriz (só o titular, mostra o que será apagado e confirma com a sigla; JA Nails protegida)."}
+{"app": "0.3.41", "gestor": "0.9.55", "matriz": "0.3.28", "novidade": "Personalizar painel: cada pessoa escolhe os quadros do Dashboard e a ordem. Monitoramento e o Mapa das unidades viraram uma tela só, com abas."}
