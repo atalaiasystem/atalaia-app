@@ -132,6 +132,7 @@ let css="i.ic{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.1
 for(const k in P)css+=`i.ic-${k}{--im:url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+P[k]+'</svg>')}")}`;
 let ob=null,ligado=false;
 const PLR=/([A-Za-zÀ-ÿ]+)\((s|es|ões|ns)\)/g,PLT=/[A-Za-zÀ-ÿ]\((?:s|es|ões|ns)\)/;
+window.pdfNovo=function(o){const d=new window.jspdf.jsPDF(o),t=d.text,f=v=>typeof v=="string"&&window.atalaiaPlural?atalaiaPlural(v):v;d.text=function(x,...r){return t.call(d,Array.isArray(x)?x.map(f):f(x),...r)};return d};
 function numAntes(t,i,n){const a=t.slice(0,i),c=a.split(/[.;:·|•\n]/).pop(),m=c.match(/(\d+(?:[.,]\d+)?)(?!.*\d)/);if(m)return m[1];if(c.trim()==""||/^[\s()A-Za-zÀ-ÿ]*$/.test(c)){const p=n.previousSibling;if(p&&p.textContent){const q=p.textContent.match(/(\d+(?:[.,]\d+)?)\s*$/);if(q&&c.split(/\s+/).filter(Boolean).length<=3)return q[1]}}return null}
 function plural(n){const t=n.nodeValue;if(!t||!PLT.test(t))return;const v=t.replace(PLR,(m,w,suf,i)=>{const k=numAntes(t,i,n),um=k!=null&&/^0*1$/.test(k.replace(/[.,]0+$/,""));if(suf=="ns")return um?w:w.replace(/m$/,"ns");if(suf=="ões")return um?w:w.replace(/ção$/,"ções").replace(/são$/,"sões");return um?w:w+suf});if(v!=t)n.nodeValue=v}
 window.atalaiaPlural=t=>{const n={nodeValue:String(t),previousSibling:null};plural(n);return n.nodeValue};
@@ -161,7 +162,7 @@ atalaiaIcones(true);</script>
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.40",
+  versao:"0.3.41",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -750,7 +751,7 @@ async function baixarPDF(){
   const bt=$("#bp");if(bt){bt.disabled=true;bt.querySelector("b").textContent="⏳ Gerando o PDF… aguarde"}
   try{
     if(!window.jspdf)await carregarScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
-    const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,H=297,M=14,c=E.v.contratantes,hoje=new Date().toLocaleDateString("pt-BR");
+    const doc=pdfNovo({unit:"mm",format:"a4"}),W=210,H=297,M=14,c=E.v.contratantes,hoje=new Date().toLocaleDateString("pt-BR");
     const topo=()=>{doc.setTextColor(29,31,35);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text(c.nome,M,9);
       doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(90,94,102);doc.text("Relatório de bens · Atalaia System",M,13.8);doc.text(hoje,W-M,13.8,{align:"right"});doc.setDrawColor(29,31,35);doc.setLineWidth(1.2);doc.line(M,16.6,W-M,16.6);doc.setLineWidth(0.2);doc.setTextColor(29,31,35)};
     const rodape=(n,t)=>{doc.setFontSize(8);doc.setTextColor(107,112,120);doc.text("Atalaia System - Sistema de Gestão de Patrimônio e Manutenção",M,H-8);doc.text(`Página ${n} de ${t}`,W-M,H-8,{align:"right"});doc.setTextColor(29,31,35)};

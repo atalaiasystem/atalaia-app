@@ -280,6 +280,7 @@ let css="i.ic{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.1
 for(const k in P)css+=`i.ic-${k}{--im:url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+P[k]+'</svg>')}")}`;
 let ob=null,ligado=false;
 const PLR=/([A-Za-zÀ-ÿ]+)\((s|es|ões|ns)\)/g,PLT=/[A-Za-zÀ-ÿ]\((?:s|es|ões|ns)\)/;
+window.pdfNovo=function(o){const d=new window.jspdf.jsPDF(o),t=d.text,f=v=>typeof v=="string"&&window.atalaiaPlural?atalaiaPlural(v):v;d.text=function(x,...r){return t.call(d,Array.isArray(x)?x.map(f):f(x),...r)};return d};
 function numAntes(t,i,n){const a=t.slice(0,i),c=a.split(/[.;:·|•\n]/).pop(),m=c.match(/(\d+(?:[.,]\d+)?)(?!.*\d)/);if(m)return m[1];if(c.trim()==""||/^[\s()A-Za-zÀ-ÿ]*$/.test(c)){const p=n.previousSibling;if(p&&p.textContent){const q=p.textContent.match(/(\d+(?:[.,]\d+)?)\s*$/);if(q&&c.split(/\s+/).filter(Boolean).length<=3)return q[1]}}return null}
 function plural(n){const t=n.nodeValue;if(!t||!PLT.test(t))return;const v=t.replace(PLR,(m,w,suf,i)=>{const k=numAntes(t,i,n),um=k!=null&&/^0*1$/.test(k.replace(/[.,]0+$/,""));if(suf=="ns")return um?w:w.replace(/m$/,"ns");if(suf=="ões")return um?w:w.replace(/ção$/,"ções").replace(/são$/,"sões");return um?w:w+suf});if(v!=t)n.nodeValue=v}
 window.atalaiaPlural=t=>{const n={nodeValue:String(t),previousSibling:null};plural(n);return n.nodeValue};
@@ -304,7 +305,7 @@ if(document.documentElement.dataset.estilo=="corporativo")atalaiaIcones(true);
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.52"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.53"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1232,7 +1233,7 @@ function grafCanvas(tipo,dados,cor,w,h){const cv=document.createElement("canvas"
   return cv.toDataURL("image/png")}
 async function dashPDF(){const D=dashDados(E.modal.mes),cor=corPal();try{
   if(!window.jspdf)await addScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
-  const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,H=297,M=12;let y=0;const rgb=c=>hexRGB(c),limpa=t=>(window.atalaiaPlural?atalaiaPlural(t):String(t)).replace(/🔒\s*/g,"").replace(/\s*★/g," de 5").replace(/[^\x00-\xFF·–—“”‘’…]/g,""),T=(t,xx,yy,o)=>doc.text(Array.isArray(t)?t.map(limpa):limpa(t),xx,yy,o);
+  const doc=pdfNovo({unit:"mm",format:"a4"}),W=210,H=297,M=12;let y=0;const rgb=c=>hexRGB(c),limpa=t=>(window.atalaiaPlural?atalaiaPlural(t):String(t)).replace(/🔒\s*/g,"").replace(/\s*★/g," de 5").replace(/[^\x00-\xFF·–—“”‘’…]/g,""),T=(t,xx,yy,o)=>doc.text(Array.isArray(t)?t.map(limpa):limpa(t),xx,yy,o);
   let logo=null;try{const lp=(E.v.contratantes.design||{}).logo;if(lp)logo=await fotoParaPDF(lp)}catch(e){}
   const corp=cor.k=="corporativo";const topo=()=>{const a=rgb(cor.h1),b=rgb(cor.h2);if(corp){doc.setDrawColor(209,213,219);doc.setLineWidth(.4);doc.line(M,26,W-M,26)}else for(let i=0;i<20;i++){const t=i/19;doc.setFillColor(...a.map((v,k)=>Math.round(v+(b[k]-v)*t)));doc.rect(i*W/20,0,W/20+.3,26,"F")}
     const ink=corp?[17,24,39]:rgb(cor.hink);doc.setTextColor(...ink);let tx=M;if(logo){const lw=18,lh=Math.min(18,lw*logo.h/logo.w);doc.setFillColor(255,255,255);doc.roundedRect(M,4,lw+2,18,2,2,"F");doc.addImage(logo.d,"JPEG",M+1,4+(18-lh)/2,lw,lh);tx=M+24}
@@ -2012,7 +2013,7 @@ function pgAmbiente(){const a=E.amb.find(x=>x.id==E.ambId);if(!a)return pgMonit(
   :`<div class="card"><h2>Relatório do ambiente</h2><p class="note">Resumo, chamados do período, inventário e calibrações deste ambiente em um PDF.</p><button class="btn" onclick="relatorioAmbiente('${a.id}')">Gerar PDF</button></div>`}`}
 async function relatorioAmbiente(id){const a=E.amb.find(x=>x.id==id),s=statusAmb(a);try{
   if(!window.jspdf)await addScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
-  const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,M=14;let y=0;
+  const doc=pdfNovo({unit:"mm",format:"a4"}),W=210,M=14;let y=0;
   const topo=()=>{pdfCab(doc,W,M,"Relatório do ambiente · "+(linhaEmpresa()||""));doc.setTextColor(29,31,35);y=28};
   const linha=(t,b)=>{if(y>280){doc.addPage();topo()}doc.setFont("helvetica",b?"bold":"normal");doc.setFontSize(b?11:9);doc.splitTextToSize(t,W-2*M).forEach(l=>{doc.text(l,M,y);y+=b?6:4.6})};
   topo();linha(a.nome+" - "+nomeUni(a.estabelecimento_id),true);linha(`Situação: ${COR[s.cor][2]} · ${s.bens.length} bem(ns) · ${s.ch.length} chamado(s) em aberto (${s.atr.length} atrasado(s)) · ${s.venc.length} calibração/preventiva vencida(s)`);y+=3;
@@ -2343,7 +2344,7 @@ function pdfCampo(st,k,v,lw){const {doc,M}=st,TW=st.W-2*M;lw=lw||46;doc.setFontS
   doc.setFont("helvetica","bold");doc.setFontSize(8.4);doc.text(doc.splitTextToSize(pdfT(k),lw-3)[0],M+1.5,st.y+4.1);doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(t,M+lw+1.5,st.y+4.1);st.y+=h}
 async function relPDF(comFotos){const per=relPeriodo(),R=montarRel(E.rk,per);try{await prepLogoPDF();
   if(!window.jspdf)await addScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
-  const larga=R.secoes.some(s=>s.cols.length>7),doc=new window.jspdf.jsPDF({unit:"mm",format:"a4",orientation:larga?"landscape":"portrait"}),W=larga?297:210,H=larga?210:297,M=12;let y=0;
+  const larga=R.secoes.some(s=>s.cols.length>7),doc=pdfNovo({unit:"mm",format:"a4",orientation:larga?"landscape":"portrait"}),W=larga?297:210,H=larga?210:297,M=12;let y=0;
   const topo=()=>{pdfCab(doc,W,M,linhaEmpresa(E.ru||null));y=26};
   const quebra=h=>{if(y+h>H-14){doc.addPage();topo();return true}return false};
   topo();doc.setFont(pdfFonteTit(),"bold");doc.setFontSize(pdfFonteTit()=="times"?17:14);doc.text(R.titulo,M,y);y+=6;doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(`${R.sub||""} · ${E.ru?nomeUni(E.ru):GESTOR()?"Todas as unidades":nomeUni(minhaUnidadeId())}`,M,y);y+=7;
@@ -2862,7 +2863,7 @@ function baixasPendHTML(){if(!GESTOR())return "";if(!E.bxCarr){E.bxCarr=1;DB.bai
 async function decBaixa(id,a){let o=null;if(a=="recusar"){o=prompt("Por que está recusando? (vai para quem pediu)");if(o==null)return}else if(!confirm("Aprovar a baixa? O bem sai da lista (o histórico fica guardado)."))return;
   try{toast(await DB.decidirBaixa(id,a,o));E.bxCarr=0;await recarregar()}catch(e){toast(e.message)}}
 async function pdfBase(titulo){await prepLogoPDF();if(!window.jspdf)await addScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
-  const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,M=14;pdfCab(doc,W,M,linhaEmpresa());
+  const doc=pdfNovo({unit:"mm",format:"a4"}),W=210,M=14;pdfCab(doc,W,M,linhaEmpresa());
   doc.setFont(pdfFonteTit(),"bold");doc.setFontSize(pdfFonteTit()=="times"?17:15);doc.text(titulo,M,30);const st={doc,W,M,y:38};
   st.PH=297;st.nova=()=>{doc.addPage();st.y=20};st.L=(k,v)=>pdfCampo(st,k,v);
   st.H=t=>{if(st.y>262){doc.addPage();st.y=20}st.y+=4;doc.setFont(pdfFonteTit(),"bold");doc.setFontSize(11);doc.text(pdfT(t),M,st.y);st.y+=3};
@@ -3515,7 +3516,7 @@ async function assinarOS(k){const n=$("#nm_"+k).value.trim();if(n.length<3){toas
   try{await DB.assinarOS(E.modal.c.id,k,n,document.getElementById("cv_"+k).toDataURL("image/png"));E.modal.osa=await DB.assinaturasOS(E.modal.c.id);E.modal.ev=await DB.eventos(E.modal.c.id).catch(()=>E.modal.ev);toast("Assinatura registrada.");render()}catch(e){toast(e.message)}}
 async function osPDF(){const c=E.modal.c,A=E.modal.osa||[],ev=E.modal.ev||[];try{await prepLogoPDF();
   if(!window.jspdf)await addScript("https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js","sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3");
-  const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4"}),W=210,M=14;let y=0;const b=bemDe(c.bem_id),pecas=(E.estMov||[]).filter(m=>m.chamado_id==c.id&&m.tipo=="saida");
+  const doc=pdfNovo({unit:"mm",format:"a4"}),W=210,M=14;let y=0;const b=bemDe(c.bem_id),pecas=(E.estMov||[]).filter(m=>m.chamado_id==c.id&&m.tipo=="saida");
   pdfCab(doc,W,M,linhaEmpresa(c.estabelecimento_id));doc.setTextColor(29,31,35);y=30;
   doc.setFont("helvetica","bold");doc.setFontSize(15);doc.text(`Ordem de serviço nº ${c.os_numero||c.numero}`,M,y);y+=8;
   const L=(k,v)=>{doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.text(k+":",M,y);doc.setFont("helvetica","normal");const t=doc.splitTextToSize(String(v||"—"),W-2*M-42);doc.text(t,M+42,y);y+=Math.max(5.2,t.length*4.6)};
