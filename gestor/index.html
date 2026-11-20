@@ -290,7 +290,7 @@ if(document.documentElement.dataset.estilo=="corporativo")atalaiaIcones(true);
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.50"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.51"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -943,7 +943,7 @@ function cfgDesign(){
   const ok=Math.max(cw,cb)>=4.5;
   return `<div class="grid g2"><div class="card"><h2>Design do painel</h2><p class="note">Muda as cores, a fonte e a logo do Painel do Gestor para todos os usuários da empresa.${ADMIN()?"":" Somente administradores podem alterar."}</p>
    ${perfilOpcHTML(d)}${estiloOpcHTML(d)}
-   ${estiloDe(d)=="corporativo"?`<p class="note" style="margin:0 0 14px">No visual Corporativo as cores são fixas, como nos sistemas profissionais: a sua empresa aparece pela logo, no topo e no cabeçalho dos PDFs. A paleta de cores e a cor principal voltam a aparecer se escolher outro estilo, como o Clássico.</p>`:""}<div ${estiloDe(d)=="corporativo"?"hidden":""}>
+   ${E.titSis?`<p class="note" style="margin:0 0 14px">🔒 <b>Paleta de cores e cor principal: ocultas para os clientes.</b> Só o titular do sistema vê esta parte, para liberar no futuro como atualização.</p>`:""}<div ${E.titSis?"":"hidden"}>
    <div class="f" style="margin-bottom:14px"><b>Paleta de cores do painel e do app</b> <span class="muted">· menu, topo, indicadores e gráficos</span>
     ${["Claras","Escuras"].map(g=>`<div class="note" style="margin-top:8px;font-weight:700">${g}</div><div class="palc">${Object.entries(PALS).filter(([k,v])=>v[1]==g).map(([k,[n,,p]])=>`<button type="button" aria-pressed="${(d.paleta||PAL_PADRAO)==k}" onclick="E.rascunho.paleta='${k}';previa();render()" title="${n}"><span class="pv"><i style="background:linear-gradient(180deg,${p.s1},${p.s2});${p.s1=="#ffffff"?"border-right:1px solid #e3e0da":""}"></i><div style="background:${p.bg}"><span class="hd" style="background:linear-gradient(120deg,${p.h1},${p.h2})"></span><span class="ks"><span style="background:${p.k1}"></span><span style="background:${p.k2}"></span><span style="background:${p.k3}"></span><span style="background:${p.k4}"></span></span></div></span><b>${n}${k==PAL_PADRAO?" · padrão":""}</b></button>`).join("")}</div>`).join("")}</div>
    <div class="f" style="margin-bottom:12px"><b>Cor principal</b> <span class="muted">· opcional: a cor da sua marca nos botões e no topo. ${d.cor?`<button type="button" class="btn ghost sm" onclick="delete E.rascunho.cor;previa();render()">Usar a cor da paleta</button>`:"Sem cor própria: usa a da paleta."}</span> <span class="muted">· atual ${cor}</span>${paletaHTML(cor,"E.rascunho.cor='COR';render()")}<div class="pal-outra">Qualquer outra cor: <input type="color" value="${cor}" onchange="E.rascunho.cor=this.value;render()" style="width:56px;height:40px;padding:2px"></div></div>
@@ -1046,6 +1046,7 @@ async function posLogin(novo){
   const u=await DB.usuario();E.uid=u?.id;
   if(!u?.user_metadata?.senha_definida){E.tela="negado";E.negMsg="Crie sua senha pessoal primeiro";E.negSub="No primeiro acesso, a senha provisória precisa ser trocada pelo aplicativo.";render();return}
   E.v=await DB.vinculo();if(E.v){try{E.v.dados=await DB.empresaDados(E.v.contratante_id)}catch(e){E.v.dados={}}}
+   E.titSis=false;if(!DEMO&&E.v){try{const q=await sb.rpc("matriz_nivel");E.titSis=!q.error&&q.data=="titular"}catch(e){}}
   if(!E.v){const ina=await DB.acessoInativo();if(ina){apagarDadosLocais(DEMO?"atalaia-painel-demo":"atalaia-painel");E.tela="negado";E.negMsg="Seu acesso foi desativado";E.negSub=`A empresa ${ina.empresa||""} desativou o seu acesso${ina.inativado_em?" em "+new Date(ina.inativado_em).toLocaleDateString("pt-BR"):""}. Se for um engano, fale com o Gestor ou o Administrador da sua unidade.`;render();return}E.tela="negado";E.negMsg="Acesso ainda não liberado";E.negSub="Seu e-mail não está ligado a uma empresa.";render();return}
   if(!["administrador","gestor","cliente"].includes(E.v.perfil)){E.tela="negado";E.negMsg="O painel é para o Gestor, os Administradores e os clientes";E.negSub="Colaboradores usam o aplicativo do celular no dia a dia.";render();return}
   aplicarDesign(E.v.contratantes.design);E.tela="painel";if(novo)DB.registrar(E.v.contratante_id,"entrou",null);await recarregar();if(ADMIN())DB.entradas(E.v.contratante_id).then(r=>{E.entradas=r||[];render()}).catch(()=>{});
