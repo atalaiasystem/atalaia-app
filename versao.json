@@ -1,1 +1,1 @@
-{"app": "0.3.41", "gestor": "0.9.55", "matriz": "0.3.28", "novidade": "Personalizar painel: cada pessoa escolhe os quadros do Dashboard e a ordem. Monitoramento e o Mapa das unidades viraram uma tela só, com abas."}
+{"app": "0.3.41", "gestor": "0.9.56", "matriz": "0.3.28", "novidade": "Novo relatório de Depreciação: valor de compra, vida útil, depreciação acumulada e do período e valor contábil de cada bem (método linear). Também: Personalizar painel e mapas juntos em uma tela."}
