@@ -162,7 +162,7 @@ atalaiaIcones(true);</script>
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.41",
+  versao:"0.3.42",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:""
@@ -185,6 +185,13 @@ const tem2=()=>!!(E.v&&E.v.contratantes.planos.funcoes.includes("duas_etapas"));
 /* ---------------- Camada de dados: Supabase real ou demonstração ---------------- */
 let sb=null;
 const DB=DEMO?mockDB():realDB();
+/* comunicados da equipe Atalaia System (arquivo 65) */
+DB.comunicados=DEMO?async()=>(window.__COMA||(window.__COMA=[{id:1,titulo:"Manutenção programada no sábado",texto:"Sábado, das 22h às 23h, o sistema pode ficar fora do ar por alguns minutos. Nada precisa ser feito.",tipo:"manutencao",inicio:new Date().toISOString()}])).filter(x=>!x.lido):async c=>{try{const r=await sb.rpc("comunicados_para",{p_c:c});return r.error?[]:(r.data||[])}catch(e){return []}};
+DB.comLido=DEMO?async id=>{const x=(window.__COMA||[]).find(y=>y.id==id);if(x)x.lido=true}:async id=>{try{await sb.rpc("comunicado_lido",{p_id:id})}catch(e){}};
+const TIPO_COMA={novidade:["Novidade","#1F5FA8"],manutencao:["Manutenção programada","#B26A00"],aviso:["Aviso","#5B6470"],importante:["Importante","#C0362C"]};
+function comApp(){if(!E.comCarr&&E.v){E.comCarr=1;DB.comunicados(E.v.contratante_id).then(L=>{E.comA=L||[];if(E.comA.length)render()}).catch(()=>{})}const L=E.comA||[],sl=E.v&&E.v.contratantes&&E.v.contratantes.situacao=="leitura";
+ return (sl?`<div class="card" style="border-left:4px solid #B26A00"><b>Empresa em modo só leitura</b><p class="note" style="margin:4px 0 0">Você continua vendo tudo, mas não é possível lançar nada novo agora. Fale com o Gestor da sua empresa.</p></div>`:"")+
+ L.map(x=>{const T=TIPO_COMA[x.tipo]||TIPO_COMA.aviso;return `<div class="card" style="border-left:4px solid ${T[1]}"><span class="note" style="color:${T[1]};font-weight:600">${T[0]} · Atalaia System</span><div style="font-weight:700;margin:2px 0 4px">${esc(x.titulo)}</div><p style="margin:0 0 8px;white-space:pre-wrap">${esc(x.texto)}</p><button class="btn ghost sm" onclick="E.comA=E.comA.filter(y=>y.id!=${Number(x.id)});render();DB.comLido(${Number(x.id)})">Li, pode esconder</button></div>`}).join("")}
 function realDB(){
   sb=supabase.createClient(CONFIG.url,CONFIG.anonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const chk=({data,error})=>{if(error)throw new Error(traduz(error.message));return data};
@@ -381,7 +388,7 @@ function telaSemAcesso(){const ina=E.inativo;if(!ina&&!E.inaChk&&DB.acessoInativ
 function telaApp(){
   const c=E.v.contratantes,p=c.planos;
   const corpo=E.aba=="man"?abaMan():E.aba=="ron"&&typeof abaRon=="function"?abaRon():E.aba=="bens"?abaBens(p):E.aba=="amb"?abaAmb(p):abaPlano(p);
-  return cab(esc(c.nome))+`<div class="wrap">${corpo}</div><nav class="tabs">${[...(temMan()?[["man","Manutenção"]]:[]),...(temF("rondas")&&typeof abaRon=="function"?[["ron","Rondas"]]:[]),["bens","Bens"],["amb",p.ambientes>1?"Ambientes":"Ambiente"],["plano","Plano"]].map(([k,t])=>`<button aria-current="${E.aba==k}" onclick="irAba('${k}')">${ic(k=="amb"?"amb":k)}${t}</button>`).join("")}</nav>`;
+  return cab(esc(c.nome))+`<div class="wrap">${comApp()}${corpo}</div><nav class="tabs">${[...(temMan()?[["man","Manutenção"]]:[]),...(temF("rondas")&&typeof abaRon=="function"?[["ron","Rondas"]]:[]),["bens","Bens"],["amb",p.ambientes>1?"Ambientes":"Ambiente"],["plano","Plano"]].map(([k,t])=>`<button aria-current="${E.aba==k}" onclick="irAba('${k}')">${ic(k=="amb"?"amb":k)}${t}</button>`).join("")}</nav>`;
 }
 function uso(n,lim,neutro){const p=Math.min(100,n/lim*100);return `<div class="bar"><i style="width:${p}%;background:${neutro?"var(--ink)":p>=100?"var(--bad)":p>=75?"var(--warn)":"var(--ink)"}"></i></div>`}
 function abaBens(p){
