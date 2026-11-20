@@ -42,12 +42,17 @@ body{font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-
 .urg button{border-radius:8px!important;border-width:1px!important}
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-</head>
+<style>.mpch.on{background:color-mix(in srgb,var(--mp1) 72%,#000)!important;border-color:color-mix(in srgb,var(--mp1) 72%,#000)!important}:focus-visible{outline:2px solid #1F5FA8;outline-offset:2px}</style><script>/* Atalaia · acessibilidade (ABNT NBR 17225 / WCAG 2.1 AA): dá nome aos campos sem rótulo e deixa as tabelas roláveis acessíveis pelo teclado */
+(function(){function nome(el){if(el.getAttribute("aria-label")||el.getAttribute("aria-labelledby")||el.closest("label"))return;if(el.id&&document.querySelector('label[for="'+el.id+'"]'))return;let t=el.getAttribute("title")||el.getAttribute("placeholder")||"";if(!t){let p=el.previousElementSibling;while(p&&!t){const x=(p.textContent||"").trim();if(x&&!p.matches("select,input,textarea,button"))t=x.replace(/:$/,"");p=p.previousElementSibling}}if(!t){const td=el.closest("td");if(td){const tr=td.parentElement,tb=td.closest("table"),i=[...tr.children].indexOf(td),th=tb&&tb.querySelector("tr th:nth-child("+(i+1)+")"),c0=tr.children[0];t=((th&&th.textContent.trim())||"")+(c0&&c0!==td?" · "+c0.textContent.trim().slice(0,40):"")}}if(!t&&el.tagName=="SELECT"){const o=el.options[el.selectedIndex];t="Escolher"+(o?": "+o.text:"")}if(t)el.setAttribute("aria-label",t.slice(0,80))}
+function tab(el){if(el.scrollWidth>el.clientWidth+2&&!el.hasAttribute("tabindex")){el.setAttribute("tabindex","0");el.setAttribute("role","region");el.setAttribute("aria-label","Tabela (role para os lados)")}}
+function varrer(r){if(!r||r.nodeType!=1)return;r.querySelectorAll("select,input:not([type=hidden]),textarea").forEach(nome);if(r.matches&&r.matches("select,input,textarea"))nome(r);requestAnimationFrame(()=>r.querySelectorAll(".tbl,.tw").forEach(tab))}
+function ini(){varrer(document.body);new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(varrer))).observe(document.body,{childList:true,subtree:true})}
+document.body?ini():document.addEventListener("DOMContentLoaded",ini,{once:true})})();</script></head>
 <body>
 <div id="app"><div class="wrap"><p class="muted">Carregando…</p></div></div>
 <script>
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.1.3"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.1.4"};
 const P=new URLSearchParams(location.search),DEMO=P.has("demo");
 const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const dh=d=>d?new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
