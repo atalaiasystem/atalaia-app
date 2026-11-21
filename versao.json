@@ -1,1 +1,1 @@
-{"app": "0.3.44", "gestor": "0.9.63", "matriz": "0.3.33", "novidade": "Página do QR Code em português, espanhol e inglês, e entrada do Gestor e da Matriz pronta para o captcha."}
+{"app": "0.3.45", "gestor": "0.9.64", "matriz": "0.3.34", "novidade": "Verificação de segurança (não sou um robô) na entrada do aplicativo, do Gestor e da Matriz."}
