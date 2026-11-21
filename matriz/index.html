@@ -238,7 +238,7 @@ document.body?ini():document.addEventListener("DOMContentLoaded",ini,{once:true}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.36",
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.37",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública). Vazio = sem captcha.
   turnstileSiteKey:"0x4AAAAAAGMIUUFreGPjKUGi"};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
@@ -271,7 +271,7 @@ const rpcTodas=async(f,a)=>{const T=1000;let out=[],i=0;for(;;){const r=await sb
     async usuario(){return (await sb.auth.getUser()).data.user},
     async nivel(){return chk(await sb.auth.mfa.getAuthenticatorAssuranceLevel())},
     async fatores(){const d=chk(await sb.auth.mfa.listFactors());return (d.all||[]).filter(f=>f.factor_type=="totp")},
-    async inscrever(){for(const f of await this.fatores())if(f.status!=="verified")await sb.auth.mfa.unenroll({factorId:f.id});return chk(await sb.auth.mfa.enroll({factorType:"totp",friendlyName:"Atalaia Matriz "+new Date().toISOString().slice(0,16)}))},
+    async inscrever(){for(const f of await this.fatores())if(f.status!=="verified")await sb.auth.mfa.unenroll({factorId:f.id});return chk(await sb.auth.mfa.enroll({factorType:"totp",issuer:"Atalaia System",friendlyName:"Atalaia Matriz "+new Date().toISOString().slice(0,16)}))},
     async verificar(id,code){return chk(await sb.auth.mfa.challengeAndVerify({factorId:id,code}))},
     souMatriz:()=>rpc("sou_da_matriz"),
     indicadores:()=>rpc("matriz_indicadores"),

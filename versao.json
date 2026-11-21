@@ -1,1 +1,1 @@
-{"app": "0.3.46", "gestor": "0.9.67", "matriz": "0.3.36", "novidade": "Verificação em duas etapas obrigatória para Gestores e Administradores no Painel do Gestor, com QR Code na primeira entrada."}
+{"app": "0.3.47", "gestor": "0.9.68", "matriz": "0.3.37", "novidade": "No aplicativo autenticador, a conta aparece como Atalaia System. Versão visível na entrada do Gestor."}

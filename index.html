@@ -167,7 +167,7 @@ document.body?ini():document.addEventListener("DOMContentLoaded",ini,{once:true}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.46",
+  versao:"0.3.47",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:"0x4AAAAAAGMIUUFreGPjKUGi"
@@ -222,7 +222,7 @@ async function todas(q,max){const T=1000;let out=[],i=0;max=max||200000;for(;;){
     async fatores(){const d=chk(await sb.auth.mfa.listFactors());return (d.all||[]).filter(f=>f.factor_type=="totp")},
     async inscrever(){
       for(const f of await this.fatores())if(f.status!=="verified")await sb.auth.mfa.unenroll({factorId:f.id});
-      return chk(await sb.auth.mfa.enroll({factorType:"totp",friendlyName:"Atalaia "+new Date().toISOString().slice(0,16)}));
+      return chk(await sb.auth.mfa.enroll({factorType:"totp",issuer:"Atalaia System",friendlyName:"Atalaia "+new Date().toISOString().slice(0,16)}));
     },
     async verificarCodigo(factorId,code){return chk(await sb.auth.mfa.challengeAndVerify({factorId,code}))},
     async removerFator(factorId){return chk(await sb.auth.mfa.unenroll({factorId}))},
