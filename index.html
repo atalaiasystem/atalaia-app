@@ -167,7 +167,7 @@ document.body?ini():document.addEventListener("DOMContentLoaded",ini,{once:true}
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.45",
+  versao:"0.3.46",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:"0x4AAAAAAGMIUUFreGPjKUGi"
@@ -554,8 +554,7 @@ async function posLogin(registrar){
   await abrirApp(registrar);
 }
 async function confirmarMfa(){
-  try{const f=(await DB.fatores()).find(x=>x.status=="verified");if(!f)throw new Error("Nenhuma verificação em duas etapas encontrada.");
-    await DB.verificarCodigo(f.id,$("#otp").value.trim());E.msg=null;
+  try{const code=$("#otp").value.trim(),fs=(await DB.fatores()).filter(x=>x.status=="verified");if(!fs.length)throw new Error("Nenhuma verificação em duas etapas encontrada.");let ok=false;for(const f of fs){try{await DB.verificarCodigo(f.id,code);ok=true;break}catch(x){}}if(!ok)throw new Error("Código não confere. Confira se a hora do celular está automática (Configurações › Data e hora) e use o código da conta Atalaia mais recente no autenticador.");E.msg=null;
     if(E.depois=="senha"){E.depois=null;E.tela="senha";render();return}
     const reg=E.depois=="app+reg";E.depois=null;await posLogin(reg);
   }catch(e){falha(e.message)}}
