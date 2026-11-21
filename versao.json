@@ -1,1 +1,1 @@
-{"app": "0.3.46", "gestor": "0.9.66", "matriz": "0.3.36", "novidade": "Zerar a verificação em duas etapas de quem trocou de celular (por quem está acima) e código aceito de qualquer autenticador da conta."}
+{"app": "0.3.46", "gestor": "0.9.67", "matriz": "0.3.36", "novidade": "Verificação em duas etapas obrigatória para Gestores e Administradores no Painel do Gestor, com QR Code na primeira entrada."}
