@@ -7,7 +7,7 @@
 <title>Atalaia System · Painel do Gestor</title>
 <meta name="theme-color" content="#1d1f23">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://ipwleoawvxmzvofcccjn.supabase.co; connect-src https://ipwleoawvxmzvofcccjn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob: https://ipwleoawvxmzvofcccjn.supabase.co; connect-src https://ipwleoawvxmzvofcccjn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d1f23%27/%3E%3Cpath d=%27M50 18 L24 82 M50 18 L76 82%27 stroke=%27white%27 stroke-width=%2710%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3Cpath d=%27M35 58 L46 67 L67 44%27 stroke=%27%23f2a33a%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 fill=%27none%27/%3E%3C/svg%3E">
 <link id="gf" rel="stylesheet"><link id="gf2" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
@@ -310,7 +310,9 @@ document.body?ini():document.addEventListener("DOMContentLoaded",ini,{once:true}
    Para administradores e gestores das empresas clientes (computador).
    Mesmo login do aplicativo. Cada empresa só vê os próprios dados.
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.62"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.9.63",
+  // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública). Vazio = sem captcha.
+  turnstileSiteKey:""};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -353,7 +355,7 @@ async function todas(q,max){const T=1000;let out=[],i=0;max=max||200000;for(;;){
 
   return {
     async sessao(){return chk(await sb.auth.getSession()).session},
-    async entrar(e,s){return chk(await sb.auth.signInWithPassword({email:e,password:s}))},
+    async entrar(e,s,cap){return chk(await sb.auth.signInWithPassword({email:e,password:s,options:cap?{captchaToken:cap}:{}}))},
     async sair(){await sb.auth.signOut()},async sairTodos(){await sb.auth.signOut({scope:"global"})},
     async usuario(){return (await sb.auth.getUser()).data.user},
     async nivel(){return chk(await sb.auth.mfa.getAuthenticatorAssuranceLevel())},
@@ -773,7 +775,7 @@ function render(){
   carregarFotos();
 }
 function telaLogin(){return `<div class="center"><div class="card"><div style="display:flex;gap:10px;align-items:center"><div style="width:40px;height:40px;border-radius:10px;background:#1d1f23;display:grid;place-items:center">${LOGO}</div><div><b>ATALAIA SYSTEM</b><div class="note">Painel do Gestor</div></div></div>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}
- <form onsubmit="event.preventDefault();entrar()"><label class="f">E-mail<input id="em" type="email" autocomplete="username" required></label><label class="f">Senha<input id="se" type="password" autocomplete="current-password" required></label><button class="btn" style="width:100%;background:#1d1f23;color:#fff">Entrar</button></form>
+ <form onsubmit="event.preventDefault();entrar()"><label class="f">E-mail<input id="em" type="email" autocomplete="username" required></label><label class="f">Senha<input id="se" type="password" autocomplete="current-password" required></label>${captchaHTML()}<button class="btn" style="width:100%;background:#1d1f23;color:#fff">Entrar</button></form>
  <p class="note">Primeiro acesso ou esqueceu a senha? Use o <a href="../">aplicativo</a>.</p><p class="muted" style="text-align:center;font-size:.82rem;margin:8px 0 0"><a href="/privacidade/" target="_blank" rel="noopener">Política de Privacidade</a> · <a href="/termos/" target="_blank" rel="noopener">Termos de Uso</a></p>${DEMO?`<div class="msg info">Modo demonstração: digite qualquer e-mail e senha.<br><b>Entrar como:</b> ${[["","Gestor (os 3 hospitais)"],["admin","Administrador do Hospital B"],["adminc","Administrador do Hospital C"]].map(([k,t])=>{const at=(new URLSearchParams(location.search).get("demo")||"")==k;return `<a href="?demo${k?"="+k:""}" style="display:block;margin-top:4px;font-weight:${at?800:500}">${at?"✓ ":""}${t}</a>`}).join("")}</div>`:`<button type="button" class="btn ghost" style="width:100%" onclick="location.search='?demo'">Ver demonstração (dados fictícios)</button>`}</div></div>`}
 function telaMfa(){return `<div class="center"><div class="card"><h2>Verificação em duas etapas</h2><p class="sub">Digite o código de 6 números do aplicativo autenticador.</p>${E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:""}<form onsubmit="event.preventDefault();confirmarMfa()"><label class="f">Código<input id="otp" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="one-time-code" required style="font-size:1.4rem;letter-spacing:.4em;text-align:center"></label><button class="btn" style="width:100%;background:#1d1f23;color:#fff">Confirmar</button></form><button class="btn ghost sm" onclick="sair()">Sair</button></div></div>`}
 function telaNegado(){return `<div class="center"><div class="card"><h2>${E.negMsg||"Acesso não liberado"}</h2><p class="sub">${E.negSub||""}</p><a class="btn" style="background:#1d1f23;color:#fff;text-decoration:none" href="../">Abrir o aplicativo</a><button class="btn ghost sm" onclick="sair()">Sair</button></div></div>`}
@@ -1093,7 +1095,16 @@ function modalBem(){const b=E.modal.bem||{},novo=!b.id,ed=ADMIN();setTimeout(com
 
 /* ---------------- Ações ---------------- */
 async function iniciar(){try{if(await DB.sessao()){await posLogin(false);return}}catch(e){E.msg=["err",e.message]}E.tela="login";render()}
-async function entrar(){E.msg=null;try{await DB.entrar($("#em").value.trim(),$("#se").value);await posLogin(true)}catch(e){falha(e.message)}}
+async function entrar(){E.msg=null;try{const cap=tokenCaptcha();await DB.entrar($("#em").value.trim(),$("#se").value,cap);await posLogin(true)}catch(e){resetCaptcha();falha(e.message)}}
+/* Captcha (Cloudflare Turnstile) na entrada · fica ativo só quando turnstileSiteKey (chave do site, pública) estiver preenchida */
+let cfPronto=false,cfId=null;
+const captchaHTML=()=>CONFIG.turnstileSiteKey&&!DEMO?`<div id="cf" style="margin:0 0 12px;min-height:65px"></div>`:"";
+function montarCaptcha(){const el=document.getElementById("cf");if(!el||!cfPronto||el.dataset.ok)return;el.dataset.ok="1";cfId=turnstile.render(el,{sitekey:CONFIG.turnstileSiteKey,language:"pt-br",appearance:"interaction-only"})}
+function carregarTurnstile(){if(!CONFIG.turnstileSiteKey||DEMO)return;window.cfOk=()=>{cfPronto=true;montarCaptcha()};const sc=document.createElement("script");sc.src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=cfOk&render=explicit";sc.async=true;document.head.appendChild(sc);new MutationObserver(()=>{const el=document.getElementById("cf");if(el&&!el.dataset.ok)montarCaptcha();if(!el){cfId=null}}).observe(document.body,{childList:true,subtree:true})}
+function tokenCaptcha(){if(!CONFIG.turnstileSiteKey||DEMO)return null;const t=cfPronto&&cfId!=null?turnstile.getResponse(cfId):"";if(!t)throw new Error("Aguarde a verificação de segurança (não sou um robô) terminar e tente de novo.");return t}
+function resetCaptcha(){try{if(cfPronto&&cfId!=null)turnstile.reset(cfId)}catch(e){}}
+document.readyState=="loading"?document.addEventListener("DOMContentLoaded",carregarTurnstile,{once:true}):setTimeout(carregarTurnstile,0);
+
 async function posLogin(novo){
   const n=await DB.nivel();if(n.nextLevel=="aal2"&&n.currentLevel!="aal2"){E.novo=novo;E.tela="mfa";E.msg=null;render();return}
   const u=await DB.usuario();E.uid=u?.id;

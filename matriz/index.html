@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#1d1f23">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://ipwleoawvxmzvofcccjn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src https://ipwleoawvxmzvofcccjn.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d1f23%27/%3E%3Cpath d=%27M50 18 L24 82 M50 18 L76 82%27 stroke=%27white%27 stroke-width=%2710%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3Cpath d=%27M35 58 L46 67 L67 44%27 stroke=%27%23f2a33a%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 fill=%27none%27/%3E%3C/svg%3E">
 <link id="gf" rel="stylesheet" href="data:text/css,">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
@@ -238,7 +238,9 @@ document.body?ini():document.addEventListener("DOMContentLoaded",ini,{once:true}
    dos clientes (LGPD): nenhum dado de bens, fotos ou pessoas aparece aqui.
    Entrada: e-mail + senha + código de duas etapas (obrigatório).
    ===================================================================== */
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.32"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.3.33",
+  // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública). Vazio = sem captcha.
+  turnstileSiteKey:""};
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
 const DEMO=new URLSearchParams(location.search).has("demo");
 const LOGO=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 L18 88 M50 12 L82 88" stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none"/><path d="M32 60 L45 71 L70 44" stroke="#f2a33a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
@@ -264,7 +266,7 @@ function realDB(){
 const rpcTodas=async(f,a)=>{const T=1000;let out=[],i=0;for(;;){const r=await sb.rpc(f,a||{}).range(i,i+T-1);const d=chk(r)||[];if(!Array.isArray(d))return d;out=out.concat(d);if(d.length<T||out.length>=100000)break;i+=T}return out};
   return {
     async sessao(){return chk(await sb.auth.getSession()).session},
-    async entrar(e,s){return chk(await sb.auth.signInWithPassword({email:e,password:s}))},
+    async entrar(e,s,cap){return chk(await sb.auth.signInWithPassword({email:e,password:s,options:cap?{captchaToken:cap}:{}}))},
     async sair(){await sb.auth.signOut()},
     async usuario(){return (await sb.auth.getUser()).data.user},
     async nivel(){return chk(await sb.auth.mfa.getAuthenticatorAssuranceLevel())},
@@ -440,7 +442,7 @@ function render(){
 }
 const cab=()=>`<header><div class="wrap">${LOGO}<div><b>ATALAIA SYSTEM<span class="pill">Matriz</span></b><small>Painel da Matriz · Sistema de Gestão de Patrimônio e Manutenção</small></div><div class="sp"></div>${E.tela=="painel"?`<div class="who">${esc(E.email)}<br><button class="btn ghost sm" style="color:#fff;border-color:#555;margin-top:4px" onclick="sair()">Sair</button></div>`:""}</div></header>`;
 const msgH=()=>E.msg?`<div class="msg ${E.msg[0]}">${esc(E.msg[1])}</div>`:"";
-function telaLogin(){return `<div class="center wrap"><div class="card"><h1>Painel da Matriz</h1><p class="sub">Acesso restrito à equipe da Atalaia System.</p>${msgH()}<form onsubmit="event.preventDefault();entrar()"><label>E-mail<input id="em" type="email" autocomplete="username" required></label><label>Senha<input id="se" type="password" autocomplete="current-password" required></label><button class="btn full">Entrar</button></form></div><p class="muted" style="text-align:center">Versão ${CONFIG.versao}</p><p class="muted" style="text-align:center;font-size:.82rem;margin:8px 0 0"><a href="/privacidade/" target="_blank" rel="noopener">Política de Privacidade</a> · <a href="/termos/" target="_blank" rel="noopener">Termos de Uso</a></p></div>`}
+function telaLogin(){return `<div class="center wrap"><div class="card"><h1>Painel da Matriz</h1><p class="sub">Acesso restrito à equipe da Atalaia System.</p>${msgH()}<form onsubmit="event.preventDefault();entrar()"><label>E-mail<input id="em" type="email" autocomplete="username" required></label><label>Senha<input id="se" type="password" autocomplete="current-password" required></label>${captchaHTML()}<button class="btn full">Entrar</button></form></div><p class="muted" style="text-align:center">Versão ${CONFIG.versao}</p><p class="muted" style="text-align:center;font-size:.82rem;margin:8px 0 0"><a href="/privacidade/" target="_blank" rel="noopener">Política de Privacidade</a> · <a href="/termos/" target="_blank" rel="noopener">Termos de Uso</a></p></div>`}
 function telaMfa(){return `<div class="center wrap"><div class="card"><h1>Verificação em duas etapas</h1><p class="sub">Digite o código de 6 números do aplicativo autenticador (Atalaia Matriz).</p>${msgH()}<form onsubmit="event.preventDefault();confirmarMfa()"><label>Código<input id="otp" class="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><button class="btn full">Confirmar</button></form><p style="text-align:center;margin:12px 0 0"><button class="btn ghost sm" onclick="sair()">Sair</button></p></div></div>`}
 function telaAtivar(){const i=E.insc;return `<div class="center wrap" style="max-width:520px"><div class="card"><h1>Ativar verificação em duas etapas</h1><p class="sub">Obrigatória para a equipe da Matriz. Mesmo que alguém descubra a senha, não entra sem o código do seu celular.</p>${msgH()}
  <p><b>1.</b> Instale no celular o <b>Google Authenticator</b> ou o <b>Microsoft Authenticator</b>.</p><p><b>2.</b> No aplicativo, toque em <b>+</b> e escaneie o código:</p>
@@ -1152,7 +1154,16 @@ function abaAcessos(){return `<h1>Registro de acessos da Matriz</h1><p class="su
 /* ---------------- Ações ---------------- */
 aplicarDesign(lerDesign());
 async function iniciar(){try{if(await DB.sessao()){await posLogin(false);return}}catch(e){E.msg=["err",e.message]}E.tela="login";render()}
-async function entrar(){E.msg=null;try{await DB.entrar($("#em").value.trim(),$("#se").value);await posLogin(true)}catch(e){falha(e.message)}}
+async function entrar(){E.msg=null;try{const cap=tokenCaptcha();await DB.entrar($("#em").value.trim(),$("#se").value,cap);await posLogin(true)}catch(e){resetCaptcha();falha(e.message)}}
+/* Captcha (Cloudflare Turnstile) na entrada · fica ativo só quando turnstileSiteKey (chave do site, pública) estiver preenchida */
+let cfPronto=false,cfId=null;
+const captchaHTML=()=>CONFIG.turnstileSiteKey&&!DEMO?`<div id="cf" style="margin:0 0 12px;min-height:65px"></div>`:"";
+function montarCaptcha(){const el=document.getElementById("cf");if(!el||!cfPronto||el.dataset.ok)return;el.dataset.ok="1";cfId=turnstile.render(el,{sitekey:CONFIG.turnstileSiteKey,language:"pt-br",appearance:"interaction-only"})}
+function carregarTurnstile(){if(!CONFIG.turnstileSiteKey||DEMO)return;window.cfOk=()=>{cfPronto=true;montarCaptcha()};const sc=document.createElement("script");sc.src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=cfOk&render=explicit";sc.async=true;document.head.appendChild(sc);new MutationObserver(()=>{const el=document.getElementById("cf");if(el&&!el.dataset.ok)montarCaptcha();if(!el){cfId=null}}).observe(document.body,{childList:true,subtree:true})}
+function tokenCaptcha(){if(!CONFIG.turnstileSiteKey||DEMO)return null;const t=cfPronto&&cfId!=null?turnstile.getResponse(cfId):"";if(!t)throw new Error("Aguarde a verificação de segurança (não sou um robô) terminar e tente de novo.");return t}
+function resetCaptcha(){try{if(cfPronto&&cfId!=null)turnstile.reset(cfId)}catch(e){}}
+document.readyState=="loading"?document.addEventListener("DOMContentLoaded",carregarTurnstile,{once:true}):setTimeout(carregarTurnstile,0);
+
 async function posLogin(novo){
   const u=await DB.usuario();E.email=u?.email||"";E.meuNome=(u&&u.user_metadata&&(u.user_metadata.nome||u.user_metadata.full_name))||"";
   if(!(await DB.souMatriz())){E.tela="negado";render();return}

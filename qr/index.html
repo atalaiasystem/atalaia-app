@@ -47,12 +47,55 @@ body{font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-
 function tab(el){if(el.scrollWidth>el.clientWidth+2&&!el.hasAttribute("tabindex")){el.setAttribute("tabindex","0");el.setAttribute("role","region");el.setAttribute("aria-label","Tabela (role para os lados)")}}
 function varrer(r){if(!r||r.nodeType!=1)return;r.querySelectorAll("select,input:not([type=hidden]),textarea").forEach(nome);if(r.matches&&r.matches("select,input,textarea"))nome(r);requestAnimationFrame(()=>r.querySelectorAll(".tbl,.tw").forEach(tab))}
 function ini(){varrer(document.body);new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(varrer))).observe(document.body,{childList:true,subtree:true})}
-document.body?ini():document.addEventListener("DOMContentLoaded",ini,{once:true})})();</script></head>
+document.body?ini():document.addEventListener("DOMContentLoaded",ini,{once:true})})();</script><script>/* Atalaia · idiomas da página do QR Code (pt · es · en). Escolha: ?lang=, depois a escolha salva, depois o idioma do celular. */
+(function(){
+const D={
+"Abrir chamado":["Abrir solicitud","Open a request"],"Avalie":["Evalúe","Feedback"],"Ambiente:":["Ambiente:","Room:"],
+". Não precisa de login.":[". No necesita iniciar sesión.",". No login needed."],
+". Deixe uma reclamação, sugestão ou elogio. Não precisa de login.":[". Deje un reclamo, sugerencia o elogio. No necesita iniciar sesión.",". Leave a complaint, suggestion or compliment. No login needed."],
+"Qual equipamento? (opcional)":["¿Qué equipo? (opcional)","Which equipment? (optional)"],"Não sei / é do ambiente":["No sé / es del ambiente","I don't know / it's the room"],
+"O que está acontecendo? *":["¿Qué está pasando? *","What is happening? *"],"Ex.: o ar-condicionado está pingando sobre o leito 3":["Ej.: el aire acondicionado gotea sobre la cama 3","E.g.: the air conditioner is dripping over bed 3"],
+"É urgente?":["¿Es urgente?","Is it urgent?"],"Sim":["Sí","Yes"],"Não":["No","No"],"Normal":["Normal","Normal"],
+"Seu nome (opcional)":["Su nombre (opcional)","Your name (optional)"],"Telefone ou setor para contato (opcional)":["Teléfono o sector de contacto (opcional)","Phone or department for contact (optional)"],
+"Telefone ou e-mail para retorno (opcional)":["Teléfono o e-mail para respuesta (opcional)","Phone or e-mail for a reply (optional)"],
+"Enviar chamado":["Enviar solicitud","Send request"],"Enviar":["Enviar","Send"],"Enviar avaliação":["Enviar evaluación","Send rating"],
+"Chamado registrado":["Solicitud registrada","Request registered"],"Protocolo":["Protocolo","Reference"],
+"Anote ou tire um print: com ele você acompanha o chamado.":["Anótelo o tome una captura: con él sigue la solicitud.","Write it down or take a screenshot: use it to follow the request."],
+"O chamado fica guardado neste aparelho, em “Chamados abertos neste aparelho”.":["La solicitud queda guardada en este equipo, en “Solicitudes abiertas en este equipo”.","The request is saved on this device, under “Requests opened on this device”."],
+"Chamados abertos neste aparelho":["Solicitudes abiertas en este equipo","Requests opened on this device"],"Acompanhar este chamado":["Seguir esta solicitud","Follow this request"],
+"Aceito pela manutenção":["Aceptada por mantenimiento","Accepted by maintenance"],"Concluído":["Concluida","Completed"],"Aberto":["Abierta","Open"],"Em andamento":["En curso","In progress"],"Confirmado":["Confirmada","Confirmed"],
+"O que foi feito:":["Qué se hizo:","What was done:"],"Avalie o atendimento":["Evalúe la atención","Rate the service"],"Sua avaliação":["Su evaluación","Your rating"],"Comentário (opcional)":["Comentario (opcional)","Comment (optional)"],
+"Obrigado pela avaliação!":["¡Gracias por su evaluación!","Thank you for your rating!"],"Atualizar":["Actualizar","Refresh"],"Voltar":["Volver","Back"],"Carregando…":["Cargando…","Loading…"],
+"QR Code incompleto":["Código QR incompleto","Incomplete QR code"],"Leia de novo o QR Code colado no ambiente.":["Lea de nuevo el código QR pegado en el ambiente.","Scan the QR code on the room again."],
+"Não foi possível agora. Tente de novo.":["No fue posible ahora. Intente de nuevo.","It was not possible now. Please try again."],
+"O que você quer enviar? *":["¿Qué quiere enviar? *","What do you want to send? *"],"Reclamação":["Reclamo","Complaint"],"Sugestão":["Sugerencia","Suggestion"],"Elogio":["Elogio","Compliment"],
+"Sua mensagem *":["Su mensaje *","Your message *"],"Escolha reclamação, sugestão ou elogio.":["Elija reclamo, sugerencia o elogio.","Choose complaint, suggestion or compliment."],
+"Volta sozinho ao início em":["Vuelve solo al inicio en","Returns to the start in"],"ficar nesta tela":["quedarse en esta pantalla","stay on this screen"],"✓ Finalizar e voltar ao início":["✓ Terminar y volver al inicio","✓ Finish and go back to start"],
+"Política de Privacidade":["Política de Privacidad","Privacy Policy"],"Sistema de Gestão de Patrimônio e Manutenção":["Sistema de Gestión de Patrimonio y Mantenimiento","Asset and Maintenance Management System"],
+"Atalaia System · Sistema de Gestão de Patrimônio e Manutenção":["Atalaia System · Sistema de Gestión de Patrimonio y Mantenimiento","Atalaia System · Asset and Maintenance Management System"],
+"A data e a hora do chamado são registradas pelo servidor.":["La fecha y la hora de la solicitud las registra el servidor.","The date and time of the request are recorded by the server."],
+"Não escreva dados de pacientes. Use só a descrição do problema. Nome e contato são opcionais e servem só para dar retorno sobre este pedido (":["No escriba datos de pacientes. Use solo la descripción del problema. Nombre y contacto son opcionales y sirven solo para responder sobre este pedido (","Do not write patient data. Only describe the problem. Name and contact are optional and are used only to reply about this request ("],
+"Para um problema que precisa de conserto, use Abrir chamado. Não escreva dados de pacientes. Nome e contato são opcionais e servem só para dar retorno sobre este pedido (":["Para un problema que necesita reparación, use Abrir solicitud. No escriba datos de pacientes. Nombre y contacto son opcionales y sirven solo para responder sobre este pedido (","For a problem that needs repair, use Open a request. Do not write patient data. Name and contact are optional and are used only to reply about this request ("]};
+const R=[[/^Chamado nº (\d+)$/,["Solicitud nº $1","Request no. $1"]],[/^nº (\d+)$/,["nº $1","no. $1"]],[/^Nº (\d+) · (.*)$/,["Nº $1 · $2","No. $1 · $2"]],
+ [/^Aberto em (.+) \(hora do servidor\)\. A equipe de manutenção já recebeu\.$/,["Abierta el $1 (hora del servidor). El equipo de mantenimiento ya la recibió.","Opened on $1 (server time). The maintenance team has received it."]],
+ [/^Sua mensagem chegou à equipe responsável pelo ambiente (.+), com data e hora do servidor\.$/,["Su mensaje llegó al equipo responsable del ambiente $1, con fecha y hora del servidor.","Your message reached the team responsible for $1, with server date and time."]]];
+const LS="atalaia_idioma",Q=new URLSearchParams(location.search).get("lang");
+let L=(Q||(()=>{try{return localStorage.getItem(LS)}catch(e){return null}})()||(navigator.language||"pt")).slice(0,2).toLowerCase();if(!["pt","es","en"].includes(L))L="pt";
+const ix=L=="es"?0:1,ORIG=new WeakMap(),ORIGA=new WeakMap();
+function tr(s){if(L=="pt")return s;const t=s.trim();if(!t)return s;let v=D[t]&&D[t][ix];if(!v)for(const [re,o] of R){if(re.test(t)){v=t.replace(re,o[ix]);break}}return v?s.replace(t,v):s}
+function txt(n){if(n.parentNode&&/^(SCRIPT|STYLE)$/.test(n.parentNode.nodeName))return;if(!ORIG.has(n))ORIG.set(n,n.nodeValue);const o=ORIG.get(n),v=tr(o);if(n.nodeValue!==v)n.nodeValue=v}
+function el(e){["placeholder","aria-label","title"].forEach(a=>{if(e.hasAttribute&&e.hasAttribute(a)){const k=ORIGA.get(e)||{};if(!(a in k))k[a]=e.getAttribute(a);ORIGA.set(e,k);const v=tr(k[a]);if(e.getAttribute(a)!==v)e.setAttribute(a,v)}})}
+function varrer(r){if(!r)return;if(r.nodeType==3)return txt(r);if(r.nodeType!=1)return;el(r);const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);let n;while(n=w.nextNode())n.nodeType==3?txt(n):el(n)}
+function seletor(){if(document.getElementById("idi"))return;const h=document.querySelector("header");if(!h)return;const d=document.createElement("div");d.id="idi";d.setAttribute("role","group");d.setAttribute("aria-label","Idioma / Language");d.style.cssText="float:right;display:flex;gap:4px;margin-top:2px";
+ [["pt","PT"],["es","ES"],["en","EN"]].forEach(([k,t])=>{const b=document.createElement("button");b.type="button";b.textContent=t;b.lang=k;b.setAttribute("aria-pressed",String(k==L));b.style.cssText="background:"+(k==L?"var(--marca-ink)":"transparent")+";color:"+(k==L?"var(--marca)":"var(--marca-ink)")+";border:1px solid var(--marca-ink);border-radius:6px;padding:2px 7px;font-size:.75rem;font-weight:700;cursor:pointer";b.onclick=()=>{try{localStorage.setItem(LS,k)}catch(e){}L=k;location.reload()};d.appendChild(b)});h.insertBefore(d,h.firstChild)}
+function ini(){document.documentElement.lang=L=="pt"?"pt-BR":L;varrer(document.body);seletor();new MutationObserver(ms=>{ms.forEach(m=>{if(m.type=="characterData")txt(m.target);else m.addedNodes.forEach(varrer)});seletor()}).observe(document.body,{childList:true,subtree:true,characterData:true})}
+window.atalaiaIdioma=()=>L;document.body?ini():document.addEventListener("DOMContentLoaded",ini,{once:true})})();</script>
+</head>
 <body>
 <div id="app"><div class="wrap"><p class="muted">Carregando…</p></div></div>
 <script>
 if(window.top!==window.self){document.documentElement.innerHTML="";throw new Error("Bloqueado.")}
-const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.1.4"};
+const CONFIG={url:"https://ipwleoawvxmzvofcccjn.supabase.co",anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",versao:"0.1.5"};
 const P=new URLSearchParams(location.search),DEMO=P.has("demo");
 const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const dh=d=>d?new Date(d).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):"";
