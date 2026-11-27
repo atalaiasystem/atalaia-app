@@ -13,7 +13,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2722%27 fill=%27%231d1f23%27/%3E%3Cpath d=%27M50 18 L24 82 M50 18 L76 82%27 stroke=%27white%27 stroke-width=%2710%27 stroke-linecap=%27round%27 fill=%27none%27/%3E%3Cpath d=%27M35 58 L46 67 L67 44%27 stroke=%27%23f2a33a%27 stroke-width=%278%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 fill=%27none%27/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js" integrity="sha384-BWcjm9OdFth9TbhCxZPdm+gAOUMAzQy9nmTs12ioXdCcbVnJaPMn+fMUoQCLt60R" crossorigin="anonymous"></script>
 <style>
-:root{--ink:#1d1f23;--amb:#f2a33a;--mut:#6b7078;--line:#e3e0da;--bg:#f5f3ef;--card:#fff;--ok:#1f9a55;--bad:#B02E25;--warn:#b7791f;--soft:#efece6}
+:root{--ink:#1d1f23;--amb:#f2a33a;--mut:#6b7078;--line:#e3e0da;--bg:#f5f3ef;--card:#fff;--ok:#1f9a55;--bad:#B02E25;--warn:#8F5600;--soft:#efece6}
 *{box-sizing:border-box}html,body{margin:0}
 body{font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -214,7 +214,7 @@ window.atalaiaIdioma=()=>L;window.atalaiaTr=tr;document.body?ini():document.addE
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.50",
+  versao:"0.3.51",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:"0x4AAAAAAGMIUUFreGPjKUGi"
@@ -912,8 +912,8 @@ const souAdm=()=>E.v&&["gestor","administrador"].includes(E.v.perfil);
 const tecCad=()=>{const c=E.v&&E.v.contratantes||{};return c.tecnico_cadastra!=null?!!c.tecnico_cadastra:c.modo=="prestadora"};
 const podeCad=()=>souAdm()||(E.v&&E.v.perfil=="colaborador"&&tecCad());
 const abaRaiz=()=>E.v&&E.v.perfil=="colaborador"&&temMan()?"man":"bens";
-const SITM={aberto:["Aberto · aguardando alguém assumir","#b7791f"],aceito:["Aceito","#2f6fb5"],em_atendimento:["Em atendimento","#2f6fb5"],concluido:["Concluído · aguardando confirmação","#b7791f"],confirmado:["Confirmado","#1f9a55"]};
-const PRIC={urgente:["Urgente","#B02E25"],alta:["Alta","#B02E25"],media:["Média","#b7791f"],baixa:["Baixa","#1f9a55"]};
+const SITM={aberto:["Aberto · aguardando alguém assumir","#8F5600"],aceito:["Aceito","#2f6fb5"],em_atendimento:["Em atendimento","#2f6fb5"],concluido:["Concluído · aguardando confirmação","#8F5600"],confirmado:["Confirmado","#1f9a55"]};
+const PRIC={urgente:["Urgente","#B02E25"],alta:["Alta","#B02E25"],media:["Média","#8F5600"],baixa:["Baixa","#1f9a55"]};
 const ETAPAS_F={antes:"Antes",durante:"Durante",depois:"Depois",abertura:"Abertura"};
 const nomeAmbC=id=>((E.amb||[]).find(a=>a.id==id)||{}).nome||"";
 const nomeMem=id=>((E.mems||[]).find(m=>m.user_id==id)||{}).nome||"";
@@ -1144,7 +1144,7 @@ function ronHome(){const u=minhaUniC(),L=(E.amb||[]).filter(a=>a.estabelecimento
   ${E.ron.erro?`<div class="msg err">${esc(E.ron.erro)}</div>`:""}
   ${souAdm()&&variasUnis()&&!E.v.estabelecimento_id?`<label>Unidade<select onchange="E.rUniC=this.value;carregarRon()">${E.unis.map(x=>`<option value="${x.id}" ${u==x.id?"selected":""}>${esc(x.nome)}</option>`).join("")}</select></label>`:""}
   <div class="card"><b>Ronda de hoje · ${n} de ${L.length} ambientes</b><div class="bar" style="margin-top:8px"><i style="width:${L.length?n/L.length*100:0}%;background:#1f9a55"></i></div></div>
-  <div class="card">${L.map(a=>{const ok=f.has(a.id),tp=a.tipo_ronda||"ambiente";return `<button class="rowch" onclick="${MEDT.includes(tp)?`abrirMedC('${a.id}')`:`abrirVistC('${a.id}')`}" style="--pc:${ok?"#1f9a55":"#b7791f"}"><span class="dot"></span><span class="tx"><b>${esc(a.nome)}</b><span>${esc(TRC[tp]||"Ambiente")}${MEDT.includes(tp)?" · medições":` · ${itensDeC(a).length} itens`}</span><span>${ok?`<span class="tg" style="--tc:#1f9a55">✔ vistoriado hoje</span>`:`<span class="tg" style="--tc:#b7791f">pendente</span>`}</span></span></button>`}).join("")||`<p class="muted">Nenhum ambiente na ronda desta unidade.</p>`}</div>
+  <div class="card">${L.map(a=>{const ok=f.has(a.id),tp=a.tipo_ronda||"ambiente";return `<button class="rowch" onclick="${MEDT.includes(tp)?`abrirMedC('${a.id}')`:`abrirVistC('${a.id}')`}" style="--pc:${ok?"#1f9a55":"#8F5600"}"><span class="dot"></span><span class="tx"><b>${esc(a.nome)}</b><span>${esc(TRC[tp]||"Ambiente")}${MEDT.includes(tp)?" · medições":` · ${itensDeC(a).length} itens`}</span><span>${ok?`<span class="tg" style="--tc:#1f9a55">✔ vistoriado hoje</span>`:`<span class="tg" style="--tc:#8F5600">pendente</span>`}</span></span></button>`}).join("")||`<p class="muted">Nenhum ambiente na ronda desta unidade.</p>`}</div>
   ${E.ron.aberta?`<button class="btn amb full" onclick="fimRondaC()">Concluir a ronda de hoje</button>`:""}<button class="btn ghost full" style="margin-top:8px" onclick="carregarRon()">↻ Atualizar</button>`}
 function abrirVistC(id){E.rv={a:id,res:{},desc:{},foto:{}};E.rt="vist";abrirNivel();render();scrollTo(0,0)}
 function guardaDescC(){const I=itensDeC((E.amb||[]).find(x=>x.id==E.rv.a));I.forEach((_,i)=>{const el=document.getElementById("rvd"+i);if(el)E.rv.desc[i]=el.value})}
@@ -1239,12 +1239,12 @@ async function vistDoAmb(id){const a=(E.amb||[]).find(x=>x.id==id);E.aba="ron";i
    trocas de equipamento, auditoria do ambiente pela câmera, responsável pelo
    ambiente e etiqueta do QR do ambiente. */
 const TIPO_SV={calibracao:"Calibração",preventiva:"Preventiva",corretiva:"Corretiva",qualificacao:"Qualificação",inspecao:"Inspeção",seguranca_eletrica:"Segurança elétrica (TSE)",aceitacao:"Teste de aceitação",constancia:"Teste de constância",radiometrico:"Levantamento radiométrico"};
-const RES_SV={aprovado:["Aprovado","#1f9a55"],aprovado_com_ajuste:["Aprovado com ajuste","#b7791f"],reprovado:["Reprovado","#B02E25"]};
-const SIT_AG={vencida:["Vencida","#B02E25"],vence_30_dias:["Vence em até 30 dias","#b7791f"],em_dia:["Em dia","#1f9a55"]};
+const RES_SV={aprovado:["Aprovado","#1f9a55"],aprovado_com_ajuste:["Aprovado com ajuste","#8F5600"],reprovado:["Reprovado","#B02E25"]};
+const SIT_AG={vencida:["Vencida","#B02E25"],vence_30_dias:["Vence em até 30 dias","#8F5600"],em_dia:["Em dia","#1f9a55"]};
 const TIPO_DOC=[["laudo","Laudo de calibração"],["certificado","Certificado"],["laudo","Teste de segurança elétrica"],["manual","Manual do fabricante"],["nota_fiscal","Nota fiscal"],["contrato","Contrato"],["foto","Foto do equipamento"],["outro","Outro"]];
 const NOME_DOC={manual:"Manual",laudo:"Laudo",certificado:"Certificado",nota_fiscal:"Nota fiscal",contrato:"Contrato",foto:"Foto",outro:"Outro"};
 let DEMO_EXTRA=[];
-const RES_AUD={localizado:["Localizado","#1f9a55"],outro_ambiente:["Cadastrado em outro ambiente","#b7791f"],sem_cadastro:["Sem cadastro","#B02E25"],repetido:["Já lido","#7a8794"]};
+const RES_AUD={localizado:["Localizado","#1f9a55"],outro_ambiente:["Cadastrado em outro ambiente","#8F5600"],sem_cadastro:["Sem cadastro","#B02E25"],repetido:["Já lido","#7a8794"]};
 const QRGEN={src:"https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js",sri:"sha384-8FWZA6BGMXhsfO+BLtrJK0We6gg5o1JyO8xQm6peWDEUs17ACA5ziE/NIAkl9z2k"};
 const linkQRAmb=a=>`https://app.atalaiasystem.com.br/qr/?t=${encodeURIComponent(a.qr_token||"")}`;
 const dBR=d=>d?new Date(String(d).length==10?d+"T12:00:00":d).toLocaleDateString("pt-BR"):"—";
@@ -1354,7 +1354,7 @@ function manProg(){const f=E.pf||{},A=(E.agenda||[]).filter(x=>(!f.s||x.situacao
   const venc=(E.agenda||[]).filter(x=>x.situacao=="vencida").length,v30=(E.agenda||[]).filter(x=>x.situacao=="vence_30_dias").length;
   return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Manutenções programadas</h1><p class="sub">Preventivas, calibrações, qualificações e inspeções agendadas${E.v.estabelecimento_id&&nomeUni(E.v.estabelecimento_id)?" · "+esc(nomeUni(E.v.estabelecimento_id)):""}. As vencidas aparecem primeiro.</p>
   ${E.agCarr?`<div class="card"><p class="muted">Carregando a agenda…</p></div>`:`
-  ${venc||v30?`<div class="card" style="border-color:${venc?"#B02E25":"#b7791f"}"><b>${venc?`⚠ ${venc} vencida(s)`:""}${venc&&v30?" · ":""}${v30?`${v30} vence(m) em até 30 dias`:""}</b><p class="muted" style="margin:4px 0 0">Toque no item para registrar o serviço feito e anexar o laudo.</p></div>`:""}
+  ${venc||v30?`<div class="card" style="border-color:${venc?"#B02E25":"#8F5600"}"><b>${venc?`⚠ ${venc} vencida(s)`:""}${venc&&v30?" · ":""}${v30?`${v30} vence(m) em até 30 dias`:""}</b><p class="muted" style="margin:4px 0 0">Toque no item para registrar o serviço feito e anexar o laudo.</p></div>`:""}
   <div class="card" style="display:grid;gap:8px"><div class="chps">${chip4("s","","Todas")}${chip4("s","atencao","Precisam de atenção")}${chip4("s","vencida","Vencidas")}${chip4("s","vence_30_dias","Até 30 dias")}</div>
   <div class="chps">${chip4("t","","Todos os tipos")}${chip4("t","calibracao","Calibrações")}${chip4("t","preventiva","Preventivas")}${chip4("t","inspecao","Inspeções")}${chip4("t","qualificacao","Qualificações")}</div></div>
   <div class="card"><b>${A.length} ite${A.length==1?"m":"ns"} na agenda</b>${A.map(x=>{const s=SIT_AG[x.situacao]||SIT_AG.em_dia;return `<button class="rowch" style="--pc:${s[1]}" onclick="E.bemSel='${x.bem_id}';E.svP='${x.id}';E.svTipo='${x.tipo}';E.svArq=null;irMan('servico')"><span class="dot"></span><span class="tx"><b>${esc(TIPO_SV[x.tipo]||x.tipo)} · ${esc(x.bem||"")}${x.critico?' <span class="pill" style="background:#fde2df">crítico</span>':""}</b><span>${esc(x.patrimonio||"sem patrimônio")}${x.ambiente?" · "+esc(x.ambiente):""}${x.empresa?" · "+esc(x.empresa):" · equipe interna"}</span><span style="color:${s[1]};font-weight:700">Próxima ${dBR(x.proxima)} · ${diasTxt(x.dias)}</span><span>Última: ${dBR(x.ultima)}</span></span></button>`}).join("")||`<p class="muted">Nada na agenda com esses filtros. A agenda é montada pelo Gestor ou Administrador no painel do computador (Manutenção › Plano de manutenção).</p>`}</div>
@@ -1433,7 +1433,7 @@ async function salvarServico(){guardarSv();const b=(E.bens||[]).find(x=>x.id==E.
 
 /* ---- ficha de vida do bem ---- */
 async function carregarFicha(id){E.fic={id,carregando:true,prog:[],real:[],docs:[]};try{await carregarMan4();const [prog,real,docs]=await Promise.all([DB.progBem(id),DB.realizadosBem(id),souAdm()?DB.docsBem(id):Promise.resolve([])]);if(E.fic&&E.fic.id==id){E.fic={id,prog,real,docs};if(E.mt=="bem"||E.mt=="servico")render()}}catch(e){if(E.fic)E.fic.carregando=false}}
-function stProg(p){const n=p.proxima?Math.round((Date.parse(p.proxima+"T12:00:00")-Date.parse(hojeISO()+"T12:00:00"))/864e5):null;if(!p.ultima&&p.proxima_manual)return ["Sem laudo · conferir","#B02E25",n];return n==null?["Sem data","#7a8794",n]:n<0?[`Vencida há ${-n} dia(s)`,"#B02E25",n]:n<=30?[`Vence em ${n} dia(s)`,"#b7791f",n]:["Em dia","#1f9a55",n]}
+function stProg(p){const n=p.proxima?Math.round((Date.parse(p.proxima+"T12:00:00")-Date.parse(hojeISO()+"T12:00:00"))/864e5):null;if(!p.ultima&&p.proxima_manual)return ["Sem laudo · conferir","#B02E25",n];return n==null?["Sem data","#7a8794",n]:n<0?[`Vencida há ${-n} dia(s)`,"#B02E25",n]:n<=30?[`Vence em ${n} dia(s)`,"#8F5600",n]:["Em dia","#1f9a55",n]}
 function fichaHTML(b){const F=E.fic&&E.fic.id==b.id?E.fic:null;if(!F){setTimeout(()=>carregarFicha(b.id),0);return `<div class="card"><p class="muted">Carregando a ficha de vida…</p></div>`}
   if(F.carregando)return `<div class="card"><p class="muted">Carregando a ficha de vida…</p></div>`;
   const tr=(E.trocas||[]).filter(t=>t.bem_id==b.id&&t.situacao=="pendente");
@@ -1521,7 +1521,7 @@ async function finalizarAudC(){if(!confirm("Finalizar a auditoria? Depois de fin
   try{const r=await DB.fimAud(E.aud.id);E.audRes={...r,amb:E.aud.amb,nome:E.aud.nome};E.aud=null;render();scrollTo(0,0)}catch(e){toast(e.message)}}
 function audResumoHTML(){const r=E.audRes,a=(E.amb||[]).find(x=>x.id==r.amb)||{},NL=r.nao_localizados||[];
   return `<button class="voltar" onclick="voltar()">← Voltar</button><h1>Auditoria finalizada</h1><p class="sub">${esc(a.nome||"")} · auditor ${esc(r.nome||"")}</p>
-  <div class="card"><dl class="dl"><dt>Bens esperados</dt><dd><b>${r.esperados}</b></dd><dt>Localizados</dt><dd style="color:#1f9a55"><b>${r.localizados}</b></dd><dt>De outro ambiente</dt><dd style="color:#b7791f"><b>${r.outro_ambiente}</b></dd><dt>Sem cadastro</dt><dd style="color:#B02E25"><b>${r.sem_cadastro}</b></dd><dt>Não localizados</dt><dd style="color:#B02E25"><b>${r.qtd_nao_localizados??NL.length}</b></dd></dl></div>
+  <div class="card"><dl class="dl"><dt>Bens esperados</dt><dd><b>${r.esperados}</b></dd><dt>Localizados</dt><dd style="color:#1f9a55"><b>${r.localizados}</b></dd><dt>De outro ambiente</dt><dd style="color:#8F5600"><b>${r.outro_ambiente}</b></dd><dt>Sem cadastro</dt><dd style="color:#B02E25"><b>${r.sem_cadastro}</b></dd><dt>Não localizados</dt><dd style="color:#B02E25"><b>${r.qtd_nao_localizados??NL.length}</b></dd></dl></div>
   ${NL.length?`<div class="card"><b>Não localizados (${NL.length})</b>${NL.map(b=>`<button class="rowch" style="--pc:#B02E25" onclick="E.bemSel='${b.id}';irMan('bem')"><span class="dot"></span><span class="tx"><b>${esc(b.nome)}</b><span>${esc(b.patrimonio||"sem patrimônio")}</span></span></button>`).join("")}</div>`:`<div class="msg info">Todos os bens do ambiente foram localizados.</div>`}
   <p class="muted" style="font-size:.84rem">O resultado fica guardado e aparece no relatório de auditoria do painel do computador.</p>
   <button class="btn amb full" onclick="E.audRes=null;E.aud=null;render()">Nova auditoria</button>`}
