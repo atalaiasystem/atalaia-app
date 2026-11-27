@@ -132,7 +132,7 @@ let css="i.ic{display:inline-block;width:1.05em;height:1.05em;vertical-align:-.1
 for(const k in P)css+=`i.ic-${k}{--im:url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+P[k]+'</svg>')}")}`;
 let ob=null,ligado=false;
 const PLR=/([A-Za-zÀ-ÿ]+)\((s|es|ões|ns)\)/g,PLT=/[A-Za-zÀ-ÿ]\((?:s|es|ões|ns)\)/;
-window.pdfNovo=function(o){const d=new window.jspdf.jsPDF(o),t=d.text,f=v=>typeof v=="string"&&window.atalaiaPlural?atalaiaPlural(v):v;d.text=function(x,...r){return t.call(d,Array.isArray(x)?x.map(f):f(x),...r)};return d};
+window.pdfNovo=function(o){const d=new window.jspdf.jsPDF(o),t=d.text,f=v=>{if(typeof v!="string")return v;if(window.atalaiaPlural)v=atalaiaPlural(v);return window.atalaiaTr?atalaiaTr(v):v},s=d.splitTextToSize;d.text=function(x,...r){return t.call(d,Array.isArray(x)?x.map(f):f(x),...r)};d.splitTextToSize=function(x,...r){return s.call(d,typeof x=="string"?f(x):x,...r)};return d};
 function numAntes(t,i,n){const a=t.slice(0,i),c=a.split(/[.;:·|•\n]/).pop(),m=c.match(/(\d+(?:[.,]\d+)?)(?!.*\d)/);if(m)return m[1];if(c.trim()==""||/^[\s()A-Za-zÀ-ÿ]*$/.test(c)){const p=n.previousSibling;if(p&&p.textContent){const q=p.textContent.match(/(\d+(?:[.,]\d+)?)\s*$/);if(q&&c.split(/\s+/).filter(Boolean).length<=3)return q[1]}}return null}
 function plural(n){const t=n.nodeValue;if(!t||!PLT.test(t))return;const v=t.replace(PLR,(m,w,suf,i)=>{const k=numAntes(t,i,n),um=k!=null&&/^0*1$/.test(k.replace(/[.,]0+$/,""));if(suf=="ns")return um?w:w.replace(/m$/,"ns");if(suf=="ões")return um?w:w.replace(/ção$/,"ções").replace(/são$/,"sões");return um?w:w+suf});if(v!=t)n.nodeValue=v}
 window.atalaiaPlural=t=>{const n={nodeValue:String(t),previousSibling:null};plural(n);return n.nodeValue};
@@ -172,21 +172,23 @@ function datas(c){if(!/\d/.test(c)||!(RM.test(c)||RA.test(c)||RW.test(c)))return
  else{v=v.replace(new RegExp("(\\d{1,2} de )("+MJ+")","gi"),(x,d,m)=>d+ME[mi(m)]).replace(new RegExp("("+MJ+")( de \\d{4})","gi"),(x,m,y)=>cap(m,ME[mi(m)])+y)}
  return v==c?null:v}
 const CX=new Map();
-function look(c,d){if(!c)return null;if(D[c])return D[c][ix];if(CX.has(c))return CX.get(c);let v=null,m;
+function look(c,d){if(!c)return null;if(D[c])return D[c][ix];if(CX.has(c))return CX.get(c);let v=null,m,r;
  for(const [re,o] of R){if(re.test(c)){v=c.replace(re,o[ix]);break}}
  if(v==null&&!c.includes(" · "))v=datas(c);
- if(v==null&&d<4){
-  if(m=c.match(/^(.+?) ·$/)){const r=look(m[1],d+1);if(r)v=r+" ·"}
-  else if(c.startsWith("+ ")){const r=look(c.slice(2),d+1);if(r)v="+ "+r}
-  else if(m=c.match(/^(.+?)\s*(→|›)$/)){const r=look(m[1],d+1);if(r)v=r+" "+m[2]}
-  else if(c.includes(" · ")){const ps=c.split(" · ");const out=ps.map(p=>look(p.trim(),d+1)||datas(p.trim())||p);if(out.some((x,i)=>x!==ps[i]))v=out.join(" · ")}
-  else if(m=c.match(/^([\d.,]+%?\s*(?:[×x]\s*)?)(\D.*)$/)){const r=look(m[2],d+1);if(r)v=m[1]+r}
-  else if(m=c.match(/^(.+?)(\s*(?::\s*[\d.,]+%?|\([\d.,]+\)|[×x]\s*\d+))$/)){const r=look(m[1],d+1);if(r)v=r+m[2]}
-  else if(c.includes("; ")){const ps=c.split("; ");const out=ps.map(p=>look(p.trim(),d+1)||p);if(out.some((x,i)=>x!==ps[i]))v=out.join("; ")}
-  else if(m=c.match(/^(.+?)([.:!?…])$/)){const r=look(m[1],d+1);if(r)v=r+m[2]}
-  else if(m=c.match(/^([^:]{2,40}): (.+)$/)){const a=look(m[1],d+1),b=look(m[2],d+1)||datas(m[2]);if(a||b)v=(a||m[1])+": "+(b||m[2])}
-  else if(m=c.match(/^(.+?) \(([^()]+)\)$/)){const a=look(m[1],d+1),b=look(m[2],d+1);if(a||b)v=(a||m[1])+" ("+(b||m[2])+")"}
-  else if(m=c.match(/^(.+?) (#[0-9a-fA-F]{6}|R\$\s?[\d.,]+|[\d.]+)$/)){const a=look(m[1],d+1);if(a)v=a+" "+m[2]}}
+ if(v!=null){const w=datas(v);if(w)v=w}
+ if(v==null&&d<4){const T=[
+  ()=>(m=c.match(/^(.+?) ·$/))&&(r=look(m[1],d+1))?r+" ·":null,
+  ()=>c.startsWith("+ ")&&(r=look(c.slice(2),d+1))?"+ "+r:null,
+  ()=>(m=c.match(/^(.+?)\s*(→|›)$/))&&(r=look(m[1],d+1))?r+" "+m[2]:null,
+  ()=>{if(!c.includes(" · "))return null;const ps=c.split(" · ");const out=ps.map(p=>look(p.trim(),d+1)||datas(p.trim())||p);return out.some((x,i)=>x!==ps[i])?out.join(" · "):null},
+  ()=>{if(!c.includes("; "))return null;const ps=c.split("; ");const out=ps.map(p=>look(p.trim(),d+1)||p);return out.some((x,i)=>x!==ps[i])?out.join("; "):null},
+  ()=>(m=c.match(/^([\d.,]+%?\s*(?:[×x]\s*)?)(\D.*)$/))&&(r=look(m[2],d+1))?m[1]+r:null,
+  ()=>(m=c.match(/^(.+?)(\s*(?::\s*[\d.,]+%?|\([\d.,]+\)|[×x]\s*\d+))$/))&&(r=look(m[1],d+1))?r+m[2]:null,
+  ()=>(m=c.match(/^(.+?)([.:!?…])$/))&&(r=look(m[1],d+1))?r+m[2]:null,
+  ()=>{if(!(m=c.match(/^([^:]{2,40}): (.+)$/)))return null;const a=look(m[1],d+1),b=look(m[2],d+1)||datas(m[2]);return a||b?(a||m[1])+": "+(b||m[2]):null},
+  ()=>{if(!(m=c.match(/^(.+?) \(([^()]+)\)$/)))return null;const a=look(m[1],d+1),b=look(m[2],d+1);return a||b?(a||m[1])+" ("+(b||m[2])+")":null},
+  ()=>(m=c.match(/^(.+?) (#[0-9a-fA-F]{6}|R\$\s?[\d.,]+|[\d.]+)$/))&&(r=look(m[1],d+1))?r+" "+m[2]:null];
+  let r;for(const f of T){v=f();if(v!=null)break}}
  if(CX.size<5000)CX.set(c,v);return v}
 function tr(s){if(L=="pt"||!s)return s;const t=s.trim();if(!t)return s;let pre="",core=t;const m=t.match(/^([^A-Za-zÀ-ú0-9+(]+)(.*)$/s);if(m){pre=m[1];core=m[2]}
  let v=D[t]?D[t][ix]:null;if(v==null){const r=look(core,0);if(r!=null)v=pre+r}return v?s.replace(t,v):s}
@@ -212,7 +214,7 @@ window.atalaiaIdioma=()=>L;window.atalaiaTr=tr;document.body?ini():document.addE
 const CONFIG={
   url:"https://ipwleoawvxmzvofcccjn.supabase.co",
   anonKey:"sb_publishable_Y0vnKk8p0mRjOjOgKmOMFQ_kTNr4a-u",
-  versao:"0.3.49",
+  versao:"0.3.50",
   // Captcha (Cloudflare Turnstile): cole aqui só a CHAVE DO SITE (Site Key, pública).
   // A chave secreta (Secret Key) vai direto no Supabase, nunca aqui.
   turnstileSiteKey:"0x4AAAAAAGMIUUFreGPjKUGi"
